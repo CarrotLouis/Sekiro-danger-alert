@@ -1,0 +1,54 @@
+-- Current ModOptionsMenu API v3. Actions are consumed after Apply completes.
+local M={}
+function M.new(log)
+    local self={ready=false,pending=nil}
+    local prefix='peril_warning.crusher.'
+    local menu
+    function self:register()
+        if self.ready then return true end
+        menu=rawget(_G,'ModOptionsMenu')
+        if type(menu)~='table' or menu.api~=1 or (menu.version or 0)<3 then return false end
+        local specs={
+            {'volume',{type='slider',label='音量 / Volume',min=0,max=100,step=1,default=60,
+                description='只调整危提示音。0 为静音。按 APPLY 应用。 / Only this warning sound; 0 mutes it. Apply to save.'}},
+            {'preview',{type='choice',label='立即试听 / Preview',default=1,
+                choices={'待命 / Ready','播放一次 / Play once'},
+                description='选择播放一次，然后按 APPLY；立即按已应用的音量播放。可重复使用。 / Play once, then Apply.'}},
+            {'visual',{type='choice',label='动画预览 / Animation preview',default=1,
+                choices={'待命 / Ready','三秒后播放 / Play in 3 seconds'},
+                description='按 APPLY 后关闭菜单，三秒后显示动画并播放音效。此版使用屏幕固定位置预览。'}},
+            {'capture',{type='choice',label='Crusher 采集 / Capture',default=1,
+                choices={'待命 / Ready','开始两分钟采集 / Start 2 minutes','结束采集 / Stop'},
+                description='在任务内、Crusher 附近开启。记录动作状态与距离。此版尚未确认攻击编号，不会自动预警。'}},
+        }
+        for _,row in ipairs(specs) do
+            row[2].mod='危提示测试 / Peril Warning';row[2].mod_id='peril_warning.crusher'
+            local ok,why=menu.register_option(prefix..row[1],row[2])
+            if not ok then log('menu refused '..row[1]..': '..tostring(why));return false end
+        end
+        -- A saved action is never replayed on startup. Reset has no callback.
+        for _,key in ipairs({'preview','visual','capture'}) do
+            menu.set(prefix..key,1)
+            menu.on_change(prefix..key,function(value)
+                if value~=1 then
+                    self.pending=self.pending or {}
+                    self.pending[key]=value
+                end
+            end)
+        end
+        self.ready=true
+        log('menu registered: slider 0..100, audio preview, visual preview, capture')
+        return true
+    end
+    function self:volume()
+        local v=self.ready and menu.get(prefix..'volume') or 60
+        return math.max(0,math.min(100,tonumber(v) or 60))
+    end
+    function self:consume()
+        local actions=self.pending or {};self.pending=nil
+        for key in pairs(actions) do menu.set(prefix..key,1) end
+        return actions
+    end
+    return self
+end
+return M

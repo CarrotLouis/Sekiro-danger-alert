@@ -1,0 +1,217 @@
+-- Read-only layouts researched in HD2Runtime by SkyeShade (see README credit).
+-- Animation layer reader independently checked against the retained 25480438 capture.
+-- No engine function pointer calls and no game-memory writes.
+local ffi=require('ffi')
+local bit=require('bit')
+local M={}
+local function u32(s,o)
+    local a,b,c,d=s:byte(o+1,o+4);assert(d,'short read')
+    return a+b*256+c*65536+d*16777216
+end
+local function hex(s)return (s:reverse():gsub('.',function(c)return string.format('%02x',c:byte())end)) end
+M.u32=u32
+function M.new(memory,profile)
+    local self={memory=memory,reads=0,bytes=0}
+    local game=assert(memory.module('game.dll'));local exe=assert(memory.module(nil))
+    self.game,self.exe=game,exe
+    local float=ffi.new('float[1]')
+    local function f32(s,o) ffi.copy(float,s:sub(o+1,o+4),4);local n=tonumber(float[0]);assert(n==n and math.abs(n)<1e8,'invalid float');return n end
+    function self:begin() self.reads,self.bytes=0,0 end
+    local function read(at,n)
+        self.reads=self.reads+1;self.bytes=self.bytes+n
+        assert(self.reads<=2500 and self.bytes<=1048576,'read budget exceeded')
+        assert(at~=nil and n>0 and n<=1048576,'invalid read')
+        local s=memory.read(at,n);assert(s,'unreadable state');return s
+    end
+    local function ptr(at)local p=memory.pointer(read(at,8));assert(p,'missing pointer');return p end
+    local function nullable(at)return memory.pointer(read(at,8)) end
+    local function numptr(s,o)return u32(s,o)+u32(s,o+4)*4294967296 end
+    local function entity(s,p)
+        return {resource=hex(s:sub(1,8)),id=u32(s,8),unit=u32(s,12),owned=bit.band(u32(s,20),1)~=0,
+            identity=s:sub(1,20),pointer=p}
+    end
+    local function map_index(at,id,limit)
+        local h=read(at,20);local cap,empty,mult=u32(h,8),u32(h,12),u32(h,16)
+        if cap==0 then return nil end
+        assert(cap<=limit and bit.band(cap,cap-1)==0,'bad entity map')
+        local rows=assert(memory.pointer(h))
+        local start=(id*(mult%65536)+((id*math.floor(mult/65536))%65536)*65536)%4294967296
+        for k=0,63 do
+            local b=read(rows+bit.band(start+k,cap-1)*8,8)
+            if u32(b,0)==id then return u32(b,4) end
+            if u32(b,0)==empty then return nil end
+        end
+        error('entity map probe limit')
+    end
+    function self:scene()
+        local context=ptr(game+53633856)
+        local mode=u32(read(context+705052,4),0)
+        local result={mode=mode,mission=mode==4,key=tostring(context)}
+        if mode~=4 then return result end
+        local players=ptr(game+53634152);local c=read(players+0x84,8)
+        assert(u32(c,0)<=4 and u32(c,4)<=1,'player count invalid')
+        if u32(c,4)==0 then return result end
+        local handle=u32(read(players+0x3a8,4),0)
+        if handle==0x7fff then return result end
+        local entities=ptr(game+54968216)
+        local index=map_index(entities+0xf22ec8,handle,1048576)
+        if index and index<262144 then
+            local at=entities+0xf32f18+index*24
+            local e=entity(read(at,24),at)
+            if e.resource==profile.avatar_resource and e.owned then
+                result.avatar=e;result.position=self:position(e.unit)
+            end
+        end
+        result.key=result.key..'/'..tostring(entities)
+        return result
+    end
+    function self:ui_world()
+        local context=ptr(game+53633856);local target=memory.address(ptr(context+4376))
+        local app=ptr(exe+27329032);local count=u32(read(app+1424,4),0)
+        assert(count>0 and count<=64,'world list invalid')
+        local rows=read(ptr(app+1432),count*8)
+        local S=assert(rawget(_G,'stingray'));local list=S.Application.worlds()
+        assert(type(list)=='table' and #list==count,'world list changed')
+        for i=0,count-1 do if numptr(rows,i*8)==target then return list[i+1] end end
+        error('UI world unavailable')
+    end
+    local function unit_object(unit)
+        assert(unit>0 and unit<4294967296,'invalid unit')
+        local index,generation=unit%4194304,math.floor(unit/4194304)%256
+        local registry=ptr(exe+27328752);local count=u32(read(registry+152,4),0)
+        assert(count<=4194304 and index<count,'unit index invalid')
+        local generations=ptr(registry+160)
+        assert(read(generations+index,1):byte()==generation,'unit expired')
+        local object=ptr(ptr(registry+136)+index*8)
+        assert(u32(read(object+8,4),0)==unit,'unit identity changed')
+        return object
+    end
+    function self:position(unit)
+        local object=unit_object(unit);local vt=ptr(object);local accessor=ptr(vt+0xe8)
+        assert(accessor==exe+2873456 and read(accessor,5)=='\072\141\065\096\195','position accessor mismatch')
+        local s=read(ptr(object+136)+48,12)
+        return {x=f32(s,0),y=f32(s,4),z=f32(s,8)}
+    end
+    function self:animation(unit)
+        local object=unit_object(unit);local accessor=ptr(ptr(object)+0x1b0)
+        local rva=memory.distance(accessor,exe)
+        assert(rva>=4096 and rva<0x2000000,'animation accessor outside image')
+        assert(read(accessor,8)=='\072\139\129\120\001\000\000\195','animation accessor mismatch')
+        local machine=ptr(object+0x178);local resource=ptr(machine+0x28)
+        local h=read(resource,12);local layers=u32(h,4);local group_offset=u32(h,8)
+        assert(layers>0 and layers<=32 and group_offset<0x2000000,'animation header invalid')
+        local current=read(ptr(machine+0x50),layers*8)
+        local groups=resource+group_offset;local tablebytes=read(groups,4+layers*4)
+        assert(u32(tablebytes,0)==layers,'animation groups invalid')
+        local out={}
+        for i=0,layers-1 do
+            local state=memory.pointer(current,i*8)
+            if state then
+                local relative=memory.distance(state,resource)
+                assert(relative>=0 and relative<0x2000000,'animation state outside resource')
+                local off=u32(tablebytes,4+i*4);assert(off<0x2000000,'animation group offset invalid')
+                local group=groups+off;local states=u32(read(group+8,4),0)
+                assert(states<=2048,'too many animation states')
+                local indices=states>0 and read(group+12,states*4) or ''
+                local index=-1;local delta=memory.distance(state,group)
+                for j=0,states-1 do if u32(indices,j*4)==delta then index=j;break end end
+                assert(index>=0,'animation state not in its group')
+                out[#out+1]={layer=i,index=index,hash=hex(read(state,8))}
+            else out[#out+1]={layer=i,index=-1,hash='none'} end
+        end
+        assert(read(ptr(machine+0x50),layers*8)==current,'animation changed during read')
+        return out
+    end
+    function self:health_header()
+        local manager=ptr(game+53634696);local h=read(manager+4112,88)
+        local cap,live=u32(h,0),u32(h,16)
+        assert(cap>0 and cap<=4096 and live<=cap,'health counts invalid')
+        return {manager=manager,count=live,descriptors=assert(memory.pointer(h,56)),records=assert(memory.pointer(h,72))}
+    end
+    function self:discover(header,start,limit)
+        local out={};local last=math.min(header.count,start+limit)
+        if last<=start then return out,0 end
+        local rows=read(header.descriptors+start*8,(last-start)*8)
+        for i=0,last-start-1 do
+            local at=memory.pointer(rows,i*8)
+            if at then
+                local s=read(at,24)
+                if hex(s:sub(1,8))==profile.crusher_resource then out[#out+1]=entity(s,at) end
+            end
+        end
+        return out,last>=header.count and 0 or last
+    end
+    function self:resolve(header,id)
+        local index=map_index(header.manager+4144,id,65536)
+        if not index or index>=header.count then return nil end
+        local at=nullable(header.descriptors+index*8);if not at then return nil end
+        local e=entity(read(at,24),at)
+        if e.id~=id or e.resource~=profile.crusher_resource then return nil end
+        local health=read(header.records+index*440,440)
+        e.health=u32(health,20);e.life=u32(health,412)
+        if e.health==0 or e.health>=2147483648 then return nil end
+        return e
+    end
+    function self:abilities(targets)
+        local manager=ptr(game+53634624);local h=read(manager+8,56)
+        local cap,count=u32(h,0),u32(h,4)
+        assert(cap<=8192 and count<=cap,'ability counts invalid')
+        if count==0 then return {} end
+        local owners=read(assert(memory.pointer(h,40)),count*8)
+        local rows=assert(memory.pointer(h,48));local out={}
+        for i=0,count-1 do
+            local e=targets[numptr(owners,i*8)]
+            if e then
+                assert(read(e.pointer,20)==e.identity,'ability owner changed')
+                local row=read(rows+i*224,224)
+                if row:byte(17)~=0 then
+                    local item={entity=e.id,id=u32(row,0),time=f32(row,8),speed=f32(row,12),slot=i}
+                    out[#out+1]=item
+                end
+            end
+        end
+        assert(read(manager+8,56)==h,'ability table changed')
+        return out
+    end
+    local function resource(kind,name)
+        local app=ptr(exe+27328968);local manager=ptr(app+1016)
+        local function find(entries,capacity,buckets,stride,nextoff,key)
+            assert(buckets>0 and buckets<=capacity and capacity<=1048576,'resource map invalid')
+            local index=tonumber(key:sub(1,8),16)%buckets
+            for _=1,128 do
+                assert(index<capacity,'resource chain invalid')
+                local at=entries+index*stride;local row=read(at,stride);local nxt=u32(row,nextoff)
+                if nxt==4294967294 then return nil end
+                if hex(row:sub(1,8))==key then return at,row end
+                if nxt==2147483647 then return nil end
+                index=nxt
+            end
+            error('resource chain budget')
+        end
+        local cap=u32(read(manager+744,4),0);local buckets=u32(read(manager+772,4),0)
+        assert(cap<=4096,'resource type capacity invalid')
+        local at,row=find(ptr(manager+752),cap,buckets,208,200,kind)
+        if not at then return nil end
+        local entry,n=find(assert(memory.pointer(row,40)),u32(row,32),u32(row,60),24,16,name)
+        if not entry then return nil end
+        local slot=u32(n,8);if slot==4211011825 then return nil end
+        assert(slot<1048576,'resource slot invalid')
+        return nullable(assert(memory.pointer(row,16))+slot*160)
+    end
+    function self:image_ready(hash)
+        local texture=resource('cd4238c6a0c69e32',hash)
+        local at=resource('eac0b497876adedf',hash)
+        if not texture or not at then return false end
+        local m=read(at,160);local object=assert(memory.pointer(m,32),'material not online')
+        assert(u32(m,0)==0x120 and u32(m,4)==1 and u32(m,64)==1 and u32(m,128)==0x3461ff0d,
+            'material format differs')
+        assert(hex(m:sub(141,148))==hash,'material texture name differs')
+        assert(memory.pointer(m,48)==at+136 and memory.pointer(m,56)==at+140,'material fixup differs')
+        local o=read(object,72)
+        assert(u32(o,0)==3643441971 and memory.pointer(o,16)==at+24 and u32(o,48)==0x3461ff0d
+            and hex(o:sub(57,64))==hash,'material object differs')
+        return true
+    end
+    return self
+end
+return M

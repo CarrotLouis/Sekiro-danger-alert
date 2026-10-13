@@ -1,0 +1,28 @@
+# Release packages are published manually by the maintainer.
+outputs/
+dist/
+build/
+
+# Local upstream checkouts, captures, analysis and tools; never redistribute.
+work/
+research/
+pip-*/
+*.log
+*.jsonl
+*.dmp
+*.dll
+*.exe
+*.zip
+
+# Python and editor caches / local configuration.
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store

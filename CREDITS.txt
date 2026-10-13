@@ -1,0 +1,8 @@
+Uses code / research from HD2Runtime by SkyeShade
+https://github.com/SkyeShade/HD2Runtime
+
+Bingus runtime and memory helpers by CowboyBingus, 0BSD.
+https://github.com/CowboyBingus/ModOptionsMenu
+
+User-provided Sekiro peril visual/audio. No ownership over third-party media is claimed.
+HD2 HUD Plus was inspected only; no source or assets from that mod are redistributed.

@@ -1,0 +1,35 @@
+{
+  "repositories": {
+    "BingusSharedLoader": "68b9d05fd8e49ba3fb07e7e669ea46d350e9df8f",
+    "ModOptionsMenu": "fd0160807b6cc75c2eeb74dbf9793a3c5d30deb6",
+    "HD2Runtime": "75988a992141023e50fc0193f4b1de017d9e4b57",
+    "HD2-Agent-Skills": "eaac4a62351f473586b1b73e8bf4feee5cf9d3d3"
+  },
+  "files": [
+    {
+      "file": "vendor/bingus_runtime.lua",
+      "source": "work/ModOptionsMenu/src/bingus_runtime.lua",
+      "sha256": "c4450f555f697e583916d18f876412ca96f6963eb1bf4cdad451ebb906c2f988"
+    },
+    {
+      "file": "vendor/bingus_memory.lua",
+      "source": "work/ModOptionsMenu/src/bingus_memory.lua",
+      "sha256": "3973924b1c009cc4e6c863a4eaf87f166899a16ddcb579c3d77ab5465172b416"
+    },
+    {
+      "file": "vendor/hd2_image.py",
+      "source": "work/HD2Runtime/sdk/tools/hd2_image.py",
+      "sha256": "4bd44b1a61427424aef04a924035f4eb8f871ac65071107666ed1a8d16390c30"
+    },
+    {
+      "file": "vendor/hd2_archive.py",
+      "source": "work/HD2Runtime/sdk/tools/hd2_archive.py",
+      "sha256": "81a227df2ad38db35453854fa2b9e5f4ac152a09ce0a5bc01368c0edaae26914"
+    },
+    {
+      "file": "vendor/game_lua.py",
+      "source": "work/BingusSharedLoader/tests/game_lua.py",
+      "sha256": "958b9ac753802ea0606fd117c2ec22f3440a0e061990efe8bc8a77cdb3c617b1"
+    }
+  ]
+}
