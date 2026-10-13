@@ -25,7 +25,7 @@ def module(path):
 
 def masks():
     dest=ROOT/'assets/frames';dest.mkdir(exist_ok=True)
-    frames=OUT/'Sekiro_Peril_Transparent_Sequence/PNG_1920x1080_5994fps'
+    frames=OUT/'Sekiro danger alert Transparent Sequence/PNG_1920x1080_5994fps'
     for n in range(48):
         target=dest/f'{n:03}.png'
         if target.exists():continue
@@ -43,7 +43,15 @@ def profile():
           ('exe',0x554329,'458b440b044c03c1','animation group offsets'),
           ('exe',2873456,'488d4160c3','unit scene graph'),
           ('exe',6235350,'488b2c02','resource slot'),
-          ('exe',1475261,'c70133832ad9','material object')]
+          ('exe',1475261,'c70133832ad9','material object'),
+          ('exe',0x1fe5ff,'448b4210','scene graph node count'),
+          ('exe',0x1fe608,'488b5240','scene graph node names'),
+          ('exe',0x30d980,'f30f104134c3','camera field of view'),
+          ('game',0x12f55c3,'4c8b0d967f1702','camera manager global'),
+          ('game',0x127a18c,'0f11430c','camera cached right'),
+          ('game',0x127a194,'0f114b1c','camera cached forward'),
+          ('game',0x127a19c,'0f11432c','camera cached up'),
+          ('game',0x127a1ab,'0f114b3c','camera cached position')]
     rows=["{module='%s',rva=%d,bytes=%s,label='%s'}"%(m,r,lua_bytes(bytes.fromhex(b)),label) for m,r,b,label in pins]
     text="""return {
  steam_build='25480438',
@@ -52,8 +60,8 @@ def profile():
  avatar_resource='4d1c334d294dfa97',
  crusher_resource='%016x',
  pins={%s},
- -- Deliberately empty until a user-labelled capture establishes the attack states.
- attack_states={},
+ -- Captured attack onsets; do not substitute animation hashes shared by other abilities.
+ attack_states={[1411]=true,[1412]=true},
 }
 """%(resource_hash(crusher),','.join(rows))
     (ROOT/'src/profile.lua').write_text(text,encoding='utf-8')
@@ -84,29 +92,29 @@ def build():
         pcm=wav.readframes(wav.getnframes())
     assets="return {fps=60000/1001,rate=48000,channels=2,colours={{1,1,45/255,45/255},{1,1,1,245/255},{0,0,0,0},{0,0,0,0}},frames={%s},pcm=%s}\n"%(',\n'.join(frames),lua_bytes(pcm))
     (BUILD/'assets.lua').write_text(assets,encoding='utf-8')
-    chunks=['-- HD2-Addon: '+OWNER+'\n',"if rawget(_G,'PerilWarningCrusher01') then return rawget(_G,'PerilWarningCrusher01') end\n"]
+    chunks=['-- HD2-Addon: '+OWNER+'\n',"if rawget(_G,'SekiroDangerAlert') then return rawget(_G,'SekiroDangerAlert') end\n"]
     for name,path in [('runtime','vendor/bingus_runtime.lua'),('memory_module','vendor/bingus_memory.lua'),
                       ('profile','src/profile.lua'),('assets','build/assets.lua'),('menu_module','src/menu.lua'),
                       ('audio_module','src/audio.lua'),('native_module','src/native.lua'),('overlay_module','src/overlay.lua'),
-                      ('capture_module','src/capture.lua'),('marker_module','src/marker.lua')]:
+                      ('capture_module','src/capture.lua'),('marker_module','src/marker.lua'),('detector_module','src/detector.lua')]:
         chunks.append('local '+name+'='+module(ROOT/path)+'\n')
     chunks.append((ROOT/'src/entry.lua').read_text(encoding='utf-8'))
     entry=''.join(chunks).encode('utf-8');assert b'\0' not in entry and not entry.startswith(b'\xef\xbb\xbf')
-    (BUILD/'peril_warning.lua').write_bytes(entry)
+    (BUILD/'Sekiro danger alert.lua').write_bytes(entry)
     resources[(LUA_TYPE,resource_hash(OWNER))]=(lua_resource(entry),b'')
     main,gpu=make_resource_archive(resources)
     assert read_archive(main,gpu)==resources
     archive='9ba626afa44a3aa3.patch_0'
-    description=('Crusher capture and manual preview prototype; automatic attack detection is pending. '
+    description=('Sekiro danger alert: Crusher attack onset warning within 10 m, live avatar-head projection and independent sound volume. '
                  'Requires Bingus Shared Loader v18+ and Mod Options Menu v1.2. '
                  'Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
-    manifest={'Version':1,'Guid':CONFIG['guid'],'Name':'Peril Warning - Crusher Test 0.1.0','Description':description,
-              'Options':[{'Name':'Preview + Crusher Capture','Description':description,'Include':['Addon']}]}
+    manifest={'Version':1,'Guid':CONFIG['guid'],'Name':'Sekiro danger alert '+CONFIG['version'],'Description':description,
+              'Options':[{'Name':'Sekiro danger alert','Description':description,'Include':['Addon']}]}
     files={'manifest.json':json.dumps(manifest,indent=2).encode(),
            'Addon/'+archive:main,'Addon/'+archive+'.gpu_resources':gpu,'Addon/'+archive+'.stream':b''}
     for name in ['README-测试说明.txt','CREDITS.txt']:
         if (ROOT/name).exists():files[name]=(ROOT/name).read_bytes()
-    target=OUT/'PerilWarning_Crusher_Test_0.1.0.zip'
+    target=OUT/('Sekiro danger alert '+CONFIG['version']+'.zip')
     with zipfile.ZipFile(target,'w',zipfile.ZIP_DEFLATED) as z:
         for name,data in sorted(files.items()):
             info=zipfile.ZipInfo(name,date_time=(2026,10,13,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED

@@ -10,6 +10,18 @@ local function u32(s,o)
 end
 local function hex(s)return (s:reverse():gsub('.',function(c)return string.format('%02x',c:byte())end)) end
 M.u32=u32
+-- The camera uses X=right, Y=forward, Z=up. GUI coordinates start at bottom left.
+function M.project(point,camera,w,h)
+    local dx,dy,dz=point.x-camera.x,point.y-camera.y,point.z-camera.z
+    local function dot(v)return dx*v[1]+dy*v[2]+dz*v[3] end
+    local depth=dot(camera.forward)
+    if depth<=0.05 then return nil,'head behind camera' end
+    local scale=math.tan(camera.fov*0.5)
+    local x=dot(camera.right)/(depth*scale*(w/h))
+    local y=dot(camera.up)/(depth*scale)
+    if x~=x or y~=y or math.abs(x)>1 or math.abs(y)>1 then return nil,'head outside view' end
+    return {x=(x+1)*w*0.5,y=(y+1)*h*0.5,depth=depth}
+end
 function M.new(memory,profile)
     local self={memory=memory,reads=0,bytes=0}
     local game=assert(memory.module('game.dll'));local exe=assert(memory.module(nil))
@@ -47,7 +59,7 @@ function M.new(memory,profile)
         local context=ptr(game+53633856)
         local mode=u32(read(context+705052,4),0)
         local result={mode=mode,mission=mode==4,key=tostring(context)}
-        if mode~=4 then return result end
+        if mode~=4 and mode~=3 then return result end
         local players=ptr(game+53634152);local c=read(players+0x84,8)
         assert(u32(c,0)<=4 and u32(c,4)<=1,'player count invalid')
         if u32(c,4)==0 then return result end
@@ -91,6 +103,53 @@ function M.new(memory,profile)
         assert(accessor==exe+2873456 and read(accessor,5)=='\072\141\065\096\195','position accessor mismatch')
         local s=read(ptr(object+136)+48,12)
         return {x=f32(s,0),y=f32(s,4),z=f32(s,8)}
+    end
+    function self:head_position(unit)
+        local object=unit_object(unit);local accessor=ptr(ptr(object)+0xe8)
+        assert(accessor==exe+2873456 and read(accessor,5)=='\072\141\065\096\195','head scene graph mismatch')
+        -- unit_node reads the count at SceneGraph+0x10 and name IDs at +0x40.
+        -- SceneGraph is object+0x60; world poses are at SceneGraph+0x28.
+        local count=u32(read(object+0x70,4),0)
+        assert(count>0 and count<=2048,'head node count invalid')
+        local names=read(ptr(object+0xa0),count*4)
+        for index=0,count-1 do
+            if u32(names,index*4)==0x8c5570c9 then -- StringId32("head")
+                local s=read(ptr(object+0x88)+index*64+48,12)
+                return {x=f32(s,0),y=f32(s,4),z=f32(s,8),node=index}
+            end
+        end
+        return nil,'local avatar has no head node'
+    end
+    function self:camera()
+        local manager=ptr(game+54973792);local eye=ptr(manager)
+        local pose=read(manager+12,64)
+        local fov=f32(read(eye+0x34,4),0)
+        assert(fov>0.05 and fov<3.10,'camera field of view invalid')
+        local function axis(offset)
+            local v={f32(pose,offset),f32(pose,offset+4),f32(pose,offset+8)}
+            local length=math.sqrt(v[1]^2+v[2]^2+v[3]^2)
+            assert(length>0.95 and length<1.05,'camera basis invalid')
+            for i=1,3 do v[i]=v[i]/length end
+            return v
+        end
+        local result={right=axis(0),forward=axis(16),up=axis(32),
+            x=f32(pose,48),y=f32(pose,52),z=f32(pose,56),fov=fov}
+        assert(ptr(manager)==eye,'camera changed during read')
+        return result
+    end
+    function self:head_anchor(w,h)
+        -- Avatar/camera transitions are normal: hide the frame instead of guessing a location.
+        local ok,anchor,why=pcall(function()
+            local scene=self:scene()
+            if not scene.avatar then return nil,'local avatar unavailable' end
+            local head,reason=self:head_position(scene.avatar.unit)
+            if not head then return nil,reason end
+            local projected,message=M.project(head,self:camera(),w,h)
+            if projected then projected.node=head.node;projected.unit=scene.avatar.unit end
+            return projected,message
+        end)
+        if not ok then return nil,'head read unavailable: '..tostring(anchor) end
+        return anchor,why
     end
     function self:animation(unit)
         local object=unit_object(unit);local accessor=ptr(ptr(object)+0x1b0)

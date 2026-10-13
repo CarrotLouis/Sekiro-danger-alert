@@ -9,6 +9,9 @@ function M.new(log)
         menu=rawget(_G,'ModOptionsMenu')
         if type(menu)~='table' or menu.api~=1 or (menu.version or 0)<3 then return false end
         local specs={
+            {'automatic',{type='choice',label='自动预警 / Automatic warning',default=1,
+                choices={'开启 / On','关闭 / Off'},
+                description='Crusher 在 10 米内开始已识别的攻击时预警。 / Warn at the onset of a recognized Crusher attack within 10 m.'}},
             {'volume',{type='slider',label='音量 / Volume',min=0,max=100,step=1,default=60,
                 description='只调整危提示音。0 为静音。按 APPLY 应用。 / Only this warning sound; 0 mutes it. Apply to save.'}},
             {'preview',{type='choice',label='立即试听 / Preview',default=1,
@@ -16,13 +19,13 @@ function M.new(log)
                 description='选择播放一次，然后按 APPLY；立即按已应用的音量播放。可重复使用。 / Play once, then Apply.'}},
             {'visual',{type='choice',label='动画预览 / Animation preview',default=1,
                 choices={'待命 / Ready','三秒后播放 / Play in 3 seconds'},
-                description='按 APPLY 后关闭菜单，三秒后显示动画并播放音效。此版使用屏幕固定位置预览。'}},
+                description='按 APPLY 后关闭菜单，三秒后在本机潜兵头顶显示动画并播放音效。'}},
             {'capture',{type='choice',label='Crusher 采集 / Capture',default=1,
                 choices={'待命 / Ready','开始两分钟采集 / Start 2 minutes','结束采集 / Stop'},
-                description='在任务内、Crusher 附近开启。记录动作状态与距离。此版尚未确认攻击编号，不会自动预警。'}},
+                description='在任务内、Crusher 附近开启。记录动作与距离；看到出招时按 F8 标记。'}},
         }
         for _,row in ipairs(specs) do
-            row[2].mod='危提示测试 / Peril Warning';row[2].mod_id='peril_warning.crusher'
+            row[2].mod='Sekiro danger alert';row[2].mod_id='peril_warning.crusher'
             local ok,why=menu.register_option(prefix..row[1],row[2])
             if not ok then log('menu refused '..row[1]..': '..tostring(why));return false end
         end
@@ -44,6 +47,7 @@ function M.new(log)
         local v=self.ready and menu.get(prefix..'volume') or 60
         return math.max(0,math.min(100,tonumber(v) or 60))
     end
+    function self:automatic()return self.ready and menu.get(prefix..'automatic')==1 end
     function self:consume()
         local actions=self.pending or {};self.pending=nil
         for key in pairs(actions) do menu.set(prefix..key,1) end

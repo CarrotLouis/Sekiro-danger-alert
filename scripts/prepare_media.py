@@ -12,7 +12,7 @@ ARGS=PARSER.parse_args()
 OUT=ARGS.output_dir.resolve()
 SOURCE=ARGS.source.resolve()
 FF=ARGS.ffmpeg
-DEST=OUT/'Sekiro_Peril_Transparent_Sequence'
+DEST=OUT/'Sekiro danger alert Transparent Sequence'
 FRAMES=DEST/'PNG_1920x1080_5994fps'
 FRAMES.mkdir(parents=True,exist_ok=True)
 W,H=1920,1080
@@ -67,8 +67,8 @@ for ix,k in enumerate(keys):
   bg.alpha_composite(frame);sheet.paste(bg.convert('RGB'),(ix*cw,30+row*ch))
  draw.text((ix*cw+8,10),f'{k/float(60000/1001):.2f}s',fill='white')
 draw.text((8,ch*3+38),'Same straight-alpha frames: checker / dark / light',fill='white')
-sheet.save(OUT/'Peril_Transparency_Check.png')
-with zipfile.ZipFile(OUT/'Sekiro_Peril_Transparent_PNG_5994fps.zip','w',zipfile.ZIP_DEFLATED,compresslevel=3) as z:
+sheet.save(OUT/'Sekiro danger alert Transparency Check.png')
+with zipfile.ZipFile(OUT/'Sekiro danger alert Transparent PNG 5994fps.zip','w',zipfile.ZIP_DEFLATED,compresslevel=3) as z:
  for f in sorted(DEST.rglob('*')):
   if f.is_file():z.write(f,f.relative_to(OUT).as_posix())
 print(json.dumps(info,ensure_ascii=False),flush=True)

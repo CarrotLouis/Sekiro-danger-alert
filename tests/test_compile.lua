@@ -1,5 +1,5 @@
 local root=arg[1]
-local fn=assert(loadfile(root..'/build/peril_warning.lua'))
+local fn=assert(loadfile(root..'/build/Sekiro danger alert.lua'))
 local util=require('jit.util');local seen={};local count,maxbc=0,0
 local function walk(f)
     if seen[f] then return end;seen[f]=true

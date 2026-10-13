@@ -1,29 +1,29 @@
-local KEY='PerilWarningCrusher01'
+local KEY='SekiroDangerAlert'
 if rawget(_G,KEY) then return rawget(_G,KEY) end
-local api={version='0.1.0',automatic_warning=false,status='starting'}
+local api={version='0.2.0',automatic_warning=true,status='starting'}
 rawset(_G,KEY,api)
 local loader=rawget(_G,'CowboyBingusModLoader') or {}
 local directory=loader.log_directory or ((os.getenv('LOCALAPPDATA') or '.')..'/CowboyBingus/Helldivers2/Logs')
 local function log(line)
-    local f=io.open(directory..'/PerilWarning.log','ab')
+    local f=io.open(directory..'/Sekiro danger alert.log','ab')
     if f then f:write(os.date('!%Y-%m-%dT%H:%M:%SZ')..' '..tostring(line)..'\r\n');f:close() end
 end
 local function status(s)
     if api.status==s then return end
     api.status=s;log('status: '..s)
-    local f=io.open(directory..'/PerilWarning-STATUS.txt','wb')
+    local f=io.open(directory..'/Sekiro danger alert-STATUS.txt','wb')
     if f then
-        f:write('Peril Warning 0.1.0 | Crusher capture + manual preview\r\n'..s..'\r\n',
-            'Automatic attack warning: NOT ENABLED; awaiting captured attack identity.\r\n',
-            'Visual: game-native GUI; fixed preview position, not head tracking yet.\r\n',
+        f:write('Sekiro danger alert 0.2.0 | Crusher attack warning\r\n'..s..'\r\n',
+            'Automatic warning: Crusher abilities 1411/1412, within 10 meters at onset.\r\n',
+            'Visual: game-native GUI; live local-avatar head projection.\r\n',
             'Sound: independent PCM playback, not a Wwise event.\r\n');f:close()
     end
 end
-log('loaded 0.1.0; Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
+log('Sekiro danger alert loaded 0.2.0; Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
 local menu=menu_module.new(log)
 local memory=memory_module.new(runtime)
-local audio,native,overlay,capture,key
-local origin=memory.time();local next_sample=0;local pending_visual=nil;local refused=false
+local audio,native,overlay,capture,key,detector
+local origin=memory.time();local next_sample=0;local next_attack_sample=0;local pending_visual=nil;local refused=false
 local function now()return memory.time()-origin end
 local function play_audio()
     if not audio then audio=audio_module.new(assets.pcm,assets.rate,assets.channels,log) end
@@ -40,6 +40,10 @@ local function initialize()
     native=native_module.new(memory,profile)
     overlay=overlay_module.new(native,assets,log)
     capture=capture_module.new(native,directory,log,now)
+    detector=detector_module.new(native,profile,log,function(event)
+        log('automatic_trigger '..capture_module.json(event))
+        overlay:play(now());play_audio()
+    end)
     key=marker_module.new()
     status('build matched; preparing visual; capture is ready')
 end
@@ -48,7 +52,7 @@ local function visual_step(t)
     local ok,why=pcall(function()
         native:begin()
         if not overlay.ready then
-            if overlay:warmup() then status('ready: preview and capture; automatic attack recognition pending') end
+            if overlay:warmup() then status('ready: head tracking and automatic Crusher attack warning') end
         end
         if pending_visual and t>=pending_visual then
             pending_visual=nil
@@ -80,6 +84,13 @@ local function step()
         capture:mark();pending_visual=t;log('F8 user attack marker')
     end
     visual_step(t)
+    api.automatic_warning=menu:automatic() and not detector.disabled
+    if api.automatic_warning and t>=next_attack_sample then
+        detector:step(t);next_attack_sample=t+0.05
+        if detector.disabled then api.automatic_warning=false;status('automatic warning unavailable; see log') end
+    elseif not menu:automatic() then
+        detector:reset()
+    end
     if capture.active and t>=next_sample then
         capture:step()
         next_sample=t+((capture.cost or 0)>0.005 and 0.15 or 0.05)

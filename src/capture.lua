@@ -33,12 +33,12 @@ function M.new(native,path,log,clock)
         if self.active then self:stop('restarted') end
         self.serial=(self.serial or 0)+1
         local timestamp=os.date('%Y%m%d-%H%M%S')..'-'..math.floor(clock()*1000)..'-'..self.serial
-        self.path=path..'/PerilWarning-Crusher-'..timestamp..'.jsonl'
+        self.path=path..'/Sekiro danger alert-Crusher-'..timestamp..'.jsonl'
         file=assert(io.open(self.path,'wb'),'cannot create capture log')
         began=clock();deadline=began+120;next_discover=0;next_heartbeat=0;context=nil
         bytes_written=0;self.active=true;self.tracked={};self.last={};self.cursor=0;self.errors=0;self.samples=0
         emit('capture_start',{build='25480438',sample_hz=20,range_m=50,
-            warning_range_m=10,automatic_warning=false,manual_marker='F8',version='0.1.0'})
+            warning_range_m=10,automatic_warning_supported=true,manual_marker='F8',version='0.2.0',mod='Sekiro danger alert'})
         log('capture started: '..self.path)
     end
     function self:stop(reason)

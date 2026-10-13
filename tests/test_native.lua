@@ -68,3 +68,22 @@ local a=n:abilities({[0x41003000]=e});assert(#a==1 and a[1].id==567 and a[1].tim
 write(0x41007010,'\0');assert(#n:abilities({[0x41003000]=e})==0)
 u(0x41004000+20,0);assert(n:resolve(h,100)==nil)
 print('PASS health discovery/re-resolution, dead-target rejection and canonical ability-owner join')
+-- Named head lookup uses the animated node, not the entity root or a fixed height.
+u(0x40003000+0x70,2);p(0x40003000+0xa0,0x42000000);region(0x42000000,8)
+u(0x42000000,123);u(0x42000004,0x8c5570c9)
+region(0x42001000,128);p(0x40003000+0x88,0x42001000)
+local head=ffi.new('float[3]',{2,10,1.7});write(0x42001000+64+48,ffi.string(head,12))
+local hp=n:head_position(4194307);assert(hp.node==1 and hp.x==2 and hp.y==10 and math.abs(hp.z-1.7)<0.0001)
+head[2]=0.7;write(0x42001000+64+48,ffi.string(head,12));assert(n:head_position(4194307).z<0.71)
+u(0x42000004,0);assert(n:head_position(4194307)==nil);u(0x42000004,0x8c5570c9)
+-- Camera manager matrix and actual engine camera FOV.
+region(game+54973792,8);p(game+54973792,0x42002000);region(0x42002000,80)
+p(0x42002000,0x42003000);region(0x42003000,64)
+local matrix=ffi.new('float[16]',{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1})
+write(0x42002000+12,ffi.string(matrix,64));local fov=ffi.new('float[1]',math.pi/2)
+write(0x42003000+0x34,ffi.string(fov,4))
+local camera=n:camera();assert(math.abs(camera.fov-math.pi/2)<0.0001)
+n.scene=function()return {avatar={unit=4194307}}end
+local screen=n:head_anchor(1920,1080);assert(screen and screen.node==1 and screen.unit==4194307)
+n.scene=function()return {}end;assert(n:head_anchor(1920,1080)==nil)
+print('PASS animated head-name lookup, crouching pose change, camera decoding and unavailable-avatar hiding')

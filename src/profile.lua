@@ -16,7 +16,23 @@ return {
 "\072\139\044\002"
 }),label='resource slot'},{module='exe',rva=1475261,bytes=table.concat({
 "\199\001\051\131\042\217"
-}),label='material object'}},
- -- Deliberately empty until a user-labelled capture establishes the attack states.
- attack_states={},
+}),label='material object'},{module='exe',rva=2090495,bytes=table.concat({
+"\068\139\066\016"
+}),label='scene graph node count'},{module='exe',rva=2090504,bytes=table.concat({
+"\072\139\082\064"
+}),label='scene graph node names'},{module='exe',rva=3201408,bytes=table.concat({
+"\243\015\016\065\052\195"
+}),label='camera field of view'},{module='game',rva=19879363,bytes=table.concat({
+"\076\139\013\150\127\023\002"
+}),label='camera manager global'},{module='game',rva=19374476,bytes=table.concat({
+"\015\017\067\012"
+}),label='camera cached right'},{module='game',rva=19374484,bytes=table.concat({
+"\015\017\075\028"
+}),label='camera cached forward'},{module='game',rva=19374492,bytes=table.concat({
+"\015\017\067\044"
+}),label='camera cached up'},{module='game',rva=19374507,bytes=table.concat({
+"\015\017\075\060"
+}),label='camera cached position'}},
+ -- Captured attack onsets; do not substitute animation hashes shared by other abilities.
+ attack_states={[1411]=true,[1412]=true},
 }

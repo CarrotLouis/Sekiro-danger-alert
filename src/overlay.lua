@@ -33,19 +33,28 @@ function M.new(native,assets,log)
     function self:step(now)
         if not self.until_time then return end
         if now>=self.until_time then self.until_time=nil;self:close();return end
+        local w,h=S.Gui.resolution()
+        assert(type(w)=='number' and type(h)=='number' and w>=320 and w<=16384 and h>=240 and h<=16384,'resolution invalid')
+        local anchor,why=native:head_anchor(w,h)
+        if not anchor then
+            if self.anchor_status~=why then log('visual hidden: '..tostring(why));self.anchor_status=why end
+            self:close();return
+        end
+        if self.anchor_status~='tracking' then
+            log('head tracking: unit='..anchor.unit..' node='..anchor.node)
+            self.anchor_status='tracking'
+        end
         local world=native:ui_world()
         if self.world and world~=self.world then self:close() end
         scope(function()
             if not self.gui then
                 self.world=world;self.gui=assert(S.World.create_screen_gui(world,'scale',1,1),'GUI creation failed')
             end
-            local w,h=S.Gui.resolution()
-            assert(type(w)=='number' and type(h)=='number' and w>=320 and w<=16384 and h>=240 and h<=16384,'resolution invalid')
             local index=math.min(#assets.frames,math.floor((now-self.start)*assets.fps)+1)
             local frame=assets.frames[index]
-            -- Prototype preview anchor; exact avatar-head projection follows attack identification.
+            -- Reproject the animated head every frame, including crouch/prone and camera movement.
             local size=math.min(h*0.48,512)
-            local position=S.Vector3(w*0.5-size*0.5,h*0.65-size*0.5,950)
+            local position=S.Vector3(anchor.x-size*0.5,anchor.y+h*0.075-size*0.5,950)
             local dimensions=S.Vector2(size,size);local tint=S.Color(255,255,255,255)
             if self.id==nil then self.id=assert(S.Gui.bitmap(self.gui,frame.name,position,dimensions,tint),'bitmap creation failed')
             else S.Gui.update_bitmap(self.gui,self.id,frame.name,position,dimensions,tint) end
