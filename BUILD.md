@@ -34,4 +34,4 @@ Python 3 + Pillow 用于构建；完整透明序列的提取另需 NumPy 和 FFm
 512² 纹理使用相同材质布局、BC1 格式及完整 10 级 mip 链。游戏内首次使用该分辨率仍需实测。
 
 待确认的双层动画使用独立预览工具 `scripts/preview_effect.py`，只写 `outputs/`，不会替换游戏素材或封包。
-生成方式与观感调整记录见 [动画预览 R1](docs/ANIMATION-PREVIEW-R1.md)。
+生成方式与观感调整记录见 [动画预览 R2](docs/ANIMATION-PREVIEW-R2.md)。

@@ -17,9 +17,9 @@ ROOT = Path(__file__).resolve().parents[1]
 FPS = 60000 / 1001
 COUNT = 50
 SIZE = 768
-PEAK = 14
+MAIN_STOP = 34
 END = 49
-OUTPUT = ROOT / 'outputs/Sekiro danger alert Animation R1'
+OUTPUT = ROOT / 'outputs/Sekiro danger alert Animation R2'
 
 
 def smooth(x):
@@ -28,15 +28,27 @@ def smooth(x):
 
 
 def timing(frame):
-    """Freeze main geometry at its brightness peak; echo has its own envelope."""
-    growth = float(smooth(frame / PEAK))
-    fade = float(1-smooth((frame-PEAK)/(END-PEAK)))
+    """Two independent growth curves, changing colour, erosion and bloom envelopes."""
+    f = np.clip(frame, 0, END)
+    growth = (1-np.exp(-min(f, MAIN_STOP)/9))/(1-np.exp(-MAIN_STOP/9))
+    echo_growth = (1-np.exp(-min(f, 19)/3.5))/(1-np.exp(-19/3.5))
     return {
-        'main_scale': .74 + .26*growth,
-        'main_opacity': (.72 + .28*growth)*fade,
-        'echo_scale': .88 + 1.04*float(1-(1-np.clip(frame/13, 0, 1))**2),
-        'echo_opacity': .28*float(smooth(frame/3)) * float(1-smooth((frame-4)/20)),
+        'main_scale': float(.70+.30*growth),
+        'main_opacity': float((1-smooth((f-29)/20))**.65),
+        'main_brightness': float(np.interp(f, [0, 11, 19, 33, 41, 49], [1.18, 1.16, 1.14, 1.10, .85, .3])),
+        'whiteness': float(np.interp(f, [0, 11, 19, 25, 33, 41, 49], [1, .87, .66, .40, .12, .025, 0])),
+        'echo_scale': float(.82+1.03*echo_growth),
+        'echo_opacity': float(.27*smooth(f/3)*(1-smooth((f-11)/13))),
+        'erosion': float(.88*smooth((f-23)/26)),
+        'glow': float(np.interp(f, [0, 6, 11, 19, 25, 33, 41, 49], [.30, 1, .86, .45, .20, .06, .008, 0])),
     }
+
+
+def erosion_mask(core, field, progress):
+    # Thin strokes / stroke boundaries have lower core values and disappear first.
+    # A continuous noise field varies the advancing dissolve across the glyph.
+    resistance = .30+.44*np.clip(core, 0, 1)+.26*np.clip(field, 0, 1)
+    return smooth((resistance-progress)/.24+.5)
 
 
 def make_glyph(font_path, size):
@@ -76,10 +88,13 @@ class Renderer:
         self.b = fractal(self.n, 1731)
         f = np.fft.fftfreq(self.n)[:, None]**2 + np.fft.rfftfreq(self.n)[None, :]**2
         # Floating-point Gaussian convolution avoids an 8-bit staircase in the halo.
-        self.filters = [np.exp(-2*np.pi**2*(r*self.n/SIZE)**2*f) for r in (2, 8, 25, 64)]
+        self.filters = [np.exp(-2*np.pi**2*(r*self.n/SIZE)**2*f) for r in (3, 14, 48, 115)]
         edge = np.minimum(np.arange(self.n), np.arange(self.n)[::-1])
         taper = smooth(edge/(self.n*.05)).astype(np.float32)
         self.boundary = taper[:, None]*taper[None, :]
+        y, x = np.mgrid[:self.n, :self.n]
+        self.radius2 = ((x-self.n/2)**2+(y-self.n/2)**2)/(self.n/SIZE)**2
+        self.boundary *= 1-smooth((np.sqrt(self.radius2)-SIZE*.35)/(SIZE*.15))
 
     def layer(self, scale, softness=.65):
         height = round(self.n*.35*scale)
@@ -94,24 +109,29 @@ class Renderer:
         state = timing(index)
         if index >= END:
             return Image.new('RGBA', (self.size, self.size))
-        # Slow texture evolution is also frozen at the peak: fade cannot introduce
-        # new bright patches or make a static glyph appear to keep growing.
-        phase = min(index, PEAK)/PEAK
-        field = self.a*(1-phase*.35)+self.b*phase*.35
-        light = .45 + .55*np.clip((1-field-.38)*4, 0, 1)**1.1
-        colour = (np.array([1, .12, .16], np.float32)[None, None, :]
-                  + light[:, :, None]*np.array([0, .70, .66], np.float32))
-        main = self.layer(state['main_scale'])
+        phase = index/END
+        field = self.a*(1-phase*.45)+self.b*phase*.45
+        texture = np.clip((1-field-.38)*4, 0, 1)**1.1
+        white = state['whiteness']*(.70+.30*texture)
+        colour = np.stack((np.ones_like(white), .025+.975*white, .015+.91*white), axis=2)
+        main = self.layer(state['main_scale'], softness=3.0)
         echo = self.layer(state['echo_scale'], softness=2.1)
-        main_light = main*(.45+.55*light)
-        # An actual second glyph, not a blur of the main glyph.
-        rgb = echo[:, :, None]*colour*(.50+.50*light[:, :, None])*state['echo_opacity']
+        core = np.maximum(np.fft.irfft2(np.fft.rfft2(main)*self.filters[0], s=(self.n, self.n)), 0)
+        dissolve = erosion_mask(core, field, state['erosion'])
+        main_light = main*(1-(1-state['whiteness'])*.70*(1-texture))*dissolve*state['main_brightness']
+        echo_colour = np.stack((np.ones_like(white), .06+.54*texture, .04+.48*texture), axis=2)
+        rgb = echo[:, :, None]*echo_colour*(.50+.50*texture[:, :, None])*state['echo_opacity']
         rgb += main_light[:, :, None]*colour*state['main_opacity']
-        spectrum = np.fft.rfft2(main_light*state['main_opacity'] + echo*state['echo_opacity']*.7)
-        for filt, strength, tint in zip(self.filters, (.25, .43, .60, .55),
-                                       ((1, .20, .22), (1, .15, .16), (1, .09, .10), (1, .06, .065))):
+        # Bloom expands and recedes on its own envelope instead of simply sharing
+        # the main layer's alpha. The broad skirt supplies the reference's red haze.
+        spectrum = np.fft.rfft2(main*(.75+.25*texture)*dissolve + echo*state['echo_opacity']*.08)
+        for filt, strength, tint in zip(self.filters, (.65, 1.4, 1.6, 1.0),
+                                       ((1, .08, .065), (1, .06, .045), (1, .035, .02), (1, .02, .01))):
             blurred = np.maximum(np.fft.irfft2(spectrum*filt, s=(self.n, self.n)), 0).astype(np.float32)
-            rgb += blurred[:, :, None]*strength*np.array(tint, np.float32)
+            rgb += blurred[:, :, None]*strength*state['glow']*np.array(tint, np.float32)
+        sigma = 205+55*state['glow']
+        skirt = .26*state['glow']*np.exp(-self.radius2/(2*sigma**2))
+        rgb += skirt[:, :, None]*np.array([1, .018, .012], np.float32)
         rgb *= self.boundary[:, :, None]
         # Downsample premultiplied light before constructing straight-alpha PNGs.
         small = np.stack([np.asarray(Image.fromarray(rgb[:, :, c]).resize(
@@ -119,7 +139,7 @@ class Renderer:
         return rgba_from_light(small)
 
 
-def on_background(rgba, colour=(5, 3, 4)):
+def on_background(rgba, colour=(0, 0, 0)):
     image = Image.new('RGBA', rgba.size, (*colour, 255))
     image.alpha_composite(rgba)
     return image.convert('RGB')
@@ -136,10 +156,39 @@ def encode_video(ffmpeg, frames, path):
     subprocess.run(command, input=b''.join(im.tobytes() for im in frames), check=True)
 
 
+def compare_reference(ffmpeg, video, frames):
+    """Fixed crop/scale for every source frame: no per-frame resizing or retiming."""
+    result = subprocess.run([str(ffmpeg), '-v', 'error', '-i', str(video), '-frames:v', str(COUNT),
+                             '-vf', f'crop=540:540:640:250,scale={SIZE}:{SIZE}',
+                             '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], capture_output=True, check=True)
+    source = np.frombuffer(result.stdout, np.uint8).reshape(COUNT, SIZE, SIZE, 3)
+    pairs = []
+    for i, frame in enumerate(frames):
+        pair = Image.new('RGB', (SIZE*2, SIZE+32))
+        pair.paste(Image.fromarray(source[i]))
+        pair.paste(frame, (SIZE, 0))
+        draw = ImageDraw.Draw(pair)
+        draw.text((16, SIZE+8), f'Original | Frame {i:02d} | {i/FPS:.3f} s', fill='white')
+        draw.text((SIZE+16, SIZE+8), f'Sekiro danger alert R2 | Frame {i:02d}', fill='white')
+        pairs.append(pair)
+    encode_video(ffmpeg, pairs, OUTPUT/'Sekiro danger alert R2 Comparison.mp4')
+    for label, indices in [('Early', (0, 6, 11, 19)), ('Late', (25, 33, 41, 46))]:
+        sheet = Image.new('RGB', (SIZE*2, (SIZE+32)))
+        for cell, i in enumerate(indices):
+            small = pairs[i].resize((SIZE, (SIZE+32)//2), Image.Resampling.LANCZOS)
+            sheet.paste(small, (cell%2*SIZE, cell//2*((SIZE+32)//2)))
+        sheet.save(OUTPUT/f'Sekiro danger alert R2 Compare {label}.png')
+    return {'source_sha256': hashlib.sha256(video.read_bytes()).hexdigest(),
+            'source_crop': [640, 250, 540, 540], 'uniform_scale': [SIZE, SIZE],
+            'frame_alignment': 'same zero-based frame at 60000/1001 fps; no retiming',
+            'keyframes': [0, 6, 11, 19, 25, 33, 41, 46]}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--font', type=Path, required=True)
     parser.add_argument('--ffmpeg', type=Path, required=True)
+    parser.add_argument('--reference-video', type=Path)
     args = parser.parse_args()
     OUTPUT.mkdir(parents=True, exist_ok=True)
     sequence = OUTPUT/'PNG'
@@ -151,33 +200,39 @@ def main():
         rgba = renderer.frame(i)
         rgba.save(sequence/f'{i:03d}.png')
         frames.append(on_background(rgba))
-    encode_video(args.ffmpeg, frames, OUTPUT/'Sekiro danger alert R1 59.94fps.mp4')
+    encode_video(args.ffmpeg, frames, OUTPUT/'Sekiro danger alert R2 59.94fps.mp4')
     # Separate repeat video makes the short effect easier to inspect in a player.
-    pause = [Image.new('RGB', (SIZE, SIZE), (5, 3, 4))]*60
-    encode_video(args.ffmpeg, (frames+pause)*3, OUTPUT/'Sekiro danger alert R1 Preview.mp4')
+    pause = [Image.new('RGB', (SIZE, SIZE), (0, 0, 0))]*60
+    encode_video(args.ffmpeg, (frames+pause)*3, OUTPUT/'Sekiro danger alert R2 Preview.mp4')
     # One global palette plus dithering avoids changing bands between GIF frames.
     atlas = Image.new('RGB', (SIZE*5, SIZE*2))
     for cell, index in enumerate(range(0, COUNT, 5)):
         atlas.paste(frames[index], (cell%5*SIZE, cell//5*SIZE))
     palette = atlas.quantize(colors=256)
     gif = [f.quantize(palette=palette, dither=Image.Dither.FLOYDSTEINBERG) for f in frames]
-    gif.append(pause[0].quantize(palette=palette))
-    gif[0].save(OUTPUT/'Sekiro danger alert R1 Preview.gif', save_all=True,
-                append_images=gif[1:], duration=gif_durations()+[1000], loop=0, optimize=False, disposal=2)
-    sheet = Image.new('RGB', (SIZE*3, (SIZE+32)*2), (5, 3, 4))
-    for cell, index in enumerate((4, 10, 14, 24, 36, 46)):
+    # Hold the already-black final frame. Avoid a duplicate disposal-2 terminal
+    # frame, which can produce an invalid final descriptor with Pillow's encoder.
+    durations = gif_durations()
+    durations[-1] += 1000
+    gif[0].save(OUTPUT/'Sekiro danger alert R2 Preview.gif', save_all=True,
+                append_images=gif[1:], duration=durations, loop=0, optimize=False, disposal=1)
+    sheet = Image.new('RGB', (SIZE*3, (SIZE+32)*2), (0, 0, 0))
+    for cell, index in enumerate((0, 11, 19, 25, 33, 41)):
         x, y = cell%3*SIZE, cell//3*(SIZE+32)
         sheet.paste(frames[index], (x, y))
         ImageDraw.Draw(sheet).text((x+16, y+SIZE+8), f'Frame {index:02d} / {index/FPS:.3f} s', fill='white')
-    sheet.save(OUTPUT/'Sekiro danger alert R1 Contact.png')
-    frames[10].save(OUTPUT/'Sekiro danger alert R1 Still.png')
+    sheet.save(OUTPUT/'Sekiro danger alert R2 Contact.png')
+    frames[10].save(OUTPUT/'Sekiro danger alert R2 Still.png')
+    comparison = compare_reference(args.ffmpeg, args.reference_video, frames) if args.reference_video else None
     metadata = {
-        'public_name': 'Sekiro danger alert', 'preview_revision': 'R1', 'approved': False,
+        'public_name': 'Sekiro danger alert', 'preview_revision': 'R2', 'approved': False,
         'font_family': family, 'font_sha256': hashlib.sha256(args.font.read_bytes()).hexdigest(),
         'font_bundled': False, 'size': SIZE, 'frames': COUNT, 'fps': '60000/1001',
-        'main_peak_frame': PEAK, 'echo_invisible_frame': 24, 'fully_transparent_frame': END,
-        'gif_pause_ms': 1000, 'main_scale_frozen_during_fade': True,
+        'main_growth_stop_frame': MAIN_STOP, 'echo_invisible_frame': 24, 'fully_transparent_frame': END,
+        'gif_pause_ms': 1000, 'echo_growth_stop_frame': 19, 'echo_fade_start_frame': 11,
+        'colour_darkening_and_spatial_erosion': True,
         'production_assets_changed': False, 'game_package_created': False,
+        'reference_comparison': comparison,
         'frames_timing': [timing(i) for i in range(COUNT)],
     }
     (OUTPUT/'preview.json').write_text(json.dumps(metadata, indent=2)+'\n', encoding='utf-8')
