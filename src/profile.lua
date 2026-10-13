@@ -33,6 +33,9 @@ return {
 }),label='camera cached up'},{module='game',rva=19374507,bytes=table.concat({
 "\015\017\075\060"
 }),label='camera cached position'}},
- -- Captured attack onsets; do not substitute animation hashes shared by other abilities.
- attack_states={[1411]=true,[1412]=true},
+ -- 1411/1412 have live capture support. Other branches are statically reviewed;
+ -- exact move names / live coverage still need confirmation. Never use shared animation hashes alone.
+ attack_states={[1411]=true,[1412]=true,[1413]=true,[1414]=true,[1415]=true,[1416]=true,
+                [1417]=true,[1418]=true,[1419]=true,[1420]=true,[1421]=true,[1422]=true,[1424]=true},
+ ignored_stomps={[1409]=true,[1410]=true,[1423]=true},
 }

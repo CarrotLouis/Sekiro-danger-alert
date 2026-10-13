@@ -9,6 +9,12 @@ function M.new(log)
         menu=rawget(_G,'ModOptionsMenu')
         if type(menu)~='table' or menu.api~=1 or (menu.version or 0)<3 then return false end
         local specs={
+            {'offset_x',{type='slider',label='左右位置 / Horizontal',min=-100,max=100,step=1,default=0,
+                description='0 保持原头顶锚点；负数向左，正数向右。范围约左右各一个身位。APPLY 后生效。'}},
+            {'offset_y',{type='slider',label='上下位置 / Vertical',min=-100,max=100,step=1,default=0,
+                description='0 保持原头顶锚点；负数向下，正数向上。范围约上下各两个头高。APPLY 后生效。'}},
+            {'size',{type='slider',label='大小 % / Size %',min=50,max=300,step=5,default=100,
+                description='100% 约为原效果字形大小；50% 至 300%。以头顶锚点为中心缩放，保持跟随。'}},
             {'automatic',{type='choice',label='自动预警 / Automatic warning',default=1,
                 choices={'开启 / On','关闭 / Off'},
                 description='Crusher 在 10 米内开始已识别的攻击时预警。 / Warn at the onset of a recognized Crusher attack within 10 m.'}},
@@ -48,6 +54,15 @@ function M.new(log)
         return math.max(0,math.min(100,tonumber(v) or 60))
     end
     function self:automatic()return self.ready and menu.get(prefix..'automatic')==1 end
+    function self:appearance()
+        local function value(key,default,lo,hi)
+            local v=self.ready and tonumber(menu.get(prefix..key)) or default
+            if not v or v~=v then v=default end
+            return math.max(lo,math.min(hi,v))
+        end
+        return {x=value('offset_x',0,-100,100)/100,y=value('offset_y',0,-100,100)/100,
+                scale=value('size',100,50,300)/100}
+    end
     function self:consume()
         local actions=self.pending or {};self.pending=nil
         for key in pairs(actions) do menu.set(prefix..key,1) end

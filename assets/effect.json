@@ -1,0 +1,33 @@
+{
+  "renderer": "procedural-font-fractal-v1",
+  "font_family": "HakusyuGyosyoExtraBold",
+  "font_sha256": "48964580db71af5e684f49c7d259aae9fd433a68afea45271b19692790f4b9b7",
+  "font_bundled": false,
+  "texture_size": 512,
+  "frames": 48,
+  "fps_numerator": 60000,
+  "fps_denominator": 1001,
+  "quad_ratio_to_v020": 0.38,
+  "colours": [
+    [
+      1,
+      1,
+      0.07,
+      0.03
+    ],
+    [
+      1,
+      1,
+      0.8,
+      0.73
+    ]
+  ],
+  "reference": {
+    "complexity": 4,
+    "contrast": 150,
+    "stretch_y_percent": 223,
+    "evolution_degrees": -120,
+    "glow_exposure": 1.5
+  },
+  "note": "Independent approximation; no AE plugins or font binary distributed."
+}

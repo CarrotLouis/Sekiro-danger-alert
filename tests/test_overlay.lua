@@ -32,3 +32,22 @@ anchor=saved
 stingray.Gui.bitmap=function()error('mock renderer failure')end
 assert(not pcall(o.step,o,4));assert(temp==17,'temporary arena must restore even after failure');o:close()
 print('PASS head-follow GUI, missing-head hiding, frame switching, arena restore and stale-world cleanup')
+-- Size scales around the existing anchor; offset limits do not grow with size.
+local placement={x=0,y=0,scale=1}
+local dims
+stingray.Gui.bitmap=function(_,_,p,s)calls.position=p;dims=s;return 42 end
+stingray.Gui.update_bitmap=function(_,_,_,p,s)calls.position=p;dims=s end
+assets.quad_ratio=0.38
+o=dofile(root..'/src/overlay.lua').new(n,assets,function()end,function()return placement end)
+o:warmup();o:warmup();o:play(10);o:step(10)
+local baseline=dims[1]
+local cx=calls.position[1]+dims[1]/2;local cy=calls.position[2]+dims[2]/2
+placement={x=1,y=-1,scale=3};o:step(10.01)
+assert(math.abs(dims[1]-baseline*3)<0.001)
+assert(math.abs(calls.position[1]+dims[1]/2-cx-108)<0.001)
+assert(math.abs(calls.position[2]+dims[2]/2-cy+108)<0.001)
+placement={x=0,y=0,scale=.5};anchor.x=anchor.x+25;o:step(10.02)
+assert(math.abs(dims[1]-baseline*.5)<0.001)
+assert(math.abs(calls.position[1]+dims[1]/2-cx-25)<0.001,'scaled glyph must continue following the moving avatar')
+o:close()
+print('PASS zero-anchor preservation, bounded offsets and 0.5x/3x scaling while following')

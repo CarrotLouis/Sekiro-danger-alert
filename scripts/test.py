@@ -17,6 +17,8 @@ def main():
     if not (args.mom_source / 'src/mod_options_menu.lua').is_file():
         parser.error('--mom-source must point to a ModOptionsMenu source checkout')
     (ROOT / 'build/test_logs').mkdir(parents=True, exist_ok=True)
+    for test in sorted((ROOT / 'tests').glob('test_*.py')):
+        subprocess.run([sys.executable, str(test)], check=True, cwd=ROOT)
     for test in sorted((ROOT / 'tests').glob('test_*.lua')):
         command = [sys.executable, str(ROOT / 'vendor/game_lua.py'), str(test), str(ROOT)]
         if test.name == 'test_menu.lua':

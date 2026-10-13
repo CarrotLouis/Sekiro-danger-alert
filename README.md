@@ -4,9 +4,9 @@
 
 依赖 [Bingus Shared Loader](https://github.com/CowboyBingus/BingusSharedLoader) 和 [Mod Options Menu](https://github.com/CowboyBingus/ModOptionsMenu) v1.2 / API 3。游戏内可独立调整提示音量，并立即试听。
 
-当前版本为 **0.2.0 测试版**：当 10 米内的 Crusher 开始已识别攻击时播放提示；动画每帧跟随本机潜兵的头部，并保留声音预览和动作采集功能。仅支持已核对的 Steam build 25480438。
+当前版本为 **0.3.0 测试版**：使用“極太行書”重建动态红色辉光动画；当 10 米内的 Crusher 开始已识别攻击时播放提示。动画每帧跟随本机潜兵头部，可调整左右、上下位置及 50%～300% 大小。仅支持已核对的 Steam build 25480438。
 
-采集回放支持能力 1411 / 1412 的识别，共复现 9 次起点。头顶投影、重复触发管理和菜单接口通过离线测试；新版的游戏内头顶对齐与客机识别仍需实测。不会把尚未确认的状态 1434 当作攻击。详见 [验证记录](docs/VALIDATION-0.2.0.md) 和 [测试说明](README-测试说明.txt)。
+能力白名单现覆盖 13 个经过静态核对的非脚部近战分支，明确排除三个跺脚分支。1411 / 1412 已有采集和使用者实测支持；新增分支包含多段连击路径，但“三连锤击”的准确编号和全部招式覆盖仍需实测，不能仅凭离线测试宣称已全部识别。详见 [攻击研究与验证范围](docs/VALIDATION-0.3.0.md) 和 [测试说明](README-测试说明.txt)。
 
 ## 开发
 
@@ -23,7 +23,7 @@ python scripts/test.py --mom-source /path/to/ModOptionsMenu
 | `src/` | Lua 模块与版本限定的读取布局 |
 | `scripts/` | 素材处理、构建与测试入口 |
 | `tests/` | 离线测试 |
-| `assets/` | 48 张游戏材质遮罩与提示音 |
+| `assets/` | 48 张 512² 材质遮罩、效果参数与提示音；不包含字体文件 |
 | `vendor/` | 必要的第三方辅助代码、许可证和来源记录 |
 | `docs/` | 开发记录与验证范围 |
 | `outputs/` | 本地产物，Git 忽略；由维护者自行发布 Release |

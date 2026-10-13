@@ -1,4 +1,4 @@
--- Read-only Crusher ability observation. Only the two capture-supported attacks are enabled.
+-- Read-only Crusher observation: captured slams plus build-pinned non-stomp melee branches.
 local M={}
 function M.new(native,profile,log,trigger)
     local self={tracked={},previous={},fired={},cursor=0,next_discover=0,errors=0}
@@ -16,7 +16,11 @@ function M.new(native,profile,log,trigger)
                 local fresh=a.time>=0 and a.time<=0.35
                 local start=fresh and (not old or old.id~=a.id or a.time<old.time-0.1)
                 local identity=a.entity..':'..target.unit
-                if start and profile.attack_states[a.id] and target.distance<=10
+                if start and target.distance<=10 and not profile.attack_states[a.id]
+                    and not (profile.ignored_stomps or {})[a.id] then
+                    log('unmapped_action entity='..a.entity..' ability='..a.id)
+                end
+                if start and profile.attack_states[a.id] and not (profile.ignored_stomps or {})[a.id] and target.distance<=10
                     and t-(self.fired[identity] or -math.huge)>0.7 then
                     self.fired[identity]=t
                     trigger({entity=a.entity,unit=target.unit,ability=a.id,ability_time=a.time,distance=target.distance})

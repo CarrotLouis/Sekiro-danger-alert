@@ -4,10 +4,11 @@ import argparse,hashlib,json,struct,sys,wave,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'vendor'))
 from hd2_archive import resource_hash,lua_resource,make_resource_archive,read_archive,LUA_TYPE
-from hd2_image import icon_family,icon_masks,write_png
+from hd2_image import texture_main,bc1_mips,icon_material,TEXTURE_TYPE,MATERIAL_TYPE,read_png
 from PIL import Image
 
 CONFIG=json.loads((ROOT/'project.json').read_text())
+EFFECT=json.loads((ROOT/'assets/effect.json').read_text())
 ARGS=argparse.ArgumentParser()
 ARGS.add_argument('--output-dir',type=Path,default=ROOT/'outputs')
 OUT=ARGS.parse_args().output_dir.resolve();OUT.mkdir(parents=True,exist_ok=True)
@@ -24,17 +25,9 @@ def module(path):
     return '(function()\n'+path.read_text(encoding='utf-8')+'\nend)()'
 
 def masks():
-    dest=ROOT/'assets/frames';dest.mkdir(exist_ok=True)
-    frames=OUT/'Sekiro danger alert Transparent Sequence/PNG_1920x1080_5994fps'
     for n in range(48):
-        target=dest/f'{n:03}.png'
-        if target.exists():continue
-        rgba=Image.open(frames/f'peril_{n:04}.png').convert('RGBA')
-        # Recompose on black before converting RGB to the game's R/G mask convention.
-        black=Image.new('RGBA',rgba.size,(0,0,0,255));black.alpha_composite(rgba)
-        square=black.crop((256,-160,1664,1248)).resize((256,256),Image.Resampling.LANCZOS)
-        raw=icon_masks(square.tobytes(),dark=(0,0,0),red=(255,45,45),white=(255,255,245))
-        target.write_bytes(write_png(256,256,raw))
+        target=ROOT/f'assets/frames/{n:03}.png'
+        if not target.is_file():raise FileNotFoundError('Restore assets/frames or run render_effect.py with your font')
 
 def profile():
     crusher='content/fac_illuminate/cha_bodyhorror_helmetguy/cha_bodyhorror_helmetguy'
@@ -60,8 +53,11 @@ def profile():
  avatar_resource='4d1c334d294dfa97',
  crusher_resource='%016x',
  pins={%s},
- -- Captured attack onsets; do not substitute animation hashes shared by other abilities.
- attack_states={[1411]=true,[1412]=true},
+ -- 1411/1412 have live capture support. Other branches are statically reviewed;
+ -- exact move names / live coverage still need confirmation. Never use shared animation hashes alone.
+ attack_states={[1411]=true,[1412]=true,[1413]=true,[1414]=true,[1415]=true,[1416]=true,
+                [1417]=true,[1418]=true,[1419]=true,[1420]=true,[1421]=true,[1422]=true,[1424]=true},
+ ignored_stomps={[1409]=true,[1410]=true,[1423]=true},
 }
 """%(resource_hash(crusher),','.join(rows))
     (ROOT/'src/profile.lua').write_text(text,encoding='utf-8')
@@ -77,12 +73,13 @@ def build():
         if cache_file.exists():
             blob=cache_file.read_bytes()
             a,b=struct.unpack_from('<II',blob,0);main,gpu=blob[8:8+a],blob[8+a:8+a+b]
-            from hd2_image import TEXTURE_TYPE,MATERIAL_TYPE,icon_material
             family={TEXTURE_TYPE:(main,gpu),MATERIAL_TYPE:(icon_material(h),b'')}
         else:
-            family=icon_family(png,h)
-            from hd2_image import TEXTURE_TYPE
-            main,gpu=family[TEXTURE_TYPE];cache_file.write_bytes(struct.pack('<II',len(main),len(gpu))+main+gpu)
+            w,height,rgba=read_png(png)
+            assert w==height==EFFECT['texture_size'] and w&(w-1)==0
+            main,gpu=texture_main(w,height,w.bit_length()),bc1_mips(w,height,rgba)
+            family={TEXTURE_TYPE:(main,gpu),MATERIAL_TYPE:(icon_material(h),b'')}
+            cache_file.write_bytes(struct.pack('<II',len(main),len(gpu))+main+gpu)
         for kind,data in family.items():resources[(kind,h)]=data
         frames.append("{name='%s',hash='%016x'}"%(name,h))
         records.append({'frame':n,'name':name,'hash':'%016x'%h,'mask_png_sha256':sha})
@@ -90,7 +87,8 @@ def build():
     with wave.open(str(ROOT/'assets/peril.wav'),'rb') as wav:
         assert wav.getsampwidth()==2 and wav.getnchannels()==2 and wav.getframerate()==48000
         pcm=wav.readframes(wav.getnframes())
-    assets="return {fps=60000/1001,rate=48000,channels=2,colours={{1,1,45/255,45/255},{1,1,1,245/255},{0,0,0,0},{0,0,0,0}},frames={%s},pcm=%s}\n"%(',\n'.join(frames),lua_bytes(pcm))
+    colours='{'+','.join('{'+','.join(str(x) for x in c)+'}' for c in EFFECT['colours'])+',{0,0,0,0},{0,0,0,0}}'
+    assets="return {fps=60000/1001,rate=48000,channels=2,quad_ratio=%s,colours=%s,frames={%s},pcm=%s}\n"%(EFFECT['quad_ratio_to_v020'],colours,',\n'.join(frames),lua_bytes(pcm))
     (BUILD/'assets.lua').write_text(assets,encoding='utf-8')
     chunks=['-- HD2-Addon: '+OWNER+'\n',"if rawget(_G,'SekiroDangerAlert') then return rawget(_G,'SekiroDangerAlert') end\n"]
     for name,path in [('runtime','vendor/bingus_runtime.lua'),('memory_module','vendor/bingus_memory.lua'),

@@ -13,6 +13,8 @@ pip-*/
 *.dll
 *.exe
 *.zip
+*.ttf
+*.otf
 
 # Python and editor caches / local configuration.
 __pycache__/

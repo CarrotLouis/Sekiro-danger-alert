@@ -1,6 +1,6 @@
 -- Uses the game's screen GUI and compiled materials; no desktop overlay.
 local M={}
-function M.new(native,assets,log)
+function M.new(native,assets,log,appearance)
     local self={ready=false,world=nil,gui=nil,id=nil,until_time=nil,checked=0,coloured={}}
     local S=assert(rawget(_G,'stingray'),'stingray API missing')
     local function scope(fn)
@@ -53,8 +53,10 @@ function M.new(native,assets,log)
             local index=math.min(#assets.frames,math.floor((now-self.start)*assets.fps)+1)
             local frame=assets.frames[index]
             -- Reproject the animated head every frame, including crouch/prone and camera movement.
-            local size=math.min(h*0.48,512)
-            local position=S.Vector3(anchor.x-size*0.5,anchor.y+h*0.075-size*0.5,950)
+            local settings=appearance and appearance() or {x=0,y=0,scale=1}
+            local size=math.min(h*0.48,512)*(assets.quad_ratio or 1)*settings.scale
+            local position=S.Vector3(anchor.x+h*0.10*settings.x-size*0.5,
+                anchor.y+h*(0.075+0.10*settings.y)-size*0.5,950)
             local dimensions=S.Vector2(size,size);local tint=S.Color(255,255,255,255)
             if self.id==nil then self.id=assert(S.Gui.bitmap(self.gui,frame.name,position,dimensions,tint),'bitmap creation failed')
             else S.Gui.update_bitmap(self.gui,self.id,frame.name,position,dimensions,tint) end
