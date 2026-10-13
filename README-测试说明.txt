@@ -1,14 +1,15 @@
-Sekiro danger alert 0.3.0 — Crusher 测试版
+Sekiro danger alert 0.3.1 — Crusher 测试版
 
 本次修改
-- 使用極太行書重新生成动态红色辉光动画，采用 48 帧 512×512 原生纹理。
+- 接入已确认的 R2 双层动画：亮白转暗红、持续减速放大、动态宽光晕和边缘侵蚀淡出。
+- 采用 50 帧 512×512 原生纹理，59.94 fps，总时长约 0.834 秒；主体默认大小按旧版校准。
 - 危动画每帧跟随本机潜兵头部；支持左右、上下偏移和大小设置。
 - Crusher 在 10 米内开始已识别的非跺脚近战分支时触发（共 13 个能力分支）。
 - 连续施放同一攻击也会重新预警，单次施放不反复播放。
 - 统一菜单、封包和日志名称；保留旧版 GUID 和音量设置。
 
 安装 / 升级
-1. 在 HD2Arsenal 中用 Sekiro danger alert 0.3.0.zip 替换旧的 Peril Warning 测试包。
+1. 在 HD2Arsenal 中用 Sekiro danger alert 0.3.1.zip 替换旧的 Peril Warning 测试包。
    保持仅一个版本启用，部署后完整重启游戏。
 2. 依赖 Bingus Shared Loader v18+ 和 Mod Options Menu v1.2 / API 3。
    https://github.com/CowboyBingus/BingusSharedLoader/releases/latest
@@ -44,7 +45,7 @@ Sekiro danger alert 0.3.0 — Crusher 测试版
 旧版日志保留，不会被改名或覆盖。
 
 已知验证范围
-已用游戏 lua51.dll 完成九组离线测试，并对这次采集的 934 条能力记录回放，识别到 9 次范围内攻击起点。
+已用游戏 lua51.dll 完成十组离线测试，并对这次采集的 934 条能力记录回放，识别到 9 次范围内攻击起点。
 按键标记比实际起点晚 0.35～1.30 秒，不影响代码直接读取能力开始。
 新增 1413～1422、1424 分支有静态代码依据，三连锤具体对应编号仍需实测；不能宣称已穷尽所有攻击。
 1409 / 1410 / 1423 脚部攻击明确排除。1434 仍不预警；其他未知动作在主日志中记录编号。

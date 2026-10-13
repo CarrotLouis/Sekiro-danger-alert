@@ -38,7 +38,7 @@ function M.new(native,path,log,clock)
         began=clock();deadline=began+120;next_discover=0;next_heartbeat=0;context=nil
         bytes_written=0;self.active=true;self.tracked={};self.last={};self.cursor=0;self.errors=0;self.samples=0
         emit('capture_start',{build='25480438',sample_hz=20,range_m=50,
-            warning_range_m=10,automatic_warning_supported=true,manual_marker='F8',version='0.3.0',mod='Sekiro danger alert'})
+            warning_range_m=10,automatic_warning_supported=true,manual_marker='F8',version='0.3.1',mod='Sekiro danger alert'})
         log('capture started: '..self.path)
     end
     function self:stop(reason)

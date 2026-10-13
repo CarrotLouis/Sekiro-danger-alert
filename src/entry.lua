@@ -1,6 +1,6 @@
 local KEY='SekiroDangerAlert'
 if rawget(_G,KEY) then return rawget(_G,KEY) end
-local api={version='0.3.0',automatic_warning=true,status='starting'}
+local api={version='0.3.1',automatic_warning=true,status='starting'}
 rawset(_G,KEY,api)
 local loader=rawget(_G,'CowboyBingusModLoader') or {}
 local directory=loader.log_directory or ((os.getenv('LOCALAPPDATA') or '.')..'/CowboyBingus/Helldivers2/Logs')
@@ -13,13 +13,13 @@ local function status(s)
     api.status=s;log('status: '..s)
     local f=io.open(directory..'/Sekiro danger alert-STATUS.txt','wb')
     if f then
-        f:write('Sekiro danger alert 0.3.0 | Crusher attack warning\r\n'..s..'\r\n',
+        f:write('Sekiro danger alert 0.3.1 | Crusher attack warning\r\n'..s..'\r\n',
             'Automatic warning: Crusher non-stomp melee branches, within 10 meters at onset.\r\n',
             'Visual: game-native GUI; live local-avatar head projection.\r\n',
             'Sound: independent PCM playback, not a Wwise event.\r\n');f:close()
     end
 end
-log('Sekiro danger alert loaded 0.3.0; Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
+log('Sekiro danger alert loaded 0.3.1; Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
 local menu=menu_module.new(log)
 local memory=memory_module.new(runtime)
 local audio,native,overlay,capture,key,detector

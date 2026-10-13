@@ -5,7 +5,7 @@ https://github.com/SkyeShade/HD2Runtime
 
 本工程是 Bingus Lua addon，不需要在游戏中安装 HD2Runtime。
 Python 3 + Pillow 用于构建；完整透明序列的提取另需 NumPy 和 FFmpeg。
-已包含 48 张 512×512 游戏材质遮罩图及 PCM WAV，所以重新构建不需要字体文件、MP4、AE 或 FFmpeg。
+已包含 50 张 512×512 游戏材质遮罩图及 PCM WAV，所以重新构建不需要字体文件、MP4、AE 或 FFmpeg。
 
 运行 `python scripts/build.py`，成品写入 `outputs/`。
 需要其他输出位置时使用 `--output-dir <目录>`。
@@ -17,7 +17,9 @@ Python 3 + Pillow 用于构建；完整透明序列的提取另需 NumPy 和 FFm
 测试使用离线模拟数据；test_audio.lua 还会用系统声音接口播放一段数字静音，以检查资源释放。
 它们不启动游戏，不证明游戏内渲染或联机行为。
 
-素材约定：完整 PNG 原片为 straight alpha；assets/frames 是游戏图标着色器使用的 R/G mask，
+构建后运行 `python scripts/verify_package.py`，从实际 ZIP 检查清单、资源、Lua 与 BC1 纹理，并生成压缩前后关键帧对照。
+
+素材约定：完整 PNG 原片为 straight alpha；assets/frames 是游戏图标着色器使用的 R/G/B 颜色遮罩，
 外观看起来偏黄绿是正常的，不能拿它们代替透明素材包。
 
 `src/profile.lua` 在构建时生成；修改版本适配与能力白名单时应编辑 `scripts/build.py`，并保留显式跺脚排除表。
@@ -27,11 +29,16 @@ Python 3 + Pillow 用于构建；完整透明序列的提取另需 NumPy 和 FFm
 `python scripts/prepare_media.py <MP4路径> --ffmpeg <ffmpeg可执行文件路径>`。
 完整序列仍写入被忽略的 `outputs/`；不会自动上传或发布。
 
-0.3.0 的游戏动画已改为字体程序化渲染。重新生成遮罩及预览：
-`python scripts/render_effect.py --font <極太行書.ttf路径>`。
-它以字形遮罩叠加四层动态杂色、红色着色、多尺度辉光与放大淡出；没有使用 AE、VC Color Vibrance 或 Deep Glow 插件。
-字体仅从给定路径读取，不复制进仓库；普通构建直接使用已生成的遮罩。
-512² 纹理使用相同材质布局、BC1 格式及完整 10 级 mip 链。游戏内首次使用该分辨率仍需实测。
+0.3.1 已接入用户确认的 R2 动画。需要重新生成时：
 
-待确认的双层动画使用独立预览工具 `scripts/preview_effect.py`，只写 `outputs/`，不会替换游戏素材或封包。
-生成方式与观感调整记录见 [动画预览 R2](docs/ANIMATION-PREVIEW-R2.md)。
+```powershell
+python scripts/preview_effect.py --font '<極太行書.ttf>' --ffmpeg '<ffmpeg.exe>'
+python scripts/import_effect.py --sequence 'outputs/Sekiro danger alert Animation R2'
+python scripts/build.py
+```
+
+预览工具只写 `outputs/`；导入步骤才会替换生产素材。普通构建直接使用仓库内的 50 张遮罩，无需字体、视频或 FFmpeg。
+字体仅从给定路径读取，不复制进仓库。旧 `render_effect.py` 仅为 0.3.0 历史工具，不应用来覆盖当前素材。
+512² 纹理继续使用原生图标材质、BC1 格式及 10 级 mip 链；RGB 遮罩重建白、红、黄色贡献，宽红光晕放入精度更高的绿色通道。
+默认绘制区域扩大以容纳光晕，主体的默认屏幕大小按 0.3.0 校准；设置 ID 和跟随锚点不变。
+生成方式与观感调整记录见 [动画预览 R2](docs/ANIMATION-PREVIEW-R2.md)。实际游戏混合效果仍需实测。

@@ -25,9 +25,9 @@ def module(path):
     return '(function()\n'+path.read_text(encoding='utf-8')+'\nend)()'
 
 def masks():
-    for n in range(48):
+    for n in range(EFFECT['frames']):
         target=ROOT/f'assets/frames/{n:03}.png'
-        if not target.is_file():raise FileNotFoundError('Restore assets/frames or run render_effect.py with your font')
+        if not target.is_file():raise FileNotFoundError('Restore assets/frames or import the approved R2 sequence')
 
 def profile():
     crusher='content/fac_illuminate/cha_bodyhorror_helmetguy/cha_bodyhorror_helmetguy'
@@ -66,7 +66,7 @@ def build():
     masks();profile()
     resources={};frames=[];records=[]
     cache=BUILD/'image_cache';cache.mkdir(exist_ok=True)
-    for n in range(48):
+    for n in range(EFFECT['frames']):
         name=OWNER+'/images/peril_%03d'%n;h=resource_hash(name)
         png=(ROOT/f'assets/frames/{n:03}.png').read_bytes();sha=hashlib.sha256(png).hexdigest()
         cache_file=cache/(sha+'-'+str(h)+'.bin')
@@ -87,8 +87,11 @@ def build():
     with wave.open(str(ROOT/'assets/peril.wav'),'rb') as wav:
         assert wav.getsampwidth()==2 and wav.getnchannels()==2 and wav.getframerate()==48000
         pcm=wav.readframes(wav.getnframes())
-    colours='{'+','.join('{'+','.join(str(x) for x in c)+'}' for c in EFFECT['colours'])+',{0,0,0,0},{0,0,0,0}}'
-    assets="return {fps=60000/1001,rate=48000,channels=2,quad_ratio=%s,colours=%s,frames={%s},pcm=%s}\n"%(EFFECT['quad_ratio_to_v020'],colours,',\n'.join(frames),lua_bytes(pcm))
+    palette=EFFECT['colours']
+    assert 1<=len(palette)<=4 and all(len(c)==4 for c in palette)
+    palette=palette+[[0,0,0,0]]*(4-len(palette))
+    colours='{'+','.join('{'+','.join(str(x) for x in c)+'}' for c in palette)+'}'
+    assets="return {fps=%s/%s,rate=48000,channels=2,quad_ratio=%s,colours=%s,frames={%s},pcm=%s}\n"%(EFFECT['fps_numerator'],EFFECT['fps_denominator'],EFFECT['quad_ratio_to_v020'],colours,',\n'.join(frames),lua_bytes(pcm))
     (BUILD/'assets.lua').write_text(assets,encoding='utf-8')
     chunks=['-- HD2-Addon: '+OWNER+'\n',"if rawget(_G,'SekiroDangerAlert') then return rawget(_G,'SekiroDangerAlert') end\n"]
     for name,path in [('runtime','vendor/bingus_runtime.lua'),('memory_module','vendor/bingus_memory.lua'),
