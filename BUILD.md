@@ -32,3 +32,6 @@ Python 3 + Pillow 用于构建；完整透明序列的提取另需 NumPy 和 FFm
 它以字形遮罩叠加四层动态杂色、红色着色、多尺度辉光与放大淡出；没有使用 AE、VC Color Vibrance 或 Deep Glow 插件。
 字体仅从给定路径读取，不复制进仓库；普通构建直接使用已生成的遮罩。
 512² 纹理使用相同材质布局、BC1 格式及完整 10 级 mip 链。游戏内首次使用该分辨率仍需实测。
+
+待确认的双层动画使用独立预览工具 `scripts/preview_effect.py`，只写 `outputs/`，不会替换游戏素材或封包。
+生成方式与观感调整记录见 [动画预览 R1](docs/ANIMATION-PREVIEW-R1.md)。
