@@ -46,6 +46,10 @@ def profile():
           ('game',0x127a19c,'0f11432c','camera cached up'),
           ('game',0x127a1ab,'0f114b3c','camera cached position')]
     rows=["{module='%s',rva=%d,bytes=%s,label='%s'}"%(m,r,lua_bytes(bytes.fromhex(b)),label) for m,r,b,label in pins]
+    targeting=json.loads((ROOT/'config/targeting_probe.json').read_text())
+    target_rows=["{rva=%d,bytes=%s,label='%s'}"%(p['rva'],lua_bytes(bytes.fromhex(p['hex'])),p['label'])
+                 for p in targeting['pins']]
+    target_resources=["['%s']='%s'"%(r['hash'],r['name']) for r in targeting['resources']]
     text="""return {
  steam_build='25480438',
  exe_sha256='F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06',
@@ -53,13 +57,15 @@ def profile():
  avatar_resource='4d1c334d294dfa97',
  crusher_resource='%016x',
  pins={%s},
+ targeting_pins={%s},
+ targeting_resources={%s},
  -- 1411/1412 have live capture support. Other branches are statically reviewed;
  -- exact move names / live coverage still need confirmation. Never use shared animation hashes alone.
  attack_states={[1411]=true,[1412]=true,[1413]=true,[1414]=true,[1415]=true,[1416]=true,
                 [1417]=true,[1418]=true,[1419]=true,[1420]=true,[1421]=true,[1422]=true,[1424]=true},
  ignored_stomps={[1409]=true,[1410]=true,[1423]=true},
 }
-"""%(resource_hash(crusher),','.join(rows))
+"""%(resource_hash(crusher),','.join(rows),','.join(target_rows),','.join(target_resources))
     (ROOT/'src/profile.lua').write_text(text,encoding='utf-8')
 
 def build():
@@ -97,7 +103,8 @@ def build():
     for name,path in [('runtime','vendor/bingus_runtime.lua'),('memory_module','vendor/bingus_memory.lua'),
                       ('profile','src/profile.lua'),('assets','build/assets.lua'),('menu_module','src/menu.lua'),
                       ('audio_module','src/audio.lua'),('native_module','src/native.lua'),('overlay_module','src/overlay.lua'),
-                      ('capture_module','src/capture.lua'),('marker_module','src/marker.lua'),('detector_module','src/detector.lua')]:
+                      ('tracking_module','src/tracking.lua'),('capture_module','src/capture.lua'),
+                      ('marker_module','src/marker.lua'),('detector_module','src/detector.lua')]:
         chunks.append('local '+name+'='+module(ROOT/path)+'\n')
     chunks.append((ROOT/'src/entry.lua').read_text(encoding='utf-8'))
     entry=''.join(chunks).encode('utf-8');assert b'\0' not in entry and not entry.startswith(b'\xef\xbb\xbf')

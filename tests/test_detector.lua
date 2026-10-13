@@ -1,7 +1,7 @@
-local root=arg[1];local module=dofile(root..'/src/detector.lua')
+local root=arg[1];local tracking=dofile(root..'/src/tracking.lua');local module=dofile(root..'/src/detector.lua')
 local profile=dofile(root..'/src/profile.lua')
 local events={}
-local d=module.new({},profile,function()end,function(e)events[#events+1]=e end)
+local d=module.new({},profile,function()end,function(e)events[#events+1]=e end,tracking)
 local target={[1]={unit=2,distance=8}}
 local function sample(t,id,time)
     d:observe(id and {{entity=1,id=id,time=time,slot=1}} or {},target,t)
@@ -46,7 +46,7 @@ local n={memory={address=function(p)return p end},begin=function()end,
     if not owners[100] then return {}end
     return {{entity=1,id=1411,slot=1,time=time}}
  end}
-events={};d=module.new(n,profile,function()end,function(e)events[#events+1]=e end)
+events={};d=module.new(n,profile,function()end,function(e)events[#events+1]=e end,tracking)
 d:step(0);time=1;d:step(1);assert(#events==1)
 avatar=8;time=0;d:step(2);assert(#events==2)
 alive=false;d:step(3);assert(not d.tracked[1])

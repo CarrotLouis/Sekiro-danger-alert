@@ -18,10 +18,9 @@ local function json(v)
     return '{'..table.concat(out,',')..'}'
 end
 M.json=json
-function M.new(native,path,log,clock)
-    local self={active=false,tracked={},cursor=0,last={},errors=0,samples=0}
-    local began,deadline,context,next_discover,next_heartbeat
-    local file,bytes_written
+function M.new(native,path,log,clock,tracking)
+    local self={active=false,last={},errors=0,samples=0}
+    local began,deadline,context,next_heartbeat,tracker,file,bytes_written
     local function emit(kind,data)
         if not file then return end
         data=data or {};data.event=kind;data.t=clock()-began
@@ -29,28 +28,61 @@ function M.new(native,path,log,clock)
         if bytes_written+#line>8388608 then self:stop('8 MiB log limit');return end
         file:write(line);file:flush();bytes_written=bytes_written+#line
     end
-    function self:start()
+    local function nearby(selected)
+        local out={}
+        for _,e in ipairs(selected) do
+            out[#out+1]={entity=e.id,unit=e.unit,distance=e.distance,owned=e.owned,health=e.health,class_name=e.class_name}
+        end
+        return out
+    end
+    function self:start(mode)
         if self.active then self:stop('restarted') end
+        self.mode=mode=='targeting' and 'targeting' or 'crusher'
         self.serial=(self.serial or 0)+1
         local timestamp=os.date('%Y%m%d-%H%M%S')..'-'..math.floor(clock()*1000)..'-'..self.serial
-        self.path=path..'/Sekiro danger alert-Crusher-'..timestamp..'.jsonl'
+        self.path=path..'/Sekiro danger alert-'..(self.mode=='targeting' and 'Targeting-' or 'Crusher-')..timestamp..'.jsonl'
         file=assert(io.open(self.path,'wb'),'cannot create capture log')
-        began=clock();deadline=began+120;next_discover=0;next_heartbeat=0;context=nil
-        bytes_written=0;self.active=true;self.tracked={};self.last={};self.cursor=0;self.errors=0;self.samples=0
-        emit('capture_start',{build='25480438',sample_hz=20,range_m=50,
-            warning_range_m=10,automatic_warning_supported=true,manual_marker='F8',version='0.3.1',mod='Sekiro danger alert'})
+        began=clock();deadline=began+120;next_heartbeat=0;context=nil
+        bytes_written=0;self.active=true;self.last={};self.errors=0;self.samples=0;self.cost=0
+        self.ability_stamp=nil;self.observation=nil;self.detector_t=nil;self.animation_cursor=0
+        local source=native
+        if self.mode=='targeting' then
+            source={discover=function(_,h,c,n)return native:targeting_discover(h,c,n)end,
+                resolve=function(_,h,id)return native:targeting_resolve(h,id)end,
+                position=function(_,unit)return native:position(unit)end}
+        end
+        tracker=tracking.new(source,self.mode=='targeting' and 2000 or 50,self.mode=='targeting' and 8 or 16)
+        emit('capture_start',{build='25480438',nominal_sample_hz=20,adaptive_sampling=true,
+            range_m=self.mode=='targeting' and 2000 or 50,warning_range_m=10,mode=self.mode,
+            automatic_warning_supported=self.mode=='crusher',manual_marker='F8',version='0.3.2',mod='Sekiro danger alert'})
         log('capture started: '..self.path)
     end
     function self:stop(reason)
         if not self.active then return end
-        -- Reserve room for a stop record without going through the cap again.
         if file then file:write(json({event='capture_stop',t=clock()-began,reason=reason,samples=self.samples})..'\n');file:close() end
-        file=nil;self.active=false;self.tracked={};self.last={};log('capture stopped: '..reason)
+        file=nil;self.active=false;self.last={};self.observation=nil;log('capture stopped: '..reason)
     end
     function self:mark()
-        if self.active then emit('user_attack_mark',{key='F8'}) end
+        if self.active then emit('user_attack_mark',{key='F8',last_observation=self.observation,
+            observation_age=self.observation and clock()-began-self.observation.sample_t or nil}) end
     end
-    function self:step()
+    function self:record_detection(snapshot)
+        if not self.active or self.mode~='crusher' or not snapshot or snapshot.t<began or snapshot.t==self.detector_t then return end
+        if clock()>=deadline then self:stop('two minutes complete');return end
+        local key=snapshot.scene.key..':'..snapshot.scene.avatar.unit
+        if context and context~=key then self:stop('mission or local avatar changed');return end
+        context=key
+        local started=clock()
+        self.detector_t=snapshot.t
+        self.observation={sample_t=snapshot.t-began,source='automatic_detector',nearby=nearby(snapshot.selected),
+            decisions=snapshot.decisions,tracking=snapshot.tracking}
+        -- Preserve every detector decision even when animation capture has backed off.
+        emit('detector_sample',{sample_t=snapshot.t-began,nearby=self.observation.nearby,
+            items=snapshot.abilities,decisions=snapshot.decisions,tracking=snapshot.tracking,
+            avatar_entity=snapshot.scene.avatar.id,avatar_unit=snapshot.scene.avatar.unit})
+        if clock()-started>0.020 then self:stop('detector recording exceeded 20 ms budget') end
+    end
+    function self:step(snapshot)
         if not self.active then return end
         local now=clock()
         if now>=deadline then return self:stop('two minutes complete') end
@@ -63,56 +95,64 @@ function M.new(native,path,log,clock)
                 if now>=next_heartbeat then emit('waiting_for_mission');next_heartbeat=now+5 end
                 return
             end
-            if context and context~=scene.key then self:stop('mission context changed');return end
-            context=scene.key
-            local h=native:health_header()
-            if now>=next_discover then
-                local found;found,self.cursor=native:discover(h,self.cursor,128)
-                local n=0;for _ in pairs(self.tracked) do n=n+1 end
-                for _,e in ipairs(found) do
-                    if self.tracked[e.id] or n<16 then
-                        if not self.tracked[e.id] then n=n+1;emit('crusher_found',{entity=e.id,unit=e.unit,owned=e.owned}) end
-                        self.tracked[e.id]=true
-                    end
-                end
-                next_discover=now+0.15
+            local key=scene.key..':'..scene.avatar.unit
+            if context and context~=key then self:stop('mission or local avatar changed');return end
+            context=key
+            local h,selected,stats,active
+            local shared=self.mode=='crusher' and snapshot and now-snapshot.t<=0.25
+                and snapshot.t>=began and snapshot.scene.key==scene.key and snapshot.scene.avatar.unit==scene.avatar.unit
+            if shared then
+                selected=snapshot.selected;stats=snapshot.tracking;active=snapshot.abilities
+                h={count=snapshot.health_records};self:record_detection(snapshot)
+            else
+                h=self.mode=='targeting' and native:targeting_header() or native:health_header()
+                selected,stats=tracker:step(h,scene,now)
+                local owners={}
+                for _,e in ipairs(selected) do owners[native.memory.address(e.pointer)]=e end
+                active=native:abilities(owners)
             end
-            local targets,nearby={},{}
-            for id in pairs(self.tracked) do
-                local e=native:resolve(h,id)
-                if not e then self.tracked[id]=nil;self.last[id]=nil;emit('crusher_gone',{entity=id})
-                else
-                    local good,pos=pcall(native.position,native,e.unit)
-                    if good then
-                        local p=scene.position
-                        local d=math.sqrt((pos.x-p.x)^2+(pos.y-p.y)^2+(pos.z-p.z)^2)
-                        if d<=50 then
-                            nearby[#nearby+1]={entity=id,distance=d,owned=e.owned,health=e.health}
-                            targets[native.memory.address(e.pointer)]=e
-                            local anim_ok,states=pcall(native.animation,native,e.unit)
-                            local stamp=anim_ok and json(states) or tostring(states)
-                            if self.last[id]~=stamp then
-                                emit(anim_ok and 'animation_change' or 'animation_unavailable',
-                                    {entity=id,unit=e.unit,distance=d,owned=e.owned,states=anim_ok and states or nil,
-                                     reason=not anim_ok and stamp or nil})
-                                self.last[id]=stamp
-                            end
-                        end
-                    else
-                        local stamp='position unavailable: '..tostring(pos)
-                        if self.last[id]~=stamp then emit('unit_unavailable',{entity=id,reason=stamp});self.last[id]=stamp end
-                    end
+            local near=nearby(selected);local selected_ids={}
+            for _,e in ipairs(selected) do
+                selected_ids[e.id]=true
+                if not self.last[e.id] or self.last[e.id].unit~=e.unit then
+                    emit('observation_selected',{entity=e.id,unit=e.unit,distance=e.distance,class_name=e.class_name})
+                    self.last[e.id]={unit=e.unit}
                 end
             end
-            local active=native:abilities(targets)
-            local stamp={}
-            for _,a in ipairs(active) do stamp[#stamp+1]=a.entity..':'..a.id..':'..a.slot end
-            table.sort(stamp);stamp=table.concat(stamp,'|')
-            -- Log running times at 20 Hz only while a nearby Crusher has an active ability.
-            if #active>0 or self.ability_stamp~=stamp then emit('abilities',{items=active});self.ability_stamp=stamp end
+            for id in pairs(self.last) do
+                if not selected_ids[id] then emit('observation_removed',{entity=id});self.last[id]=nil end
+            end
+            if self.mode=='targeting' then
+                local states={}
+                for _,e in ipairs(selected) do states[#states+1]=native:targeting_state(h,e,scene.avatar) end
+                self.observation={sample_t=now-began,source='targeting_probe',states=states,tracking=stats}
+                emit('targeting_sample',{sample_t=now-began,states=states,abilities=active,tracking=stats,
+                    avatar_entity=scene.avatar.id,avatar_unit=scene.avatar.unit,local_position=scene.position})
+            else
+                -- Animation layers are expensive; abilities and automatic decisions stay at their own rate.
+                for _=1,math.min(4,#selected) do
+                    self.animation_cursor=self.animation_cursor%#selected+1
+                    local e=selected[self.animation_cursor]
+                    local good,states=pcall(native.animation,native,e.unit)
+                    local stamp=good and json(states) or tostring(states)
+                    if self.last[e.id].stamp~=stamp then
+                        emit(good and 'animation_change' or 'animation_unavailable',
+                            {entity=e.id,unit=e.unit,distance=e.distance,owned=e.owned,states=good and states or nil,
+                             reason=not good and stamp or nil})
+                        self.last[e.id].stamp=stamp
+                    end
+                end
+                if not shared then
+                    self.observation={sample_t=now-began,source='capture_only',nearby=near,tracking=stats}
+                    -- Without automatic observation, retain full ability samples and contemporaneous distances.
+                    emit('abilities',{items=active,nearby=near,source='capture_only'})
+                end
+            end
             if now>=next_heartbeat then
-                emit('heartbeat',{nearby=nearby,health_records=h.count,reads=native.reads,
-                    bytes=native.bytes,avatar_unit=scene.avatar.unit,local_position=scene.position})
+                emit('heartbeat',{nearby=near,component_records=h.count,tracking=stats,reads=native.reads,
+                    bytes=native.bytes,avatar_entity=scene.avatar.id,avatar_unit=scene.avatar.unit,
+                    local_position=scene.position,previous_sample_cost_ms=(self.cost or 0)*1000,
+                    source=shared and 'automatic_detector' or 'capture_only'})
                 next_heartbeat=now+1
             end
         end)

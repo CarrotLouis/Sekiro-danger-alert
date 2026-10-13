@@ -1,0 +1,178 @@
+{
+  "build": "25480438",
+  "source": "HD2Runtime by SkyeShade; independently checked against retained build 25480438 code",
+  "resources": [
+    {
+      "name": "big_walker_turret_cannon",
+      "path": "content/fac_cyborgs/turrets/cyborg_big_walker_turret_cannon/cyborg_big_walker_turret_cannon",
+      "hash": "843d18d4b5512b63"
+    },
+    {
+      "name": "tank_turret_autocannons",
+      "path": "content/fac_cyborgs/turrets/cyborg_tank_turret_autocannons/cyborg_tank_turret_autocannons",
+      "hash": "49674794a165eda8"
+    },
+    {
+      "name": "tank_turret_base",
+      "path": "content/fac_cyborgs/turrets/cyborg_tank_turret_base",
+      "hash": "b8580cac32214fc0"
+    },
+    {
+      "name": "tank_turret_heavycannon",
+      "path": "content/fac_cyborgs/turrets/cyborg_tank_turret_cannon/cyborg_tank_turret_heavycannon",
+      "hash": "8fb47dd28b398cf7"
+    },
+    {
+      "name": "tank_turret_rocketlauncher",
+      "path": "content/fac_cyborgs/turrets/cyborg_tank_turret_rocketlauncher/cyborg_tank_turret_rocketlauncher",
+      "hash": "5d142c3a73ebc634"
+    },
+    {
+      "name": "turret_autocannons",
+      "path": "content/fac_cyborgs/turrets/cyborg_tank_turret_autocannons/cyborg_turret_autocannons",
+      "hash": "aeaef7a1851e6c9d"
+    },
+    {
+      "name": "turret_base",
+      "path": "content/fac_cyborgs/turrets/cyborg_turret_base",
+      "hash": "abdb2e2a0479d8ca"
+    },
+    {
+      "name": "turret_command_bunker_hmg",
+      "path": "content/fac_cyborgs/turrets/cyborg_turret_command_bunker_hmg/cyborg_turret_command_bunker_hmg",
+      "hash": "cd28a27a79be53d5"
+    },
+    {
+      "name": "turret_heavycannon",
+      "path": "content/fac_cyborgs/turrets/cyborg_tank_turret_cannon/cyborg_turret_heavycannon",
+      "hash": "2cf3488c4845f8bd"
+    },
+    {
+      "name": "turret_mortar",
+      "path": "content/fac_cyborgs/turrets/cyborg_tank_turret_mortar/cyborg_turret_mortar",
+      "hash": "ff5cc825b9571052"
+    }
+  ],
+  "pins": [
+    {
+      "rva": 7060989,
+      "hex": "488b1d2cafc602",
+      "label": "targeting manager",
+      "asm": "mov rbx, qword ptr [rip + 0x2c6af2c]"
+    },
+    {
+      "rva": 7062525,
+      "hex": "8b8b40010000",
+      "label": "targeting count",
+      "asm": "mov ecx, dword ptr [rbx + 0x140]"
+    },
+    {
+      "rva": 7061072,
+      "hex": "488b8368010000",
+      "label": "targeting handles",
+      "asm": "mov rax, qword ptr [rbx + 0x168]"
+    },
+    {
+      "rva": 7061105,
+      "hex": "4c69fed0000000",
+      "label": "targeting stride",
+      "asm": "imul r15, rsi, 0xd0"
+    },
+    {
+      "rva": 7061120,
+      "hex": "4c03bb78010000",
+      "label": "targeting records",
+      "asm": "add r15, qword ptr [rbx + 0x178]"
+    },
+    {
+      "rva": 7061094,
+      "hex": "488b8380010000",
+      "label": "targeting network",
+      "asm": "mov rax, qword ptr [rbx + 0x180]"
+    },
+    {
+      "rva": 7061384,
+      "hex": "807b7800",
+      "label": "AI has target",
+      "asm": "cmp byte ptr [rbx + 0x78], 0"
+    },
+    {
+      "rva": 7061469,
+      "hex": "8b4318",
+      "label": "AI target entity",
+      "asm": "mov eax, dword ptr [rbx + 0x18]"
+    },
+    {
+      "rva": 7061463,
+      "hex": "f6436001",
+      "label": "AI entity tracking flag",
+      "asm": "test byte ptr [rbx + 0x60], 1"
+    },
+    {
+      "rva": 7061472,
+      "hex": "418907",
+      "label": "AI target copied to aiming",
+      "asm": "mov dword ptr [r15], eax"
+    },
+    {
+      "rva": 7062482,
+      "hex": "890c3b",
+      "label": "replicated target resolved to entity",
+      "asm": "mov dword ptr [rbx + rdi], ecx"
+    },
+    {
+      "rva": 7062452,
+      "hex": "81faff7f0000",
+      "label": "invalid network target sentinel",
+      "asm": "cmp edx, 0x7fff"
+    },
+    {
+      "rva": 8669627,
+      "hex": "4c8b0d7e1dae02",
+      "label": "behavior manager",
+      "asm": "mov r9, qword ptr [rip + 0x2ae1d7e]"
+    },
+    {
+      "rva": 8669640,
+      "hex": "458b5148",
+      "label": "behavior map capacity",
+      "asm": "mov r10d, dword ptr [r9 + 0x48]"
+    },
+    {
+      "rva": 8669691,
+      "hex": "498b7940",
+      "label": "behavior map keys",
+      "asm": "mov rdi, qword ptr [r9 + 0x40]"
+    },
+    {
+      "rva": 8669745,
+      "hex": "498b4158",
+      "label": "behavior handles",
+      "asm": "mov rax, qword ptr [r9 + 0x58]"
+    },
+    {
+      "rva": 8659711,
+      "hex": "4869faf8010000",
+      "label": "behavior stride",
+      "asm": "imul rdi, rdx, 0x1f8"
+    },
+    {
+      "rva": 8659726,
+      "hex": "49037b60",
+      "label": "behavior records",
+      "asm": "add rdi, qword ptr [r11 + 0x60]"
+    },
+    {
+      "rva": 8664224,
+      "hex": "837c2e0cff",
+      "label": "pending behavior stage",
+      "asm": "cmp dword ptr [rsi + rbp + 0xc], -1"
+    },
+    {
+      "rva": 8664265,
+      "hex": "8b142e",
+      "label": "behavior ID",
+      "asm": "mov edx, dword ptr [rsi + rbp]"
+    }
+  ]
+}

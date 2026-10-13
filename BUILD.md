@@ -42,3 +42,5 @@ python scripts/build.py
 512² 纹理继续使用原生图标材质、BC1 格式及 10 级 mip 链；RGB 遮罩重建白、红、黄色贡献，宽红光晕放入精度更高的绿色通道。
 默认绘制区域扩大以容纳光晕，主体的默认屏幕大小按 0.3.0 校准；设置 ID 和跟随锚点不变。
 生成方式与观感调整记录见 [动画预览 R2](docs/ANIMATION-PREVIEW-R2.md)。实际游戏混合效果仍需实测。
+
+0.3.2 的索敌探针配置在 `config/targeting_probe.json`；构建将资源哈希及关键指令写入生成的 `src/profile.lua`。这些只读路径仅在手动开启炮塔采集后使用。采集分析可运行 `python scripts/analyze_capture.py <日志路径>`，报告写入 `outputs/`。

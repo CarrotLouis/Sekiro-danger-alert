@@ -1,6 +1,6 @@
 local KEY='SekiroDangerAlert'
 if rawget(_G,KEY) then return rawget(_G,KEY) end
-local api={version='0.3.1',automatic_warning=true,status='starting'}
+local api={version='0.3.2',automatic_warning=true,status='starting'}
 rawset(_G,KEY,api)
 local loader=rawget(_G,'CowboyBingusModLoader') or {}
 local directory=loader.log_directory or ((os.getenv('LOCALAPPDATA') or '.')..'/CowboyBingus/Helldivers2/Logs')
@@ -13,13 +13,13 @@ local function status(s)
     api.status=s;log('status: '..s)
     local f=io.open(directory..'/Sekiro danger alert-STATUS.txt','wb')
     if f then
-        f:write('Sekiro danger alert 0.3.1 | Crusher attack warning\r\n'..s..'\r\n',
+        f:write('Sekiro danger alert 0.3.2 | Crusher attack warning\r\n'..s..'\r\n',
             'Automatic warning: Crusher non-stomp melee branches, within 10 meters at onset.\r\n',
             'Visual: game-native GUI; live local-avatar head projection.\r\n',
             'Sound: independent PCM playback, not a Wwise event.\r\n');f:close()
     end
 end
-log('Sekiro danger alert loaded 0.3.1; Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
+log('Sekiro danger alert loaded 0.3.2; Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
 local menu=menu_module.new(log)
 local memory=memory_module.new(runtime)
 local audio,native,overlay,capture,key,detector
@@ -39,11 +39,11 @@ local function initialize()
     end
     native=native_module.new(memory,profile)
     overlay=overlay_module.new(native,assets,log,function()return menu:appearance()end)
-    capture=capture_module.new(native,directory,log,now)
+    capture=capture_module.new(native,directory,log,now,tracking_module)
     detector=detector_module.new(native,profile,log,function(event)
         log('automatic_trigger '..capture_module.json(event))
         overlay:play(now());play_audio()
-    end)
+    end,tracking_module)
     key=marker_module.new()
     status('build matched; preparing visual; capture is ready')
 end
@@ -80,19 +80,24 @@ local function step()
     if actions.visual==2 then pending_visual=t+3;log('visual preview scheduled in three seconds') end
     if actions.capture==2 then capture:start() end
     if actions.capture==3 then capture:stop('user stopped') end
+    if actions.target_capture==2 then capture:start('targeting') end
+    if actions.target_capture==3 then capture:stop('user stopped') end
     if capture.active and key() then
-        capture:mark();pending_visual=t;log('F8 user attack marker')
+        capture:mark()
+        if capture.mode=='crusher' then pending_visual=t end
+        log('F8 user attack marker ('..capture.mode..')')
     end
     visual_step(t)
     api.automatic_warning=menu:automatic() and not detector.disabled
     if api.automatic_warning and t>=next_attack_sample then
         detector:step(t);next_attack_sample=t+0.05
+        capture:record_detection(detector.snapshot)
         if detector.disabled then api.automatic_warning=false;status('automatic warning unavailable; see log') end
     elseif not menu:automatic() then
         detector:reset()
     end
     if capture.active and t>=next_sample then
-        capture:step()
+        capture:step(detector.snapshot)
         next_sample=t+((capture.cost or 0)>0.005 and 0.15 or 0.05)
     end
 end

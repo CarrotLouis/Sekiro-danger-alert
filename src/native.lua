@@ -232,6 +232,81 @@ function M.new(memory,profile)
         assert(read(manager+8,56)==h,'ability table changed')
         return out
     end
+    -- Diagnostic only: AI interest and aiming are NOT proof of a committed attack.
+    -- Targeting/Behavior offsets and instruction pins: HD2Runtime by SkyeShade,
+    -- independently re-decoded from the retained 25480438 module sections.
+    function self:targeting_header()
+        if not self.targeting_proven then
+            assert(profile.targeting_pins and #profile.targeting_pins>0,'targeting pins missing')
+            for _,pin in ipairs(profile.targeting_pins) do
+                assert(read(game+pin.rva,#pin.bytes)==pin.bytes,'targeting layout mismatch: '..pin.label)
+            end
+            self.targeting_proven=true
+        end
+        local manager=ptr(game+0x3326d30);local h=read(manager+0x140,72)
+        local count=u32(h,0);assert(count<=4096,'targeting count invalid')
+        return {manager=manager,count=count,raw=h,descriptors=memory.pointer(h,0x28),
+            records=memory.pointer(h,0x38),network=memory.pointer(h,0x40)}
+    end
+    function self:targeting_discover(h,start,limit)
+        local out={};local last=math.min(h.count,start+limit)
+        if last<=start then return out,0 end
+        local rows=read(assert(h.descriptors)+start*8,(last-start)*8)
+        for i=0,last-start-1 do
+            local at=memory.pointer(rows,i*8)
+            if at then
+                local s=read(at,24);local name=profile.targeting_resources[hex(s:sub(1,8))]
+                if name and bit.band(u32(s,20),2)==0 then
+                    local e=entity(s,at);e.class_name=name;out[#out+1]=e
+                end
+            end
+        end
+        assert(read(h.manager+0x140,72)==h.raw,'targeting table changed')
+        return out,last>=h.count and 0 or last
+    end
+    function self:targeting_resolve(h,id)
+        local index=map_index(h.manager+0x150,id,65536)
+        if not index or index>=h.count then return nil end
+        local at=nullable(assert(h.descriptors)+index*8);if not at then return nil end
+        local s=read(at,24);local e=entity(s,at)
+        e.class_name=profile.targeting_resources[e.resource]
+        if e.id~=id or not e.class_name or bit.band(u32(s,20),2)~=0 then return nil end
+        e.targeting_index=index
+        return e
+    end
+    function self:targeting_state(h,e,avatar)
+        local i=e.targeting_index;assert(i and i<h.count,'targeting index invalid')
+        assert(nullable(h.descriptors+i*8)==e.pointer and read(e.pointer,20)==e.identity,'targeting owner changed')
+        local row=read(assert(h.records)+i*0xd0,0x20)
+        local net=read(assert(h.network)+i*0x18,0x18)
+        local target=u32(row,0);local network_target=u32(net,0);local resolved_network_target=u32(row,4)
+        local position_only=net:byte(0x15)~=0
+        local result={entity=e.id,unit=e.unit,class_name=e.class_name,distance=e.distance,owned=e.owned,
+            aim_target=target,network_target=network_target,network_flags=u32(net,0x10),
+            resolved_network_target=resolved_network_target,network_target_consistent=resolved_network_target==network_target,
+            target_point={x=f32(row,8),y=f32(row,12),z=f32(row,16)},
+            position_only=position_only,aim_point={x=f32(row,0x14),y=f32(row,0x18),z=f32(row,0x1c)},
+            aim_target_is_local=target==avatar.id,
+            entity_target_valid=not position_only and network_target~=0x7fff and target~=0,ai_available=false}
+        -- An AI record may be absent or stale on a peer. Keep this separate from replicated aiming.
+        local mgr=ptr(game+0x3326740);local bh=read(mgr+0x40,40)
+        local index=map_index(mgr+0x40,e.id,65536)
+        if index and index<4096 then
+            local handles=assert(memory.pointer(bh,0x18));local records=assert(memory.pointer(bh,0x20))
+            if nullable(handles+index*8)==e.pointer then
+                local ai=read(records+index*0x1f8,0x80)
+                result.ai={behavior=u32(ai,0),stage=u32(ai,8),pending_stage=u32(ai,12),
+                    target=u32(ai,0x18),has_target=ai:byte(0x79)~=0,flags=u32(ai,0x60)}
+                result.ai.target_is_local=result.ai.target==avatar.id and result.ai.has_target
+                result.ai.tracks_entity=bit.band(result.ai.flags,1)~=0
+                result.ai_available=true
+                assert(read(mgr+0x40,40)==bh and nullable(handles+index*8)==e.pointer,'AI table changed')
+            end
+        end
+        assert(read(h.manager+0x140,72)==h.raw and nullable(h.descriptors+i*8)==e.pointer
+            and read(e.pointer,20)==e.identity,'targeting identity changed')
+        return result
+    end
     local function resource(kind,name)
         local app=ptr(exe+27328968);local manager=ptr(app+1016)
         local function find(entries,capacity,buckets,stride,nextoff,key)

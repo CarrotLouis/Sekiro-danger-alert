@@ -31,5 +31,24 @@
       "source": "work/BingusSharedLoader/tests/game_lua.py",
       "sha256": "958b9ac753802ea0606fd117c2ec22f3440a0e061990efe8bc8a77cdb3c617b1"
     }
+  ],
+  "research_reuse": [
+    {
+      "files": [
+        "src/native.lua",
+        "config/targeting_probe.json",
+        "docs/ENEMY-TARGETING.md"
+      ],
+      "source": "HD2Runtime 75988a992141023e50fc0193f4b1de017d9e4b57",
+      "findings": [
+        "scripts/research_custom_payloads.py: TARGETING and pelicanAim",
+        "scripts/research_pelican.py: Behavior layout and target choice",
+        "scripts/research_sentry_components.py: targeting and perception",
+        "sdk/EnemyAuthoringCapabilities.json: 10 automaton turret resource identities"
+      ],
+      "verification": "20 runtime instruction pins re-decoded from retained build 25480438 code; no native calls or game-memory writes",
+      "license": "vendor/HD2Runtime-LICENSE.txt",
+      "credit": "README.md, packaged CREDITS.txt, manifest description and load log"
+    }
   ]
 }

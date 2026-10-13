@@ -29,6 +29,9 @@ function M.new(log)
             {'capture',{type='choice',label='Crusher 采集 / Capture',default=1,
                 choices={'待命 / Ready','开始两分钟采集 / Start 2 minutes','结束采集 / Stop'},
                 description='在任务内、Crusher 附近开启。记录动作与距离；看到出招时按 F8 标记。'}},
+            {'target_capture',{type='choice',label='炮塔索敌采集 / Turret targeting capture',default=1,
+                choices={'待命 / Ready','开始两分钟采集 / Start 2 minutes','结束采集 / Stop'},
+                description='研究用：记录炮塔 AI 目标、瞄准目标和阶段。看到闪光或开火时按 F8；暂不自动预警。与 Crusher 采集互斥。'}},
         }
         for _,row in ipairs(specs) do
             row[2].mod='Sekiro danger alert';row[2].mod_id='peril_warning.crusher'
@@ -36,7 +39,7 @@ function M.new(log)
             if not ok then log('menu refused '..row[1]..': '..tostring(why));return false end
         end
         -- A saved action is never replayed on startup. Reset has no callback.
-        for _,key in ipairs({'preview','visual','capture'}) do
+        for _,key in ipairs({'preview','visual','capture','target_capture'}) do
             menu.set(prefix..key,1)
             menu.on_change(prefix..key,function(value)
                 if value~=1 then

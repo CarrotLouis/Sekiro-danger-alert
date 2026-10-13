@@ -1,12 +1,13 @@
 -- Read-only Crusher observation: captured slams plus build-pinned non-stomp melee branches.
 local M={}
-function M.new(native,profile,log,trigger)
-    local self={tracked={},previous={},fired={},cursor=0,next_discover=0,errors=0}
+function M.new(native,profile,log,trigger,tracking)
+    local tracker=tracking.new(native)
+    local self={tracked={},previous={},fired={},errors=0}
     function self:reset()
-        self.tracked={};self.previous={};self.fired={};self.cursor=0;self.next_discover=0
+        tracker:reset();self.tracked={};self.previous={};self.fired={};self.snapshot=nil
     end
     function self:observe(items,targets,t)
-        local current={}
+        local current,decisions={},{}
         for _,a in ipairs(items) do
             local target=targets[a.entity]
             if target then
@@ -16,6 +17,13 @@ function M.new(native,profile,log,trigger)
                 local fresh=a.time>=0 and a.time<=0.35
                 local start=fresh and (not old or old.id~=a.id or a.time<old.time-0.1)
                 local identity=a.entity..':'..target.unit
+                local reason=not fresh and 'late_sample' or not start and 'already_observed'
+                    or (profile.ignored_stomps or {})[a.id] and 'stomp'
+                    or not profile.attack_states[a.id] and 'unmapped'
+                    or target.distance>10 and 'outside_10m'
+                    or t-(self.fired[identity] or -math.huge)<=0.7 and 'cooldown' or 'trigger'
+                decisions[#decisions+1]={entity=a.entity,unit=target.unit,ability=a.id,
+                    ability_time=a.time,distance=target.distance,reason=reason}
                 if start and target.distance<=10 and not profile.attack_states[a.id]
                     and not (profile.ignored_stomps or {})[a.id] then
                     log('unmapped_action entity='..a.entity..' ability='..a.id)
@@ -28,9 +36,11 @@ function M.new(native,profile,log,trigger)
             end
         end
         self.previous=current
+        return decisions
     end
     function self:step(t)
         if self.disabled or t<(self.retry_at or 0) then return end
+        self.snapshot=nil
         local ok,why=pcall(function()
             native:begin()
             local scene=native:scene()
@@ -38,29 +48,20 @@ function M.new(native,profile,log,trigger)
             local context=scene.key..':'..scene.avatar.unit
             if self.context~=context then self:reset();self.context=context end
             local h=native:health_header()
-            if t>=self.next_discover then
-                local found;found,self.cursor=native:discover(h,self.cursor,128)
-                local count=0;for _ in pairs(self.tracked) do count=count+1 end
-                for _,e in ipairs(found) do
-                    if self.tracked[e.id] or count<16 then
-                        if not self.tracked[e.id] then count=count+1 end
-                        self.tracked[e.id]=true
-                    end
-                end
-                self.next_discover=t+0.15
-            end
+            local selected,stats=tracker:step(h,scene,t);self.tracked=tracker.tracked
             local owners,targets={},{}
-            for id in pairs(self.tracked) do
-                local e=native:resolve(h,id)
-                if not e then self.tracked[id]=nil
-                else
-                    local p=native:position(e.unit);local q=scene.position
-                    local distance=math.sqrt((p.x-q.x)^2+(p.y-q.y)^2+(p.z-q.z)^2)
-                    owners[native.memory.address(e.pointer)]=e
-                    targets[id]={unit=e.unit,distance=distance}
-                end
+            for _,e in ipairs(selected) do
+                owners[native.memory.address(e.pointer)]=e
+                targets[e.id]={unit=e.unit,distance=e.distance}
             end
-            self:observe(native:abilities(owners),targets,t)
+            local active=native:abilities(owners)
+            local decisions=self:observe(active,targets,t)
+            self.snapshot={t=t,scene=scene,selected=selected,abilities=active,decisions=decisions,
+                tracking=stats,health_records=h.count}
+            -- Despawned/replaced unit identities must not accumulate for the whole mission.
+            local kept={}
+            for key,when in pairs(self.fired) do if t-when<2 then kept[key]=when end end
+            self.fired=kept
         end)
         if ok then self.errors=0
         else

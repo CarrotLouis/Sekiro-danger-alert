@@ -87,3 +87,43 @@ n.scene=function()return {avatar={unit=4194307}}end
 local screen=n:head_anchor(1920,1080);assert(screen and screen.node==1 and screen.unit==4194307)
 n.scene=function()return {}end;assert(n:head_anchor(1920,1080)==nil)
 print('PASS animated head-name lookup, crouching pose change, camera decoding and unavailable-avatar hiding')
+-- Independent synthetic layout for the read-only targeting probe. No live process required.
+local profile=dofile(root..'/src/profile.lua')
+for _,pin in ipairs(profile.targeting_pins) do region(game+pin.rva,#pin.bytes);write(game+pin.rva,pin.bytes)end
+profile.targeting_resources={['00000000000004d2']='test_turret'}
+region(game+0x3326d30,8);p(game+0x3326d30,0x43000000);region(0x43000000,0x188)
+u(0x43000140,1);u(0x43000144,1)
+p(0x43000150,0x43001000);u(0x43000158,1);u(0x4300015c,0xffffffff);u(0x43000160,1)
+region(0x43001000,8);u(0x43001000,100);u(0x43001004,0)
+p(0x43000168,0x43002000);region(0x43002000,8);p(0x43002000,0x41003000)
+p(0x43000178,0x43003000);region(0x43003000,0xd0);u(0x43003000,777)
+u(0x43003004,99)
+p(0x43000180,0x43004000);region(0x43004000,24);u(0x43004000,99)
+region(game+0x3326740,8);p(game+0x3326740,0x44000000);region(0x44000000,0x68)
+p(0x44000040,0x44001000);u(0x44000048,1);u(0x4400004c,0xffffffff);u(0x44000050,1)
+region(0x44001000,8);u(0x44001000,100);u(0x44001004,0)
+p(0x44000058,0x44002000);region(0x44002000,8);p(0x44002000,0x41003000)
+p(0x44000060,0x44003000);region(0x44003000,0x1f8)
+u(0x44003000,321);u(0x44003008,5);u(0x4400300c,6);u(0x44003018,777)
+u(0x44003060,1);write(0x44003078,'\1')
+n=dofile(root..'/src/native.lua').new(mem,profile);n:begin()
+h=n:targeting_header();found=n:targeting_discover(h,0,128);assert(#found==1 and found[1].class_name=='test_turret')
+e=n:targeting_resolve(h,100);e.distance=120
+local state=n:targeting_state(h,e,{id=777})
+assert(state.aim_target_is_local and state.entity_target_valid and state.ai.target_is_local)
+assert(state.network_target_consistent)
+u(0x43004000,88);assert(not n:targeting_state(h,e,{id=777}).network_target_consistent);u(0x43004000,99)
+assert(state.ai.tracks_entity and state.ai.stage==5 and state.ai.pending_stage==6 and state.distance==120)
+-- Position mode can retain an entity ID; it must not qualify as an entity-target lock.
+write(0x43004014,'\1');state=n:targeting_state(h,e,{id=777})
+assert(state.aim_target_is_local and not state.entity_target_valid and state.position_only)
+write(0x43004014,'\0');u(0x43004000,0x7fff);assert(not n:targeting_state(h,e,{id=777}).entity_target_valid)
+u(0x43004000,99);u(0x43003000,888);assert(not n:targeting_state(h,e,{id=777}).aim_target_is_local)
+-- A peer may have aiming data without a usable Behavior record. Never invent one.
+u(0x44001000,0xffffffff);state=n:targeting_state(h,e,{id=777});assert(not state.ai_available and not state.ai)
+-- Wrong owner, changed table, invalid count and pin mismatch all reject the observation.
+u(0x41003008,101);assert(not pcall(n.targeting_state,n,h,e,{id=777}));u(0x41003008,100)
+u(0x43000140,5000);assert(not pcall(n.targeting_header,n));u(0x43000140,1)
+local pin=profile.targeting_pins[1];write(game+pin.rva,string.rep('\0',#pin.bytes))
+n=dofile(root..'/src/native.lua').new(mem,profile);n:begin();assert(not pcall(n.targeting_header,n))
+print('PASS targeting/AI ownership, local-target distinction, position-only mode, peer absence and build/layout rejection')

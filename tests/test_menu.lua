@@ -43,6 +43,8 @@ for _,cb in ipairs(state.callbacks[p..'visual']) do cb(2,p..'visual') end
 assert(adapter:consume().visual==2)
 for _,cb in ipairs(state.callbacks[p..'capture']) do cb(3,p..'capture') end
 assert(adapter:consume().capture==3)
+for _,cb in ipairs(state.callbacks[p..'target_capture']) do cb(2,p..'target_capture') end
+assert(adapter:consume().target_capture==2 and menu.get(p..'target_capture')==1)
 -- set() never invokes actions, including a saved value reloaded at startup.
 assert(menu.set(p..'preview',2));assert(next(adapter:consume())==nil)
 print('PASS real ModOptionsMenu API v'..menu.version..': slider, applied volume, independent one-shot actions')
