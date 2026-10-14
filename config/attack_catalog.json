@@ -143,6 +143,20 @@
       "hash": "f8131632aa867107",
       "behavior": 94,
       "health_component": true
+    },
+    {
+      "class_name": "walker_scout_tier2",
+      "path": "content/fac_cyborgs/vehicles/cyborg_walker_scout/cyborg_walker_scout_tier2",
+      "hash": "9076eeed17fcee35",
+      "behavior": 96,
+      "health_component": true
+    },
+    {
+      "class_name": "lieutenant_assault_jumppack",
+      "path": "content/fac_cyborgs/cha_lieutenant/cha_lieutenant_assault_jumppack",
+      "hash": "e44ec9f9b3fe1d2a",
+      "behavior": 57,
+      "health_component": true
     }
   ],
   "moves": [
@@ -292,9 +306,9 @@
       "status": "capture_required",
       "default": true,
       "resources": [
-        "f8131632aa867107"
+        "9076eeed17fcee35"
       ],
-      "capture_note": "Variant identity needs live confirmation; paths are candidates, not a resolved wiki identity."
+      "capture_note": "Hash-matched tier2 entity; shared scout-walker model, four mounted weapons. Exact attack mapping requires capture."
     },
     {
       "id": "annihilator_fusion_cannon",
@@ -329,10 +343,9 @@
       "status": "capture_required",
       "default": true,
       "resources": [
-        "3e0537d606438fea",
-        "1897bdd32105d2dc"
+        "e44ec9f9b3fe1d2a"
       ],
-      "capture_note": "Variant identity needs live confirmation; paths are candidates, not a resolved wiki identity."
+      "capture_note": "Hash-matched assault_jumppack entity; native saw, flamer and lieutenant_jetpack mounts. Exact attack mapping requires capture."
     }
   ],
   "filediver_commit": "6bf7c1ccc4be465a35b4bc9d41087781b47034e6"

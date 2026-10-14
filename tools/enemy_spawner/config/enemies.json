@@ -1,0 +1,368 @@
+{
+  "source": {
+    "entities_sha256": "21377252b81fdbc670eba1e59a8ab64b170323df208f175e708992e4c1fb515e",
+    "typelib_sha256": "4d04870d0a0d4dc1284998c72cdfa6f8ff6d21aba0e36b6f758c6f73dd0417a4",
+    "filediver_commit": "6bf7c1ccc4be465a35b4bc9d41087781b47034e6"
+  },
+  "tables": {
+    "UnitComponentData": {
+      "index": 88,
+      "slots": 3382,
+      "records": 1692,
+      "offset": 54112,
+      "stride": 136
+    },
+    "MountComponentData": {
+      "index": 283,
+      "slots": 324,
+      "records": 163,
+      "offset": 5184,
+      "stride": 120
+    },
+    "BehaviorComponentData": {
+      "index": 284,
+      "slots": 2008,
+      "records": 1005,
+      "offset": 32128,
+      "stride": 12
+    },
+    "EnemyPackageComponentData": {
+      "index": 77,
+      "slots": 316,
+      "records": 158,
+      "offset": 5056,
+      "stride": 32
+    }
+  },
+  "enemies": [
+    {
+      "id": "charger",
+      "label": "强袭虫 / Charger",
+      "path": "content/fac_bugs/cha_charger/cha_charger",
+      "hash": "1a7fcdff98c664b0",
+      "behavior": 104,
+      "faction": 2,
+      "packages": [
+        "ea2b289bb6c14cfe"
+      ],
+      "package_record": "cfb4bb1b00000000fe4cc1b69b282bea0000000000000000ea2652df6850fdfa",
+      "required_units": [
+        {
+          "entity": "1a7fcdff98c664b0",
+          "unit": "1a7fcdff98c664b0"
+        }
+      ]
+    },
+    {
+      "id": "charger_acid",
+      "label": "孢子强袭虫 / Spore Charger",
+      "path": "content/fac_bugs/cha_charger_acid/cha_charger_acid",
+      "hash": "6b202392f4ab605e",
+      "behavior": 105,
+      "faction": 2,
+      "packages": [
+        "7197eda433731404"
+      ],
+      "package_record": "cfb4bb1b0000000004147333a4ed97710000000000000000ea2652df6850fdfa",
+      "required_units": [
+        {
+          "entity": "6b202392f4ab605e",
+          "unit": "6b202392f4ab605e"
+        }
+      ]
+    },
+    {
+      "id": "charger_tier2",
+      "label": "巨兽强袭虫 / Charger Behemoth",
+      "path": "content/fac_bugs/cha_charger/cha_charger_tier2",
+      "hash": "a05bd1ec67b3ac4c",
+      "behavior": 104,
+      "faction": 2,
+      "packages": [
+        "578fd2bcda91ee2f"
+      ],
+      "package_record": "cfb4bb1b000000002fee91dabcd28f570000000000000000ea2652df6850fdfa",
+      "required_units": [
+        {
+          "entity": "a05bd1ec67b3ac4c",
+          "unit": "3aff5fd7d5450b99"
+        }
+      ]
+    },
+    {
+      "id": "charger_burrower",
+      "label": "钻地强袭虫 / Rupture Charger",
+      "path": "content/fac_bugs/cha_charger_burrower/cha_charger_burrower",
+      "hash": "0ab7b92b131c228c",
+      "behavior": 106,
+      "faction": 2,
+      "packages": [
+        "c6e03fbbbea3b320"
+      ],
+      "package_record": "cfb4bb1b0000000020b3a3bebb3fe0c60000000000000000ea2652df6850fdfa",
+      "required_units": [
+        {
+          "entity": "0ab7b92b131c228c",
+          "unit": "0ab7b92b131c228c"
+        }
+      ]
+    },
+    {
+      "id": "impaler",
+      "label": "穿刺虫 / Impaler",
+      "path": "content/fac_bugs/cha_impaler/cha_impaler",
+      "hash": "dcf8e74212fbee3b",
+      "behavior": 113,
+      "faction": 2,
+      "packages": [
+        "987b77ea5a7e5d9e",
+        "50c4a70c3174bc79"
+      ],
+      "package_record": "cfb4bb1b000000009e5d7e5aea777b9879bc74310ca7c450aaf31c5c5f9ec796",
+      "required_units": [
+        {
+          "entity": "dcf8e74212fbee3b",
+          "unit": "dcf8e74212fbee3b"
+        }
+      ]
+    },
+    {
+      "id": "strider",
+      "label": "吐酸泰坦 / Bile Titan",
+      "path": "content/fac_bugs/cha_strider/cha_strider",
+      "hash": "9e2e17f2ccccafdd",
+      "behavior": 133,
+      "faction": 2,
+      "packages": [
+        "fac59cae01035deb"
+      ],
+      "package_record": "cfb4bb1b00000000eb5d0301ae9cc5fa0000000000000000e42667f2ac2b238b",
+      "required_units": [
+        {
+          "entity": "9e2e17f2ccccafdd",
+          "unit": "9e2e17f2ccccafdd"
+        }
+      ]
+    },
+    {
+      "id": "dragon",
+      "label": "蟑龙 / Dragonroach",
+      "path": "content/fac_bugs/cha_dragon/cha_dragon",
+      "hash": "960b48a421a3faaa",
+      "behavior": 108,
+      "faction": 2,
+      "packages": [
+        "863dc0bbdb912c40"
+      ],
+      "package_record": "cfb4bb1b00000000402c91dbbbc03d860000000000000000f42b2db160dbc78c",
+      "required_units": [
+        {
+          "entity": "960b48a421a3faaa",
+          "unit": "960b48a421a3faaa",
+          "mount_record": "1b343fcd4b64e976abb78fc3000000009a7482c101000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000"
+        },
+        {
+          "entity": "76e9644bcd3f341b",
+          "unit": "d30eba409246af45"
+        }
+      ]
+    },
+    {
+      "id": "strider_gloom",
+      "label": "孢裂泰坦 / Spore Burst Bile Titan",
+      "path": "content/fac_bugs/cha_strider/cha_strider_gloom",
+      "hash": "ef04cb84d097a497",
+      "behavior": 134,
+      "faction": 2,
+      "packages": [
+        "cade03b6c71760c3"
+      ],
+      "package_record": "cfb4bb1b00000000c36017c7b603deca0000000000000000e42667f2ac2b238b",
+      "required_units": [
+        {
+          "entity": "ef04cb84d097a497",
+          "unit": "ef04cb84d097a497"
+        }
+      ]
+    },
+    {
+      "id": "lieutenant_assault",
+      "label": "巨型者 / Hulk Scorcher",
+      "path": "content/fac_cyborgs/cha_lieutenant/cha_lieutenant_assault",
+      "hash": "3e0537d606438fea",
+      "behavior": 56,
+      "faction": 8,
+      "packages": [
+        "499591b12328acbd"
+      ],
+      "package_record": "cfb4bb1b00000000bdac2823b191954900000000000000004c5df86a0a7a8d7f",
+      "required_units": [
+        {
+          "entity": "3e0537d606438fea",
+          "unit": "b16493b009eec762",
+          "mount_record": "255b423eacd79ec83ee1c2b001000000e0552de301000000c8400e1b9da9b4f2baddd11d020000007acfd32801000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000"
+        },
+        {
+          "entity": "c89ed7ac3e425b25",
+          "unit": "c89ed7ac3e425b25"
+        },
+        {
+          "entity": "f2b4a99d1b0e40c8",
+          "unit": "08886d27a6f6db8c"
+        }
+      ]
+    },
+    {
+      "id": "spawner",
+      "label": "移动工厂 / Factory Strider",
+      "path": "content/fac_cyborgs/vehicles/cyborg_spawner/cyborg_spawner",
+      "hash": "d37e8d120d2836e3",
+      "behavior": 97,
+      "faction": 8,
+      "packages": [
+        "a2a2eb28bc511575"
+      ],
+      "package_record": "cfb4bb1b00000000751551bc28eba2a20000000000000000b9dbc44fdd16a0d1",
+      "required_units": [
+        {
+          "entity": "d37e8d120d2836e3",
+          "unit": "d37e8d120d2836e3",
+          "mount_record": "630f3bb589baaf3a14f48982000000008a82d7530000000070bd262f3d6b0e398f81a48c000000004569651a00000000632b51b5d4183d846a42dce900000000c0b3c4f300000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000"
+        },
+        {
+          "entity": "3aafba89b53b0f63",
+          "unit": "48c91e42b9f16512"
+        },
+        {
+          "entity": "390e6b3d2f26bd70",
+          "unit": "48c91e42b9f16512"
+        },
+        {
+          "entity": "843d18d4b5512b63",
+          "unit": "843d18d4b5512b63"
+        }
+      ]
+    },
+    {
+      "id": "walker_scout_tier2",
+      "label": "强化纵步者 / Reinforced Scout Strider",
+      "path": "content/fac_cyborgs/vehicles/cyborg_walker_scout/cyborg_walker_scout_tier2",
+      "hash": "9076eeed17fcee35",
+      "behavior": 96,
+      "faction": 8,
+      "packages": [
+        "2c8d8cc831d0c732"
+      ],
+      "package_record": "cfb4bb1b0000000032c7d031c88c8d2c000000000000000053b0f78a013c284d",
+      "required_units": [
+        {
+          "entity": "9076eeed17fcee35",
+          "unit": "f8131632aa867107",
+          "mount_record": "e2972955f46b342aac756f1d00000000920c23db010000001eb53ba80c6fcdd318042f3700000000b6743b3601000000c335ec5dba3f17a8740d787e00000000b444e4980100000000f13a88e4b77f391e52ad460000000019d3993501000000000000000000000000000000000000000000000001000000"
+        },
+        {
+          "entity": "2a346bf4552997e2",
+          "unit": "2a346bf4552997e2"
+        },
+        {
+          "entity": "d3cd6f0ca83bb51e",
+          "unit": "d3cd6f0ca83bb51e"
+        },
+        {
+          "entity": "a8173fba5dec35c3",
+          "unit": "e5b14182b25f7f7d"
+        },
+        {
+          "entity": "397fb7e4883af100",
+          "unit": "e5b14182b25f7f7d"
+        }
+      ]
+    },
+    {
+      "id": "tank_heavycannon",
+      "label": "湮灭坦克 / Annihilator Tank",
+      "path": "content/fac_cyborgs/vehicles/cyborg_tank/cyborg_tank_heavycannon",
+      "hash": "53d8919d7b8abd67",
+      "behavior": 76,
+      "faction": 8,
+      "packages": [
+        "62ec9c912c88c15d"
+      ],
+      "package_record": "cfb4bb1b000000005dc1882c919cec620000000000000000c1d25f1fb6d33a32",
+      "required_units": [
+        {
+          "entity": "53d8919d7b8abd67",
+          "unit": "00bcf8247a544cdc",
+          "mount_record": "f78c398bd27db48f6a42dce90000000018042f370100000065d1d425c8aa2b97052195b000000000e9e994e901000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000"
+        },
+        {
+          "entity": "8fb47dd28b398cf7",
+          "unit": "cecd6979cf7bb0f2",
+          "mount_record": "eb5911d675073936052195b0000000007cbb0a3901000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000"
+        },
+        {
+          "entity": "36390775d61159eb",
+          "unit": "d778e7fdf9eca866"
+        },
+        {
+          "entity": "972baac825d4d165",
+          "unit": "16023e554fee830e"
+        }
+      ]
+    },
+    {
+      "id": "tank_rocketlauncher",
+      "label": "铁幕坦克 / Barrager Tank",
+      "path": "content/fac_cyborgs/vehicles/cyborg_tank/cyborg_tank_rocketlauncher",
+      "hash": "63df3d07b7424588",
+      "behavior": 78,
+      "faction": 8,
+      "packages": [
+        "1a3dc966179bd5a4"
+      ],
+      "package_record": "cfb4bb1b00000000a4d59b1766c93d1a0000000000000000c1d25f1fb6d33a32",
+      "required_units": [
+        {
+          "entity": "63df3d07b7424588",
+          "unit": "00bcf8247a544cdc",
+          "mount_record": "34c6eb733a2c145d6a42dce90000000018042f3701000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000"
+        },
+        {
+          "entity": "5d142c3a73ebc634",
+          "unit": "5d142c3a73ebc634"
+        }
+      ]
+    },
+    {
+      "id": "lieutenant_assault_jumppack",
+      "label": "巨型炙焰者 / Jet Brigade Hulk Scorcher",
+      "path": "content/fac_cyborgs/cha_lieutenant/cha_lieutenant_assault_jumppack",
+      "hash": "e44ec9f9b3fe1d2a",
+      "behavior": 57,
+      "faction": 8,
+      "packages": [
+        "11d2a5cf72e88043"
+      ],
+      "package_record": "cfb4bb1b000000004380e872cfa5d21100000000000000004c5df86a0a7a8d7f",
+      "required_units": [
+        {
+          "entity": "e44ec9f9b3fe1d2a",
+          "unit": "b16493b009eec762",
+          "mount_record": "255b423eacd79ec83ee1c2b001000000e0552de301000000c8400e1b9da9b4f2baddd11d020000007acfd3280100000019827fd789c840b9a753cc8e0000000066af787701000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000"
+        },
+        {
+          "entity": "c89ed7ac3e425b25",
+          "unit": "c89ed7ac3e425b25"
+        },
+        {
+          "entity": "f2b4a99d1b0e40c8",
+          "unit": "08886d27a6f6db8c"
+        },
+        {
+          "entity": "b940c889d77f8219",
+          "unit": "b940c889d77f8219"
+        }
+      ]
+    }
+  ]
+}

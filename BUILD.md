@@ -46,3 +46,9 @@ python scripts/build.py
 0.3.2 的索敌探针配置在 `config/targeting_probe.json`；构建将资源哈希及关键指令写入生成的 `src/profile.lua`。0.4.0 的自动预警也使用其中的行为目标读取与校验。攻击时序和额外指令校验在 `config/attack_probe.json`。采集分析可运行 `python scripts/analyze_capture.py <日志路径>`，报告写入 `outputs/`。
 
 0.5.0 资源和招式目录在 `config/attack_catalog.json`，构建生成 `src/catalog.lua`。新目录的 `capture_required` 表示尚未验证攻击映射，并不直接启用自动规则。武器输入诊断校验在 `config/combat_probe.json`；这些路径仅在手动开启新招式采集时读取。
+
+独立生成工具：先运行上述主工程构建与测试，再运行
+`python tools/enemy_spawner/build.py --mom-source work/ModOptionsMenu`。
+它仍要求 `HD2_LUA51_DLL`，每次构建先执行真实 LuaJIT 编译、目录检查、原生边界模拟与真实 MOM 契约检查；全部通过才写 ZIP。
+`--validate-only` 只写本地编译缓存，不写 ZIP。工具使用独立 GUID、入口与设置 ID，输出同样位于被忽略的 `outputs/`，不会部署。
+具体字节证据和实机待验范围见 `docs/ENEMY-SPAWNER-0.1.0.md`。

@@ -1,4 +1,4 @@
-Sekiro danger alert 0.5.0 — 逐招式设置 / 新招式采集版
+Sekiro danger alert 0.5.1 — 逐招式设置 / 新招式采集版
 
 本版用途
 上一版已获用户单人测试确认。Crusher / 普通重炮塔继续预警。
@@ -53,6 +53,11 @@ Sekiro danger alert-Combat-招式ID-requested/comparison-日期-时间.jsonl
 离线测试覆盖真实设置框架、独立开关、恢复默认值、未知动作采集、
 只读布局与所有者校验、分析和旧警报回放。新采集路径及 16 个招式仍待实机。
 详细资源和取证说明见源码仓库 docs/ENEMY-EXPANSION-0.5.0.md。
+
+0.5.1 修正强化纵步者和巨型炙焰者的采集筛选：分别使用已哈希匹配的
+cyborg_walker_scout_tier2 和 cha_lieutenant_assault_jumppack。
+可搭配独立工具 Sekiro danger alert - Enemy Spawner 0.1.0，在设置中选择并生成测试敌人。
+生成工具需单独安装，仅用于对应阵营的单人任务。两者 GUID 与设置页独立。
 
 素材和音频
 采用 50 帧 512×512 游戏纹理/材质和原生 GUI，不使用游戏外浮窗。

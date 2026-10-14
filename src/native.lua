@@ -461,6 +461,11 @@ function M.new(memory,profile)
             and hex(o:sub(57,64))==hash,'material object differs')
         return true
     end
+    -- Read-only seam used by the separate Enemy Spawner after complete package residency.
+    -- MurmurHash64A("unit"); this does not spawn or load anything.
+    function self:unit_ready(hash)
+        return resource('e0a48d0be9a7453f',hash)~=nil
+    end
     return self
 end
 return M
