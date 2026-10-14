@@ -12,6 +12,8 @@ local GUIDE=[===[Sekiro danger alert - Enemy Spawner — 测试说明
    重开设置并选中“生成一只”，说明区可查看当前状态。
 
 包含用户要求的 14 类敌人。穿刺虫由自身 AI 召唤触手；不单独伪造触手。
+穿刺虫请在 5–10 难度测试。1–4 难度的原生触手生成权重为 0，工具会拒绝生成并显示原因。
+生成前还会检查当前任务的触手生成表和独立触手模型；仅加载本体资源无法保证召唤安全。
 敌人保留原生血量、武器和行为，创建时目标指向本人。
 仅限对应阵营的单人主持任务；菜单选择、资源等待和版本检查不会直接生成实体。
 每次一只、间隔至少 3 秒，每任务最多 32 次；实体容量不足会拒绝。
@@ -23,8 +25,9 @@ local GUIDE=[===[Sekiro danger alert - Enemy Spawner — 测试说明
 %LOCALAPPDATA%/CowboyBingus/Helldivers2/Logs/Sekiro danger alert - Enemy Spawner-STATUS.txt
 “native spawn begin”没有对应“returned”可定位到原生调用阶段；不要持续重复尝试。
 
-离线已检查菜单、一次性动作、资源门禁、生成参数和封包。
-游戏内生成、AI 运动、地形落点和每种敌人的完整招式仍需实测。
+离线已检查菜单、一次性动作、资源 / 召唤门禁、生成参数和封包。
+日志已确认多种强袭虫和穿刺虫本体创建；穿刺虫 1 难召唤闪退已从两次转储定位。
+本版对危险条件的拒绝经过离线验证；5 难召唤触手、其余完整行为和地形落点仍需实测。
 不自动发布 GitHub Release；成品仅在本地 outputs/。
 
 Uses code / research from HD2Runtime by SkyeShade

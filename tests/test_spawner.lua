@@ -63,6 +63,12 @@ ready=true
 function mock:spawn()calls.spawn=calls.spawn+1;return {verified=false,entity=100}end
 assert(c:request(enemy,110));c:step(110);c:step(113)
 assert(c.blocked and c.pending==nil and not c:request(enemy,117),'unverified creation stops further requests')
+local refusal_status
+local refused_controller=controller_module.new(mock,function()end,function(s)refusal_status=s end)
+function mock:prepare()return nil,'Impaler requires difficulty 5–10'end
+assert(refused_controller:request(enemy,120));local before_refusal=calls.spawn;refused_controller:step(120)
+assert(refused_controller.pending==nil and refusal_status=='Impaler requires difficulty 5–10'and calls.spawn==before_refusal,
+    'permanent summon refusal cancels immediately and reaches the menu status')
 print('PASS controller: resources, delay, exactly once, cooldown, death, world change, timeout, failed creation stop')
 
 -- A synthetic memory image exercises the production gate; the test never opens a game process.
@@ -143,5 +149,66 @@ put(part,bytes(4,4));n:begin();assert(n:prepare(enemy,s)==true and native_calls.
 unit_ready=false;n:begin();assert(n:prepare(enemy,s)==false);unit_ready=true
 n:begin();local made=assert(n:spawn(enemy,s));assert(made.verified and native_calls.spawns==1)
 put(players+132,bytes(2,4));n:begin();assert(n:scene()==nil);n:begin();assert(n:spawn(enemy,s)==nil and native_calls.spawns==1)
-put(players+132,bytes(1,4));put(game+0x1000,'WRONG');n:begin();assert(not pcall(n.prepare,n,enemy,s)and native_calls.spawns==1)
+put(players+132,bytes(1,4))
+-- Regression: the same native picker that caused both crashes rejects tentacles
+-- at difficulties 1..4. Resources alone must never authorize this parent spawn.
+local child_hash='672f7da17f3ba34a'
+local impaler={id='impaler',hash=enemy.hash,label='Impaler',faction=2,behavior=104,
+    packages=enemy.packages,package_record=enemy.package_record,required_units=enemy.required_units,
+    min_difficulty=5,summons={{entity=child_hash,group='aff5b26b',row=29}}}
+profile.summon_gate={difficulty=0x10,roster=0x20,descriptor=0x4000,rows=0x5000,count=45,
+    stride=128,weights=48,tags=88,tag_bytes=32}
+pointer(ai+0x20,game+0x4000);put(game+0x4000,bytes(game+0x5000,8)..bytes(45,4))
+local row=ffi.new('uint8_t[128]')
+ffi.cast('uint32_t *',row)[0]=tonumber('aff5b26b',16);ffi.copy(row+8,unhex(child_hash),8)
+local weights=ffi.cast('float *',row+48)
+for i=4,9 do weights[i]=1 end
+local function roster_row()put(game+0x5000+29*128,ffi.string(row,128))end
+roster_row()
+local guarded=module.new(mem,profile,catalog,core,function()end,invoke)
+local before_requests,before_spawns=native_calls.requests,native_calls.spawns
+for difficulty=1,4 do
+    put(ai+0x10,bytes(difficulty,4));guarded:begin()
+    local allowed,reason=guarded:prepare(impaler,s)
+    assert(allowed==nil and reason:find('requires difficulty 5',1,true))
+    guarded:begin();assert(guarded:spawn(impaler,s)==nil)
+end
+assert(native_calls.requests==before_requests and native_calls.spawns==before_spawns,'low difficulty refuses before either native call')
+for difficulty=5,10 do
+    put(ai+0x10,bytes(difficulty,4));guarded:begin();assert(guarded:prepare(impaler,s)==true)
+end
+assert(native_calls.requests==before_requests+1,'eligible summon holds packages once')
+put(ai+0x10,bytes(5,4));weights[4]=0;roster_row();guarded:begin()
+local allowed,reason=guarded:prepare(impaler,s)
+assert(allowed==nil and reason:find('tentacles disabled',1,true))
+guarded:begin();assert(guarded:spawn(impaler,s)==nil and native_calls.spawns==before_spawns,'changed weight is rechecked before spawn')
+for _,weight in ipairs({-1,math.huge,0/0})do
+    weights[4]=weight;roster_row();guarded:begin();assert(guarded:prepare(impaler,s)==nil)
+end
+weights[4]=1;row[88]=1;roster_row();guarded:begin();assert(not pcall(guarded.prepare,guarded,impaler,s),'changed tags refuse')
+row[88]=0;ffi.cast('uint32_t *',row)[0]=0;roster_row();guarded:begin();assert(not pcall(guarded.prepare,guarded,impaler,s),'wrong group refuses')
+ffi.cast('uint32_t *',row)[0]=tonumber('aff5b26b',16);row[8]=0;roster_row();guarded:begin();assert(not pcall(guarded.prepare,guarded,impaler,s),'wrong child refuses')
+ffi.copy(row+8,unhex(child_hash),8);roster_row()
+put(game+0x4000,bytes(game+0x5000,8)..bytes(46,4));guarded:begin();assert(not pcall(guarded.prepare,guarded,impaler,s),'changed roster bounds refuse')
+put(game+0x4000,bytes(game+0x5000,8)..bytes(45,4));guarded:begin()
+assert(guarded:spawn(impaler,s).verified and native_calls.spawns==before_spawns+1,'eligible Impaler keeps native summon AI')
+-- The catalog now includes the delayed child unit, so unloaded children block
+-- a ready parent even when every package part is marked loaded.
+local unit_table=catalog.tables.UnitComponentData
+local unit_at=assert(mem.pointer(mem.read(world+0x100+unit_table.index*8,8)))
+unit_table.slots,unit_table.records,unit_table.offset=4,2,64
+local data=ffi.new('uint8_t[336]')
+ffi.copy(data,unhex(enemy.hash),8);ffi.cast('uint32_t *',data+8)[0]=0
+ffi.copy(data+32,unhex(child_hash),8);ffi.cast('uint32_t *',data+40)[0]=1
+ffi.copy(data+64,unhex(enemy.required_units[1].unit),8);ffi.copy(data+200,unhex(child_hash),8)
+put(unit_at,ffi.string(data,336))
+impaler.required_units={{entity=enemy.hash,unit=enemy.required_units[1].unit},{entity=child_hash,unit=child_hash}}
+function core:unit_ready(hash)return hash~=child_hash end
+guarded:begin();local ready,why=guarded:prepare(impaler,s)
+assert(ready==false and why:find(child_hash,1,true),'child unit is independently required')
+guarded:begin();assert(guarded:spawn(impaler,s)==nil and native_calls.spawns==before_spawns+1)
+function core:unit_ready()return true end
+guarded:begin();assert(guarded:prepare(impaler,s)==true)
+print('PASS Impaler regression: low difficulty has zero native calls; eligible roster, live weight, tags, identity, layout, child readiness and pre-spawn recheck')
+put(game+0x1000,'WRONG');n:begin();assert(not pcall(n.prepare,n,enemy,s)and native_calls.spawns==before_spawns+1)
 print('PASS production native gates: pins, solo authority, exact definitions, complete package parts, held refs, unit presence, bounded insertion')

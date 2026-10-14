@@ -75,7 +75,8 @@ def main():
     archive=make_archive({resource_hash(project['resource']):lua_resource(entry)})
     assert read_archive(archive)=={(LUA_TYPE,resource_hash(project['resource'])):(lua_resource(entry),b'')}
     description=('Independent single-player enemy test spawner for Sekiro danger alert; 14 types, '
-        'native package loading and one-shot menu action. Requires Bingus Shared Loader v18+ and ModOptionsMenu v1.2. '
+        'native package loading and one-shot menu action. Impaler requires difficulty 5–10 and eligible tentacles. '
+        'Requires Bingus Shared Loader v18+ and ModOptionsMenu v1.2. '
         'Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
     manifest={'Version':1,'Guid':project['guid'],'Name':project['name']+' '+project['version'],
         'Description':description,'Options':[{'Name':project['name'],'Description':description,'Include':['Addon']}]}

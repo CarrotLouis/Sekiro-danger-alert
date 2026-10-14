@@ -26,6 +26,11 @@ class SpawnerCatalog(unittest.TestCase):
         self.assertEqual(rows['lieutenant_assault_jumppack']['hash'],'e44ec9f9b3fe1d2a')
         self.assertEqual(rows['lieutenant_assault_jumppack']['behavior'],57)
         self.assertIn('b940c889d77f8219',{d['entity']for d in rows['lieutenant_assault_jumppack']['required_units']})
+        self.assertEqual(rows['impaler']['min_difficulty'],5)
+        self.assertEqual(rows['impaler']['summons'],[{'entity':'672f7da17f3ba34a','group':'aff5b26b','row':29}])
+        self.assertIn({'entity':'672f7da17f3ba34a','unit':'672f7da17f3ba34a'},rows['impaler']['required_units'])
+        self.assertIn('50c4a70c3174bc79',rows['impaler']['packages'])
+        self.assertEqual([e['id']for e in c['enemies']if e.get('summons')],['impaler'])
         self.assertEqual(c['tables']['EnemyPackageComponentData'],{'index':77,'slots':316,'records':158,'offset':5056,'stride':32})
     def test_companion_does_not_replace_warning(self):
         p=json.loads((MOD/'project.json').read_text(encoding='utf-8'))
@@ -55,6 +60,11 @@ class SpawnerCatalog(unittest.TestCase):
         self.assertEqual(p['context_size'],0x8a0)
         self.assertEqual(p['invalid_entity'],0x348456c)
         self.assertEqual(p['loader']['requestRva'],19915600)
+        self.assertEqual(p['summon_gate'],{'difficulty':0x518c4,'roster':0x660,'descriptor':0x21cbd60,
+            'rows':0x32b6ba0,'count':45,'stride':128,'weights':48,'tags':88,'tag_bytes':32})
+        self.assertEqual(len(bytes.fromhex(pins['complete native enemy picker']['hex'])),0x253)
+        self.assertEqual(pins['native spawn limit dereferences picked entry']['rva'],0x952ff0)
+        self.assertEqual(pins['summon resolves native roster entry']['rva'],0x11c8c90)
         for i in p['pins']:
             self.assertIn(i['module'],{'game','exe'});self.assertGreater(i['rva'],4096)
             self.assertGreaterEqual(len(bytes.fromhex(i['hex'])),5)

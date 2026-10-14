@@ -1,5 +1,7 @@
 # Enemy Spawner 0.1.0：来源和验证范围
 
+历史研究记录。穿刺虫的低难度召唤限制和最新验证见 [0.1.1 修复](ENEMY-SPAWNER-0.1.1.md)。
+
 本工具是独立测试 addon，公开名称 `Sekiro danger alert - Enemy Spawner`，GUID `e2481445-39ce-5af2-9ff2-5052a6a76fd4`，入口 `mods/peril_warning/enemy_spawner`。原警报身份与选项 ID 保持稳定。
 
 ## 资源与变体

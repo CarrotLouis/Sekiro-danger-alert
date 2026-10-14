@@ -123,6 +123,18 @@
         {
           "entity": "dcf8e74212fbee3b",
           "unit": "dcf8e74212fbee3b"
+        },
+        {
+          "entity": "672f7da17f3ba34a",
+          "unit": "672f7da17f3ba34a"
+        }
+      ],
+      "min_difficulty": 5,
+      "summons": [
+        {
+          "entity": "672f7da17f3ba34a",
+          "group": "aff5b26b",
+          "row": 29
         }
       ]
     },

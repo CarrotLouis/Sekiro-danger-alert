@@ -9,6 +9,10 @@ local function u32(s,o)
 end
 local function hex(s)return (s:reverse():gsub('.',function(c)return string.format('%02x',c:byte())end))end
 local function rawhex(s)return (s:gsub('.',function(c)return string.format('%02x',c:byte())end))end
+local function f32(s,o)
+    local value=ffi.new('float[1]');ffi.copy(value,s:sub(o+1,o+4),4)
+    return tonumber(value[0])
+end
 local function unhex(s)
     assert(type(s)=='string'and #s==16 and s:match('^%x+$'),'invalid reviewed hash')
     local out={};for i=15,1,-2 do out[#out+1]=string.char(tonumber(s:sub(i,i+1),16))end
@@ -118,6 +122,42 @@ function M.new(memory,profile,catalog,core,log,calls)
             end
         end
     end
+    local function summons_ready(enemy)
+        if not enemy.summons then return true end
+        -- Native summon calls PickEnemy before creating its child. Loading the child's
+        -- package cannot make a zero-weight roster entry eligible (Impaler crashes at
+        -- game+0x9530F5 when PickEnemy returns no entry on difficulty 1..4).
+        local G=assert(profile.summon_gate,'missing summon gate')
+        local ai=ptr(game+profile.ai_global)
+        local difficulty=u32(read(ai+G.difficulty,4),0)
+        if difficulty<enemy.min_difficulty or difficulty>10 then
+            return nil,('穿刺虫需 5–10 难度；当前 %d / Impaler requires difficulty 5–10; current %d'):format(difficulty,difficulty)
+        end
+        local descriptor=ptr(ai+G.roster)
+        assert(descriptor==game+G.descriptor,'summon roster descriptor differs')
+        local header=read(descriptor,12)
+        assert(memory.pointer(header)==game+G.rows and u32(header,8)==G.count,'summon roster layout differs')
+        assert(#enemy.summons>0 and #enemy.summons<=4,'summon dependency limit')
+        for _,child in ipairs(enemy.summons)do
+            assert(child.row>=0 and child.row<G.count and child.row%1==0,'summon row bounds')
+            local row=read(game+G.rows+child.row*G.stride,G.stride)
+            assert(u32(row,0)==tonumber(child.group,16) and hex(row:sub(9,16))==child.entity,'summon roster identity differs')
+            -- This reviewed child is untagged. Refuse modified tag restrictions rather
+            -- than guessing which candidates the native picker will accept.
+            assert(row:sub(G.tags+1,G.tags+G.tag_bytes)==string.rep('\0',G.tag_bytes),'summon roster tags differ')
+            local weight=f32(row,G.weights+4*(difficulty-1))
+            if weight~=weight or weight<=0 or weight>1000 then
+                return nil,'当前任务未启用穿刺虫触手 / Impaler tentacles disabled in this mission'
+            end
+        end
+        assert(ptr(game+profile.ai_global)==ai and u32(read(ai+G.difficulty,4),0)==difficulty and ptr(ai+G.roster)==descriptor,
+            'summon mission changed during check')
+        local checked=enemy.id..'/'..difficulty
+        if self.summon_checked~=checked then
+            self.summon_checked=checked;log('summon gate ready '..enemy.id..' difficulty='..difficulty)
+        end
+        return true
+    end
     local function package_system()
         local L=profile.loader;local instance=ptr(game+L.instanceGlobalRva)
         local h=read(instance,32);local cap=u32(h,L.refcountMap.capacity)
@@ -175,6 +215,8 @@ function M.new(memory,profile,catalog,core,log,calls)
     end
     function self:prepare(enemy,scene)
         self:prove();identities(enemy,scene)
+        local allowed,why=summons_ready(enemy)
+        if not allowed then return nil,why end
         local wanted={}
         for _,package in ipairs(enemy.packages)do request(package);wanted[package]=true end
         if not resident_packages(wanted)then return false,'packages loading'end
