@@ -232,10 +232,11 @@ function M.new(memory,profile)
         assert(read(manager+8,56)==h,'ability table changed')
         return out
     end
-    -- Diagnostic only: AI interest and aiming are NOT proof of a committed attack.
+    -- AI interest and aiming are NOT proof of a committed attack; the detector
+    -- also requires a resource-specific active ability inside its warning window.
     -- Targeting/Behavior offsets and instruction pins: HD2Runtime by SkyeShade,
     -- independently re-decoded from the retained 25480438 module sections.
-    function self:targeting_header()
+    function self:verify_targeting()
         if not self.targeting_proven then
             assert(profile.targeting_pins and #profile.targeting_pins>0,'targeting pins missing')
             for _,pin in ipairs(profile.targeting_pins) do
@@ -243,6 +244,9 @@ function M.new(memory,profile)
             end
             self.targeting_proven=true
         end
+    end
+    function self:targeting_header()
+        self:verify_targeting()
         local manager=ptr(game+0x3326d30);local h=read(manager+0x140,72)
         local count=u32(h,0);assert(count<=4096,'targeting count invalid')
         return {manager=manager,count=count,raw=h,descriptors=memory.pointer(h,0x28),
@@ -288,24 +292,87 @@ function M.new(memory,profile)
             position_only=position_only,aim_point={x=f32(row,0x14),y=f32(row,0x18),z=f32(row,0x1c)},
             aim_target_is_local=target==avatar.id,
             entity_target_valid=not position_only and network_target~=0x7fff and target~=0,ai_available=false}
-        -- An AI record may be absent or stale on a peer. Keep this separate from replicated aiming.
+        result.ai=self:behavior_target(e,avatar)
+        result.ai_available=result.ai~=nil
+        assert(read(h.manager+0x140,72)==h.raw and nullable(h.descriptors+i*8)==e.pointer
+            and read(e.pointer,20)==e.identity,'targeting identity changed')
+        return result
+    end
+    function self:behavior_target(e,avatar)
+        self:verify_targeting()
+        assert(read(e.pointer,24):sub(1,20)==e.identity,'AI owner changed')
+        -- A peer's cached AI is not authoritative. Return observations for diagnosis;
+        -- the detector requires the fresh descriptor's ownership flag as well.
         local mgr=ptr(game+0x3326740);local bh=read(mgr+0x40,40)
         local index=map_index(mgr+0x40,e.id,65536)
+        local result
         if index and index<4096 then
             local handles=assert(memory.pointer(bh,0x18));local records=assert(memory.pointer(bh,0x20))
             if nullable(handles+index*8)==e.pointer then
                 local ai=read(records+index*0x1f8,0x80)
-                result.ai={behavior=u32(ai,0),stage=u32(ai,8),pending_stage=u32(ai,12),
+                result={behavior=u32(ai,0),stage=u32(ai,8),pending_stage=u32(ai,12),
                     target=u32(ai,0x18),has_target=ai:byte(0x79)~=0,flags=u32(ai,0x60)}
-                result.ai.target_is_local=result.ai.target==avatar.id and result.ai.has_target
-                result.ai.tracks_entity=bit.band(result.ai.flags,1)~=0
-                result.ai_available=true
+                result.target_is_local=result.target==avatar.id and result.has_target
+                result.tracks_entity=bit.band(result.flags,1)~=0
                 assert(read(mgr+0x40,40)==bh and nullable(handles+index*8)==e.pointer,'AI table changed')
             end
         end
-        assert(read(h.manager+0x140,72)==h.raw and nullable(h.descriptors+i*8)==e.pointer
-            and read(e.pointer,20)==e.identity,'targeting identity changed')
+        local descriptor=read(e.pointer,24)
+        assert(descriptor:sub(1,20)==e.identity and (bit.band(u32(descriptor,20),1)~=0)==e.owned
+            and bit.band(u32(descriptor,20),2)==0,'AI identity or ownership changed')
         return result
+    end
+    -- Scan the active ability table first, without reserving permanent enemy slots
+    -- or reading positions. Limits bound work per poll; the cursor resumes at the
+    -- next unprocessed row, including when many attacks start simultaneously.
+    function self:attack_candidates(cursor)
+        self:verify_targeting()
+        if not self.attack_proven then
+            assert(profile.attack_pins and #profile.attack_pins>0,'attack pins missing')
+            for _,pin in ipairs(profile.attack_pins) do
+                assert(read(game+pin.rva,#pin.bytes)==pin.bytes,'attack layout mismatch: '..pin.label)
+            end
+            self.attack_proven=true
+        end
+        local manager=ptr(game+53634624);local h=read(manager+8,56)
+        local cap,count=u32(h,0),u32(h,4)
+        assert(cap<=8192 and count<=cap,'ability counts invalid')
+        local stats={ability_records=count,scan_limit=2048,match_limit=32,scanned=0,matched=0}
+        if count==0 then stats.cursor=0;return {},{},stats end
+        cursor=cursor or 0;if cursor>=count then cursor=0 end
+        local last=math.min(count,cursor+stats.scan_limit)
+        local owners_at=assert(memory.pointer(h,40));local rows_at=assert(memory.pointer(h,48))
+        local owners=read(owners_at+cursor*8,(last-cursor)*8)
+        local rows=read(rows_at+cursor*224,(last-cursor)*224)
+        local active,selected,seen={},{},{}
+        local next_row=last
+        for i=0,last-cursor-1 do
+            stats.scanned=stats.scanned+1
+            local offset=i*224;local id=u32(rows,offset)
+            if rows:byte(offset+17)~=0 and (profile.attack_states[id] or profile.ignored_stomps[id]
+                or id==profile.cannon.ability) then
+                local at=memory.pointer(owners,i*8)
+                if at then
+                    local descriptor=read(at,24);local e=entity(descriptor,at)
+                    local crusher=e.resource==profile.crusher_resource
+                    local cannon=e.resource==profile.cannon.resource and id==profile.cannon.ability
+                    if bit.band(u32(descriptor,20),2)==0 and ((crusher and id~=profile.cannon.ability) or cannon) then
+                        assert(nullable(owners_at+(cursor+i)*8)==at and read(rows_at+(cursor+i)*224,20)
+                            ==rows:sub(offset+1,offset+20),'attack row changed')
+                        e.class_name=crusher and 'crusher' or 'turret_heavycannon'
+                        if not seen[e.id] then selected[#selected+1]=e;seen[e.id]=true end
+                        active[#active+1]={entity=e.id,id=id,time=f32(rows,offset+8),speed=f32(rows,offset+12),
+                            paused=rows:byte(offset+18)~=0,slot=cursor+i}
+                        stats.matched=stats.matched+1
+                        if stats.matched>=stats.match_limit then next_row=cursor+i+1;break end
+                    end
+                end
+            end
+        end
+        assert(read(manager+8,56)==h,'ability table changed')
+        stats.cursor=next_row>=count and 0 or next_row
+        stats.remaining=count-next_row;stats.selected=#selected
+        return active,selected,stats
     end
     local function resource(kind,name)
         local app=ptr(exe+27328968);local manager=ptr(app+1016)

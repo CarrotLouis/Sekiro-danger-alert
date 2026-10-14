@@ -1,0 +1,74 @@
+{
+  "build": "25480438",
+  "source": "Retained build 25480438 code and two owner-supplied targeting captures on 2026-10-14; see docs/VALIDATION-0.4.0.md",
+  "cannon": {
+    "resource": "2cf3488c4845f8bd",
+    "ability": 1037,
+    "cue_time": 1.0,
+    "last_warning_time": 1.2,
+    "fire_time": 1.5,
+    "end_time": 2.5
+  },
+  "pins": [
+    {
+      "rva": 18208692,
+      "hex": "094e1501",
+      "label": "ability 1037 dispatch"
+    },
+    {
+      "rva": 18173449,
+      "hex": "418bd0e86f19f8ff",
+      "label": "ability 1037 handler"
+    },
+    {
+      "rva": 17655689,
+      "hex": "83fa3c",
+      "label": "heavy cannon preparation tick 60"
+    },
+    {
+      "rva": 17655722,
+      "hex": "e8c1880e00",
+      "label": "preparation effect call"
+    },
+    {
+      "rva": 17655751,
+      "hex": "83fa5a",
+      "label": "heavy cannon fire tick 90"
+    },
+    {
+      "rva": 17655758,
+      "hex": "e88d330e00",
+      "label": "weapon trigger call"
+    },
+    {
+      "rva": 17655803,
+      "hex": "81fa96000000",
+      "label": "heavy cannon completion tick 150"
+    },
+    {
+      "rva": 8161481,
+      "hex": "f30f103d6feebf01",
+      "label": "ability clock rate load"
+    },
+    {
+      "rva": 37517120,
+      "hex": "00007042",
+      "label": "ability clock 60 ticks per second"
+    },
+    {
+      "rva": 8161579,
+      "hex": "4869d9e0000000",
+      "label": "ability record stride"
+    },
+    {
+      "rva": 8161590,
+      "hex": "807c3b1000",
+      "label": "ability active flag"
+    },
+    {
+      "rva": 8161601,
+      "hex": "807c3b1100",
+      "label": "ability paused flag"
+    }
+  ]
+}

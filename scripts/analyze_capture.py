@@ -18,6 +18,7 @@ def analyze(rows):
     markers = [r['t'] for r in rows if r.get('event') == 'user_attack_mark']
     decisions = Counter()
     observations, transitions, previous, times, selected = [], [], {}, [], set()
+    runs, active_runs = [], {}
     for r in rows:
         kind = r.get('event')
         if kind == 'targeting_sample':
@@ -41,6 +42,23 @@ def analyze(rows):
                 signature = {k: v for k, v in observation.items() if k not in ('t', 'distance')}
                 if previous.get(key) != signature:
                     transitions.append(observation); previous[key] = signature
+            current_runs = {}
+            states = {s['entity']: s for s in r.get('states', []) or []}
+            for ability in r.get('abilities', []) or []:
+                state = states.get(ability['entity'], {})
+                key = (ability['entity'], state.get('unit'), ability['slot'])
+                run = active_runs.get(key)
+                if not run or run['ability'] != ability['id'] or ability['time'] < run['last_clock'] - .1:
+                    speed = ability.get('speed', 0)
+                    run = dict(entity=key[0], unit=key[1], slot=key[2], ability=ability['id'],
+                        first_sample=t, first_clock=ability['time'],
+                        estimated_start=t-ability['time']/speed if speed > 0 else None,
+                        class_name=state.get('class_name'), owned=state.get('owned'),
+                        initial_ai=state.get('ai'), samples=0)
+                    runs.append(run)
+                run.update(last_sample=t, last_clock=ability['time'], samples=run['samples']+1)
+                current_runs[key] = run
+            active_runs = current_runs
         elif kind == 'detector_sample':
             t = r.get('sample_t', r['t']); times.append(t)
             for decision in r.get('decisions', []) or []:
@@ -52,7 +70,11 @@ def analyze(rows):
         duration_s=stop.get('t'), stop_reason=stop.get('reason'), event_counts=dict(events),
         marker_times=markers, observed_targeting_entities=len(selected), decision_sample_counts=dict(decisions),
         sample_gap_s=dict(max=max(gaps) if gaps else None, median=gaps[len(gaps)//2] if gaps else None),
-        targeting_transitions=transitions,
+        targeting_transitions=transitions, ability_runs=runs,
+        marker_ability_context=[dict(marker_t=t, candidates=[dict(entity=x['entity'], ability=x['ability'],
+            first_sample=x['first_sample'], estimated_start=x['estimated_start'],
+            marker_after_estimated_start=t-x['estimated_start'] if x['estimated_start'] is not None else None)
+            for x in runs if x['first_sample'] <= t <= x['last_sample']+2]) for t in markers],
         marker_windows=[dict(marker_t=t, start=t-4, end=t+1,
                              observations=[x for x in observations if t-4 <= x['t'] <= t+1]) for t in markers],
         limitations=['F8 is a delayed human marker, not a measured attack onset.',

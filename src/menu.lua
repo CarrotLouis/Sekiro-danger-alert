@@ -17,7 +17,7 @@ function M.new(log)
                 description='100% 约为原效果字形大小；50% 至 300%。以头顶锚点为中心缩放，保持跟随。'}},
             {'automatic',{type='choice',label='自动预警 / Automatic warning',default=1,
                 choices={'开启 / On','关闭 / Off'},
-                description='Crusher 在 10 米内开始已识别的攻击时预警。 / Warn at the onset of a recognized Crusher attack within 10 m.'}},
+                description='Crusher 或普通重炮塔锁定本人并进入已识别的攻击前摇时预警，不限距离。暂只采用本机拥有的敌人 AI 目标。'}},
             {'volume',{type='slider',label='音量 / Volume',min=0,max=100,step=1,default=60,
                 description='只调整危提示音。0 为静音。按 APPLY 应用。 / Only this warning sound; 0 mutes it. Apply to save.'}},
             {'preview',{type='choice',label='立即试听 / Preview',default=1,
@@ -28,10 +28,10 @@ function M.new(log)
                 description='按 APPLY 后关闭菜单，三秒后在本机潜兵头顶显示动画并播放音效。'}},
             {'capture',{type='choice',label='Crusher 采集 / Capture',default=1,
                 choices={'待命 / Ready','开始两分钟采集 / Start 2 minutes','结束采集 / Stop'},
-                description='在任务内、Crusher 附近开启。记录动作与距离；看到出招时按 F8 标记。'}},
+                description='在任务内、Crusher 附近开启。记录动作、目标和预警决策；看到出招时按 F8 标记。'}},
             {'target_capture',{type='choice',label='炮塔索敌采集 / Turret targeting capture',default=1,
                 choices={'待命 / Ready','开始两分钟采集 / Start 2 minutes','结束采集 / Stop'},
-                description='研究用：记录炮塔 AI 目标、瞄准目标和阶段。看到闪光或开火时按 F8；暂不自动预警。与 Crusher 采集互斥。'}},
+                description='记录炮塔目标、攻击计时与自动预警决策。看到闪光时按 F8 标记；与 Crusher 采集互斥。'}},
         }
         for _,row in ipairs(specs) do
             row[2].mod='Sekiro danger alert';row[2].mod_id='peril_warning.crusher'

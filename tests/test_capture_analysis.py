@@ -18,3 +18,16 @@ assert len(result['marker_windows'][0]['observations']) == 4
 assert result['targeting_transitions'][1]['aim_local'] and not result['targeting_transitions'][1]['entity_target_valid']
 assert result['observed_targeting_entities'] == 1 and not result['decision_sample_counts']
 print('PASS targeting analysis preserves delayed markers, position-only targets and raw stage transitions')
+
+# Ability onsets are a separate timeline: a constant AI stage must not hide them.
+samples = [dict(event='capture_start', mode='targeting', t=0)]
+for t, clock in [(1, 0), (2.05, 1.05), (3.4, 2.4), (12, 0), (13.1, 1.1)]:
+    samples.append(dict(event='targeting_sample', t=t,
+        states=[dict(entity=1, unit=2, owned=True, ai={'stage': 1, 'target_is_local': True})],
+        abilities=[dict(entity=1, id=1037, time=clock, speed=1, slot=55)]))
+samples += [dict(event='user_attack_mark', t=13.6), dict(event='capture_stop', t=14)]
+result = module.analyze(samples)
+assert len(result['targeting_transitions']) == 1 and len(result['ability_runs']) == 2
+assert result['ability_runs'][0]['samples'] == 3
+assert abs(result['marker_ability_context'][0]['candidates'][0]['marker_after_estimated_start']-1.6) < 1e-9
+print('PASS ability cycles and delayed marker context remain distinct from unchanged AI stages')

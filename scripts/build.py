@@ -50,6 +50,10 @@ def profile():
     target_rows=["{rva=%d,bytes=%s,label='%s'}"%(p['rva'],lua_bytes(bytes.fromhex(p['hex'])),p['label'])
                  for p in targeting['pins']]
     target_resources=["['%s']='%s'"%(r['hash'],r['name']) for r in targeting['resources']]
+    attacks=json.loads((ROOT/'config/attack_probe.json').read_text())
+    attack_rows=["{rva=%d,bytes=%s,label='%s'}"%(p['rva'],lua_bytes(bytes.fromhex(p['hex'])),p['label'])
+                 for p in attacks['pins']]
+    cannon='{'+','.join(k+'='+ ("'%s'"%v if isinstance(v,str) else str(v)) for k,v in attacks['cannon'].items())+'}'
     text="""return {
  steam_build='25480438',
  exe_sha256='F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06',
@@ -59,13 +63,15 @@ def profile():
  pins={%s},
  targeting_pins={%s},
  targeting_resources={%s},
+ attack_pins={%s},
+ cannon=%s,
  -- 1411/1412 have live capture support. Other branches are statically reviewed;
  -- exact move names / live coverage still need confirmation. Never use shared animation hashes alone.
  attack_states={[1411]=true,[1412]=true,[1413]=true,[1414]=true,[1415]=true,[1416]=true,
                 [1417]=true,[1418]=true,[1419]=true,[1420]=true,[1421]=true,[1422]=true,[1424]=true},
  ignored_stomps={[1409]=true,[1410]=true,[1423]=true},
 }
-"""%(resource_hash(crusher),','.join(rows),','.join(target_rows),','.join(target_resources))
+"""%(resource_hash(crusher),','.join(rows),','.join(target_rows),','.join(target_resources),','.join(attack_rows),cannon)
     (ROOT/'src/profile.lua').write_text(text,encoding='utf-8')
 
 def build():
@@ -113,7 +119,7 @@ def build():
     main,gpu=make_resource_archive(resources)
     assert read_archive(main,gpu)==resources
     archive='9ba626afa44a3aa3.patch_0'
-    description=('Sekiro danger alert: Crusher attack onset warning within 10 m, live avatar-head projection and independent sound volume. '
+    description=('Sekiro danger alert: target-filtered Crusher and heavy cannon warning, live avatar-head projection and independent sound volume. '
                  'Requires Bingus Shared Loader v18+ and Mod Options Menu v1.2. '
                  'Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
     manifest={'Version':1,'Guid':CONFIG['guid'],'Name':'Sekiro danger alert '+CONFIG['version'],'Description':description,

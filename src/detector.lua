@@ -1,41 +1,57 @@
--- Read-only Crusher observation: captured slams plus build-pinned non-stomp melee branches.
+-- Resource-specific attack windows plus a currently authoritative entity target.
+-- No range predicate. AI selection alone and stale/replicated aim IDs cannot warn.
 local M={}
-function M.new(native,profile,log,trigger,tracking)
-    local tracker=tracking.new(native)
-    local self={tracked={},previous={},fired={},errors=0}
+function M.new(native,profile,log,trigger)
+    local self={previous={},fired={},errors=0,cursor=0}
     function self:reset()
-        tracker:reset();self.tracked={};self.previous={};self.fired={};self.snapshot=nil
+        self.previous={};self.fired={};self.snapshot=nil;self.cursor=0
     end
-    function self:observe(items,targets,t)
-        local current,decisions={},{}
+    function self:observe(items,targets,t,avatar)
+        local decisions={}
         for _,a in ipairs(items) do
-            local target=targets[a.entity]
-            if target then
-                local key=a.entity..':'..target.unit..':'..a.slot
+            local e=targets[a.entity]
+            if e then
+                local key=a.entity..':'..e.unit..':'..a.slot
                 local old=self.previous[key]
-                current[key]={id=a.id,time=a.time}
-                local fresh=a.time>=0 and a.time<=0.35
-                local start=fresh and (not old or old.id~=a.id or a.time<old.time-0.1)
-                local identity=a.entity..':'..target.unit
-                local reason=not fresh and 'late_sample' or not start and 'already_observed'
-                    or (profile.ignored_stomps or {})[a.id] and 'stomp'
-                    or not profile.attack_states[a.id] and 'unmapped'
-                    or target.distance>10 and 'outside_10m'
-                    or t-(self.fired[identity] or -math.huge)<=0.7 and 'cooldown' or 'trigger'
-                decisions[#decisions+1]={entity=a.entity,unit=target.unit,ability=a.id,
-                    ability_time=a.time,distance=target.distance,reason=reason}
-                if start and target.distance<=10 and not profile.attack_states[a.id]
-                    and not (profile.ignored_stomps or {})[a.id] then
-                    log('unmapped_action entity='..a.entity..' ability='..a.id)
+                if not old or old.id~=a.id or a.time<old.time-0.1 or t-old.seen>2 then
+                    old={id=a.id,warned=false}
                 end
-                if start and profile.attack_states[a.id] and not (profile.ignored_stomps or {})[a.id] and target.distance<=10
-                    and t-(self.fired[identity] or -math.huge)>0.7 then
-                    self.fired[identity]=t
-                    trigger({entity=a.entity,unit=target.unit,ability=a.id,ability_time=a.time,distance=target.distance})
+                old.time=a.time;old.seen=t;self.previous[key]=old
+                local crusher=e.resource==profile.crusher_resource
+                local cannon=e.resource==profile.cannon.resource and a.id==profile.cannon.ability
+                local cue=cannon and profile.cannon.cue_time or 0
+                local last=cannon and profile.cannon.last_warning_time or 0.35
+                local ai=e.ai
+                local identity=a.entity..':'..e.unit
+                local reason
+                if crusher and (profile.ignored_stomps or {})[a.id] then reason='stomp'
+                elseif not (cannon or crusher and profile.attack_states[a.id]) then reason='unmapped'
+                elseif a.paused or not a.speed or a.speed<=0 then reason='inactive_clock'
+                elseif old.warned then reason='already_warned'
+                elseif a.time<cue then reason='before_cue'
+                elseif a.time>last then reason='late_sample'
+                elseif cannon and (profile.cannon.fire_time-a.time)/a.speed<0.2 then reason='insufficient_lead'
+                elseif e.alive==false then reason='dead_or_replaced'
+                elseif not e.owned then reason='unverified_peer_target'
+                elseif not ai then reason='no_ai_target'
+                elseif not ai.has_target or not ai.tracks_entity or ai.target==0 then reason='no_entity_target'
+                elseif not avatar or ai.target~=avatar.id then reason='other_target'
+                elseif t-(self.fired[identity] or -math.huge)<=0.7 then reason='cooldown'
+                else reason='trigger' end
+                local decision={entity=a.entity,unit=e.unit,class_name=e.class_name,ability=a.id,
+                    ability_time=a.time,ability_speed=a.speed,sample_time=t,reason=reason,owned=e.owned,
+                    target_entity=ai and ai.target,has_target=ai and ai.has_target,
+                    tracks_entity=ai and ai.tracks_entity,behavior=ai and ai.behavior,
+                    stage=ai and ai.stage,target_source=ai and 'behavior',avatar_entity=avatar and avatar.id}
+                decisions[#decisions+1]=decision
+                if reason=='trigger' then
+                    old.warned=true;self.fired[identity]=t;trigger(decision)
                 end
             end
         end
-        self.previous=current
+        -- Keep deduplication across partial table scans and short missing-row gaps.
+        for key,state in pairs(self.previous) do if t-state.seen>2 then self.previous[key]=nil end end
+        for key,when in pairs(self.fired) do if t-when>2 then self.fired[key]=nil end end
         return decisions
     end
     function self:step(t)
@@ -44,24 +60,28 @@ function M.new(native,profile,log,trigger,tracking)
         local ok,why=pcall(function()
             native:begin()
             local scene=native:scene()
-            if not scene.mission or not scene.avatar or not scene.position then self:reset();self.context=nil;return end
-            local context=scene.key..':'..scene.avatar.unit
+            if not scene.mission or not scene.avatar then self:reset();self.context=nil;return end
+            local context=scene.key..':'..scene.avatar.id..':'..scene.avatar.unit
             if self.context~=context then self:reset();self.context=context end
-            local h=native:health_header()
-            local selected,stats=tracker:step(h,scene,t);self.tracked=tracker.tracked
-            local owners,targets={},{}
+            local active,selected,stats=native:attack_candidates(self.cursor)
+            self.cursor=stats.cursor
+            local targets={};local health
             for _,e in ipairs(selected) do
-                owners[native.memory.address(e.pointer)]=e
-                targets[e.id]={unit=e.unit,distance=e.distance}
+                if e.resource==profile.crusher_resource then
+                    health=health or native:health_header()
+                    local current=native:resolve(health,e.id)
+                    e.alive=current~=nil and current.pointer==e.pointer and current.identity==e.identity
+                end
+                e.ai=native:behavior_target(e,scene.avatar)
+                targets[e.id]=e
             end
-            local active=native:abilities(owners)
-            local decisions=self:observe(active,targets,t)
+            -- Reject an avatar/world change before emitting any event from this batch.
+            local latest=native:scene()
+            assert(latest.mission and latest.avatar and latest.key==scene.key
+                and latest.avatar.id==scene.avatar.id and latest.avatar.unit==scene.avatar.unit,'warning scene changed')
+            local decisions=self:observe(active,targets,t,scene.avatar)
             self.snapshot={t=t,scene=scene,selected=selected,abilities=active,decisions=decisions,
-                tracking=stats,health_records=h.count}
-            -- Despawned/replaced unit identities must not accumulate for the whole mission.
-            local kept={}
-            for key,when in pairs(self.fired) do if t-when<2 then kept[key]=when end end
-            self.fired=kept
+                tracking=stats,health_records=health and health.count or 0}
         end)
         if ok then self.errors=0
         else

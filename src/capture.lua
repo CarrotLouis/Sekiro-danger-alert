@@ -44,7 +44,7 @@ function M.new(native,path,log,clock,tracking)
         file=assert(io.open(self.path,'wb'),'cannot create capture log')
         began=clock();deadline=began+120;next_heartbeat=0;context=nil
         bytes_written=0;self.active=true;self.last={};self.errors=0;self.samples=0;self.cost=0
-        self.ability_stamp=nil;self.observation=nil;self.detector_t=nil;self.animation_cursor=0
+        self.ability_stamp=nil;self.observation=nil;self.detector_observation=nil;self.detector_t=nil;self.animation_cursor=0
         local source=native
         if self.mode=='targeting' then
             source={discover=function(_,h,c,n)return native:targeting_discover(h,c,n)end,
@@ -53,36 +53,40 @@ function M.new(native,path,log,clock,tracking)
         end
         tracker=tracking.new(source,self.mode=='targeting' and 2000 or 50,self.mode=='targeting' and 8 or 16)
         emit('capture_start',{build='25480438',nominal_sample_hz=20,adaptive_sampling=true,
-            range_m=self.mode=='targeting' and 2000 or 50,warning_range_m=10,mode=self.mode,
-            automatic_warning_supported=self.mode=='crusher',manual_marker='F8',version='0.3.2',mod='Sekiro danger alert'})
+            diagnostic_range_m=self.mode=='targeting' and 2000 or 50,warning_rule='local_entity_target_and_attack',mode=self.mode,
+            automatic_warning_supported=true,manual_marker='F8',version='0.4.0',mod='Sekiro danger alert'})
         log('capture started: '..self.path)
     end
     function self:stop(reason)
         if not self.active then return end
         if file then file:write(json({event='capture_stop',t=clock()-began,reason=reason,samples=self.samples})..'\n');file:close() end
-        file=nil;self.active=false;self.last={};self.observation=nil;log('capture stopped: '..reason)
+        file=nil;self.active=false;self.last={};self.observation=nil;self.detector_observation=nil;log('capture stopped: '..reason)
     end
     function self:mark()
         if self.active then emit('user_attack_mark',{key='F8',last_observation=self.observation,
-            observation_age=self.observation and clock()-began-self.observation.sample_t or nil}) end
+            observation_age=self.observation and clock()-began-self.observation.sample_t or nil,
+            last_detection=self.detector_observation,
+            detection_age=self.detector_observation and clock()-began-self.detector_observation.sample_t or nil}) end
     end
     function self:record_detection(snapshot)
-        if not self.active or self.mode~='crusher' or not snapshot or snapshot.t<began or snapshot.t==self.detector_t then return end
+        if not self.active or not snapshot or snapshot.t<began or snapshot.t==self.detector_t then return end
         if clock()>=deadline then self:stop('two minutes complete');return end
         local key=snapshot.scene.key..':'..snapshot.scene.avatar.unit
         if context and context~=key then self:stop('mission or local avatar changed');return end
         context=key
         local started=clock()
         self.detector_t=snapshot.t
-        self.observation={sample_t=snapshot.t-began,source='automatic_detector',nearby=nearby(snapshot.selected),
+        local observation={sample_t=snapshot.t-began,source='automatic_detector',nearby=nearby(snapshot.selected),
             decisions=snapshot.decisions,tracking=snapshot.tracking}
+        self.detector_observation=observation
+        if self.mode=='crusher' then self.observation=observation end
         -- Preserve every detector decision even when animation capture has backed off.
-        emit('detector_sample',{sample_t=snapshot.t-began,nearby=self.observation.nearby,
+        emit('detector_sample',{sample_t=snapshot.t-began,nearby=observation.nearby,
             items=snapshot.abilities,decisions=snapshot.decisions,tracking=snapshot.tracking,
             avatar_entity=snapshot.scene.avatar.id,avatar_unit=snapshot.scene.avatar.unit})
         if clock()-started>0.020 then self:stop('detector recording exceeded 20 ms budget') end
     end
-    function self:step(snapshot)
+    function self:step()
         if not self.active then return end
         local now=clock()
         if now>=deadline then return self:stop('two minutes complete') end
@@ -98,19 +102,13 @@ function M.new(native,path,log,clock,tracking)
             local key=scene.key..':'..scene.avatar.unit
             if context and context~=key then self:stop('mission or local avatar changed');return end
             context=key
-            local h,selected,stats,active
-            local shared=self.mode=='crusher' and snapshot and now-snapshot.t<=0.25
-                and snapshot.t>=began and snapshot.scene.key==scene.key and snapshot.scene.avatar.unit==scene.avatar.unit
-            if shared then
-                selected=snapshot.selected;stats=snapshot.tracking;active=snapshot.abilities
-                h={count=snapshot.health_records};self:record_detection(snapshot)
-            else
-                h=self.mode=='targeting' and native:targeting_header() or native:health_header()
-                selected,stats=tracker:step(h,scene,now)
-                local owners={}
-                for _,e in ipairs(selected) do owners[native.memory.address(e.pointer)]=e end
-                active=native:abilities(owners)
-            end
+            -- The automatic detector now scans active abilities without positions.
+            -- Keep the bounded, proximity-based animation/aim diagnostics separate.
+            local h=self.mode=='targeting' and native:targeting_header() or native:health_header()
+            local selected,stats=tracker:step(h,scene,now)
+            local owners={}
+            for _,e in ipairs(selected) do owners[native.memory.address(e.pointer)]=e end
+            local active=native:abilities(owners)
             local near=nearby(selected);local selected_ids={}
             for _,e in ipairs(selected) do
                 selected_ids[e.id]=true
@@ -142,17 +140,14 @@ function M.new(native,path,log,clock,tracking)
                         self.last[e.id].stamp=stamp
                     end
                 end
-                if not shared then
-                    self.observation={sample_t=now-began,source='capture_only',nearby=near,tracking=stats}
-                    -- Without automatic observation, retain full ability samples and contemporaneous distances.
-                    emit('abilities',{items=active,nearby=near,source='capture_only'})
-                end
+                self.observation={sample_t=now-began,source='capture_only',nearby=near,tracking=stats}
+                emit('abilities',{items=active,nearby=near,source='capture_only'})
             end
             if now>=next_heartbeat then
                 emit('heartbeat',{nearby=near,component_records=h.count,tracking=stats,reads=native.reads,
                     bytes=native.bytes,avatar_entity=scene.avatar.id,avatar_unit=scene.avatar.unit,
                     local_position=scene.position,previous_sample_cost_ms=(self.cost or 0)*1000,
-                    source=shared and 'automatic_detector' or 'capture_only'})
+                    source='capture_only'})
                 next_heartbeat=now+1
             end
         end)

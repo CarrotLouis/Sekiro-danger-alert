@@ -75,6 +75,32 @@ return {
 "\139\020\046"
 }),label='behavior ID'}},
  targeting_resources={['843d18d4b5512b63']='big_walker_turret_cannon',['49674794a165eda8']='tank_turret_autocannons',['b8580cac32214fc0']='tank_turret_base',['8fb47dd28b398cf7']='tank_turret_heavycannon',['5d142c3a73ebc634']='tank_turret_rocketlauncher',['aeaef7a1851e6c9d']='turret_autocannons',['abdb2e2a0479d8ca']='turret_base',['cd28a27a79be53d5']='turret_command_bunker_hmg',['2cf3488c4845f8bd']='turret_heavycannon',['ff5cc825b9571052']='turret_mortar'},
+ attack_pins={{rva=18208692,bytes=table.concat({
+"\009\078\021\001"
+}),label='ability 1037 dispatch'},{rva=18173449,bytes=table.concat({
+"\065\139\208\232\111\025\248\255"
+}),label='ability 1037 handler'},{rva=17655689,bytes=table.concat({
+"\131\250\060"
+}),label='heavy cannon preparation tick 60'},{rva=17655722,bytes=table.concat({
+"\232\193\136\014\000"
+}),label='preparation effect call'},{rva=17655751,bytes=table.concat({
+"\131\250\090"
+}),label='heavy cannon fire tick 90'},{rva=17655758,bytes=table.concat({
+"\232\141\051\014\000"
+}),label='weapon trigger call'},{rva=17655803,bytes=table.concat({
+"\129\250\150\000\000\000"
+}),label='heavy cannon completion tick 150'},{rva=8161481,bytes=table.concat({
+"\243\015\016\061\111\238\191\001"
+}),label='ability clock rate load'},{rva=37517120,bytes=table.concat({
+"\000\000\112\066"
+}),label='ability clock 60 ticks per second'},{rva=8161579,bytes=table.concat({
+"\072\105\217\224\000\000\000"
+}),label='ability record stride'},{rva=8161590,bytes=table.concat({
+"\128\124\059\016\000"
+}),label='ability active flag'},{rva=8161601,bytes=table.concat({
+"\128\124\059\017\000"
+}),label='ability paused flag'}},
+ cannon={resource='2cf3488c4845f8bd',ability=1037,cue_time=1.0,last_warning_time=1.2,fire_time=1.5,end_time=2.5},
  -- 1411/1412 have live capture support. Other branches are statically reviewed;
  -- exact move names / live coverage still need confirmation. Never use shared animation hashes alone.
  attack_states={[1411]=true,[1412]=true,[1413]=true,[1414]=true,[1415]=true,[1416]=true,

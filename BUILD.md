@@ -14,7 +14,7 @@ Python 3 + Pillow 用于构建；完整透明序列的提取另需 NumPy 和 FFm
 测试：设置 `HD2_LUA51_DLL` 指向自己安装游戏的 `bin/lua51.dll`，再运行
 `python scripts/test.py --mom-source <ModOptionsMenu源码目录>`。
 测试入口为每组测试启动独立进程；单独运行时可用 `python vendor/game_lua.py tests/test_native.lua .`。
-测试使用离线模拟数据；test_audio.lua 还会用系统声音接口播放一段数字静音，以检查资源释放。
+测试使用离线模拟数据及去除真实身份信息的采集派生回放；test_audio.lua 还会用系统声音接口播放一段数字静音，以检查资源释放。
 它们不启动游戏，不证明游戏内渲染或联机行为。
 
 构建后运行 `python scripts/verify_package.py`，从实际 ZIP 检查清单、资源、Lua 与 BC1 纹理，并生成压缩前后关键帧对照。
@@ -23,7 +23,7 @@ Python 3 + Pillow 用于构建；完整透明序列的提取另需 NumPy 和 FFm
 外观看起来偏黄绿是正常的，不能拿它们代替透明素材包。
 
 `src/profile.lua` 在构建时生成；修改版本适配与能力白名单时应编辑 `scripts/build.py`，并保留显式跺脚排除表。
-自动预警按当前能力计时识别起点，不按人工标记时刻延迟触发。头部定位读取当前头骨节点世界姿态，经主相机投影到原生 GUI。
+自动预警按敌人资源、能力计时和有效 AI 实体目标判断，不按人工标记时刻延迟触发。头部定位读取当前头骨节点世界姿态，经主相机投影到原生 GUI。
 
 需要从自己的原视频重新提取透明序列时运行：
 `python scripts/prepare_media.py <MP4路径> --ffmpeg <ffmpeg可执行文件路径>`。
@@ -43,4 +43,4 @@ python scripts/build.py
 默认绘制区域扩大以容纳光晕，主体的默认屏幕大小按 0.3.0 校准；设置 ID 和跟随锚点不变。
 生成方式与观感调整记录见 [动画预览 R2](docs/ANIMATION-PREVIEW-R2.md)。实际游戏混合效果仍需实测。
 
-0.3.2 的索敌探针配置在 `config/targeting_probe.json`；构建将资源哈希及关键指令写入生成的 `src/profile.lua`。这些只读路径仅在手动开启炮塔采集后使用。采集分析可运行 `python scripts/analyze_capture.py <日志路径>`，报告写入 `outputs/`。
+0.3.2 的索敌探针配置在 `config/targeting_probe.json`；构建将资源哈希及关键指令写入生成的 `src/profile.lua`。0.4.0 的自动预警也使用其中的行为目标读取与校验。攻击时序和额外指令校验在 `config/attack_probe.json`。采集分析可运行 `python scripts/analyze_capture.py <日志路径>`，报告写入 `outputs/`。

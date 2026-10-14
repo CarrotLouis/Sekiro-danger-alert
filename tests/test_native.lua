@@ -114,6 +114,7 @@ assert(state.aim_target_is_local and state.entity_target_valid and state.ai.targ
 assert(state.network_target_consistent)
 u(0x43004000,88);assert(not n:targeting_state(h,e,{id=777}).network_target_consistent);u(0x43004000,99)
 assert(state.ai.tracks_entity and state.ai.stage==5 and state.ai.pending_stage==6 and state.distance==120)
+u(0x41003014,0);assert(not pcall(n.behavior_target,n,e,{id=777}));u(0x41003014,1)
 -- Position mode can retain an entity ID; it must not qualify as an entity-target lock.
 write(0x43004014,'\1');state=n:targeting_state(h,e,{id=777})
 assert(state.aim_target_is_local and not state.entity_target_valid and state.position_only)
@@ -127,3 +128,43 @@ u(0x43000140,5000);assert(not pcall(n.targeting_header,n));u(0x43000140,1)
 local pin=profile.targeting_pins[1];write(game+pin.rva,string.rep('\0',#pin.bytes))
 n=dofile(root..'/src/native.lua').new(mem,profile);n:begin();assert(not pcall(n.targeting_header,n))
 print('PASS targeting/AI ownership, local-target distinction, position-only mode, peer absence and build/layout rejection')
+
+-- Attack-first scanning never reserves the first sixteen enemies or requests positions.
+write(game+pin.rva,pin.bytes)
+for _,ap in ipairs(profile.attack_pins) do region(game+ap.rva,#ap.bytes);write(game+ap.rva,ap.bytes)end
+profile.crusher_resource='00000000000004d2'
+n=dofile(root..'/src/native.lua').new(mem,profile)
+local rows_at,owners_at,descriptors_at=0x45000000,0x45100000,0x45200000
+region(rows_at,3000*224);region(owners_at,3000*8);region(descriptors_at,40*32)
+u(0x41005000+8,3000);u(0x41005000+12,3000)
+p(0x41005000+48,owners_at);p(0x41005000+56,rows_at)
+local function attack(index,actor_index)
+    local at=descriptors_at+actor_index*32
+    write(at,pack(1234,8));u(at+8,101+actor_index);u(at+12,1001+actor_index);u(at+20,1)
+    p(owners_at+index*8,at);u(rows_at+index*224,1411)
+    local clock=ffi.new('float[2]',{.05,1});write(rows_at+index*224+8,ffi.string(clock,8))
+    write(rows_at+index*224+16,'\1')
+end
+attack(2300,0)
+n:begin();local items,actors,stats=n:attack_candidates(0)
+assert(#items==0 and stats.scanned==2048 and stats.cursor==2048 and n.bytes<1048576)
+n:begin();items,actors,stats=n:attack_candidates(stats.cursor)
+assert(#items==1 and items[1].slot==2300 and stats.cursor==0 and actors[1].class_name=='crusher')
+assert(items[1].speed==1 and not items[1].paused and actors[1].owned)
+u(0x41005000+12,40)
+for i=0,39 do attack(i,i)end
+n:begin();items,actors,stats=n:attack_candidates(0)
+assert(#items==32 and #actors==32 and stats.cursor==32 and stats.remaining==8)
+local seen={};for _,actor in ipairs(actors)do seen[actor.id]=true end
+n:begin();items,actors,stats=n:attack_candidates(stats.cursor)
+assert(#items==8 and stats.cursor==0)
+for _,actor in ipairs(actors)do assert(not seen[actor.id]);seen[actor.id]=true end
+local total=0;for _ in pairs(seen)do total=total+1 end;assert(total==40)
+-- Pause bit and unknown resource stay explicit; a reused owner cannot inherit the old attack.
+u(0x41005000+12,1);write(rows_at+17,'\1')
+n:begin();items=n:attack_candidates(0);assert(items[1].paused)
+write(descriptors_at,pack(4321,8));n:begin();items=n:attack_candidates(0);assert(#items==0)
+u(0x41005000+12,8193);n:begin();assert(not pcall(n.attack_candidates,n,0));u(0x41005000+12,1)
+local ap=profile.attack_pins[1];write(game+ap.rva,string.rep('\0',#ap.bytes))
+n=dofile(root..'/src/native.lua').new(mem,profile);n:begin();assert(not pcall(n.attack_candidates,n,0))
+print('PASS bounded attack-table sweep, 40 simultaneous actors, no permanent slots, pause/resource/count/pin rejection')
