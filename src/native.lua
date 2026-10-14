@@ -314,11 +314,22 @@ function M.new(memory,profile)
         if index and index<4096 then
             local handles=assert(memory.pointer(bh,0x18));local records=assert(memory.pointer(bh,0x20))
             if nullable(handles+index*8)==e.pointer then
-                local ai=read(records+index*0x1f8,include_raw and 0x1f8 or 0x80)
+                local factory=profile.expanded and e.resource==profile.expanded.factory.resource
+                local ai=read(records+index*0x1f8,(include_raw or factory) and 0x1f8 or 0x80)
                 result={behavior=u32(ai,0),stage=u32(ai,8),pending_stage=u32(ai,12),
                     target=u32(ai,0x18),has_target=ai:byte(0x79)~=0,flags=u32(ai,0x60)}
                 result.target_is_local=result.target==avatar.id and result.has_target
                 result.tracks_entity=bit.band(result.flags,1)~=0
+                if factory then
+                    self:verify_expanded()
+                    local F=profile.expanded.factory
+                    result.preparation_started=numptr(ai,F.stage_start_offset)
+                    result.preparation_ready=bit.band(u32(ai,F.ready_offset),F.ready_mask)~=0
+                    local clock=read(ptr(game+F.clock_global)+F.clock_offset,8)
+                    result.native_time=numptr(clock,0)
+                    assert(result.native_time<9007199254740992 and result.preparation_started<9007199254740992,
+                        'factory clock exceeds exact integer range')
+                end
                 if include_raw then result.raw_hex=(ai:gsub('.',function(c)return string.format('%02x',c:byte())end)) end
                 assert(read(mgr+0x40,40)==bh and nullable(handles+index*8)==e.pointer,'AI table changed')
             end
@@ -328,7 +339,7 @@ function M.new(memory,profile)
             and bit.band(u32(descriptor,20),2)==0,'AI identity or ownership changed')
         return result
     end
-    -- Research only: expose bounded weapon input observations, never call a trigger.
+    -- Read-only weapon input observations for diagnostics; never call a trigger.
     function self:weapon_inputs(e,include_raw)
         if not self.combat_proven then
             assert(profile.combat_pins and #profile.combat_pins>0,'combat pins missing')
@@ -375,6 +386,7 @@ function M.new(memory,profile)
     -- next unprocessed row, including when many attacks start simultaneously.
     function self:attack_candidates(cursor)
         self:verify_targeting()
+        self:verify_expanded()
         if not self.attack_proven then
             assert(profile.attack_pins and #profile.attack_pins>0,'attack pins missing')
             for _,pin in ipairs(profile.attack_pins) do
@@ -398,16 +410,18 @@ function M.new(memory,profile)
             stats.scanned=stats.scanned+1
             local offset=i*224;local id=u32(rows,offset)
             if rows:byte(offset+17)~=0 and (profile.attack_states[id] or profile.ignored_stomps[id]
-                or id==profile.cannon.ability) then
+                or id==profile.cannon.ability or profile.expanded and profile.expanded.ids[id]) then
                 local at=memory.pointer(owners,i*8)
                 if at then
                     local descriptor=read(at,24);local e=entity(descriptor,at)
                     local crusher=e.resource==profile.crusher_resource
                     local cannon=e.resource==profile.cannon.resource and id==profile.cannon.ability
-                    if bit.band(u32(descriptor,20),2)==0 and ((crusher and id~=profile.cannon.ability) or cannon) then
+                    local rule=profile.expanded and profile.expanded.resources[e.resource]
+                    local expanded=rule and (rule.abilities[id] or rule.excluded[id])
+                    if bit.band(u32(descriptor,20),2)==0 and ((crusher and id~=profile.cannon.ability) or cannon or expanded) then
                         assert(nullable(owners_at+(cursor+i)*8)==at and read(rows_at+(cursor+i)*224,20)
                             ==rows:sub(offset+1,offset+20),'attack row changed')
-                        e.class_name=crusher and 'crusher' or 'turret_heavycannon'
+                        e.class_name=crusher and 'crusher' or cannon and 'turret_heavycannon' or profile.health_resources[e.resource].class_name
                         if not seen[e.id] then selected[#selected+1]=e;seen[e.id]=true end
                         active[#active+1]={entity=e.id,id=id,time=f32(rows,offset+8),speed=f32(rows,offset+12),
                             paused=rows:byte(offset+18)~=0,slot=cursor+i}
@@ -421,6 +435,47 @@ function M.new(memory,profile)
         stats.cursor=next_row>=count and 0 or next_row
         stats.remaining=count-next_row;stats.selected=#selected
         return active,selected,stats
+    end
+    function self:verify_expanded()
+        if not profile.expanded or self.expanded_proven then return end
+        assert(#profile.expanded.pins>0,'expanded attack pins missing')
+        for _,pin in ipairs(profile.expanded.pins)do
+            assert(read(game+pin.rva,#pin.bytes)==pin.bytes,'expanded attack layout mismatch: '..pin.label)
+        end
+        self.expanded_proven=true
+    end
+    -- Factory cannons have no active Ability. Scan the proven contiguous world
+    -- descriptors without positions, distance tests or permanent observation slots.
+    -- A per-batch match limit resumes on the next descriptor, preserving fairness.
+    function self:factory_candidates(cursor)
+        if not profile.expanded then return {},{cursor=0,scanned=0,matched=0} end
+        self:verify_expanded()
+        local F=profile.expanded.factory;local world=ptr(game+F.world_global)
+        local invalid=u32(read(game+F.invalid_entity_global,4),0)
+        assert(F.slots==2048 and F.stride==24,'factory descriptor scan layout differs')
+        if not self.factory_resource_bytes then
+            local bytes={};for index=15,1,-2 do bytes[#bytes+1]=string.char(tonumber(F.resource:sub(index,index+1),16))end
+            self.factory_resource_bytes=table.concat(bytes)
+        end
+        local rows=read(world+F.descriptors_offset,F.slots*F.stride)
+        cursor=cursor or 0;if cursor>=F.slots then cursor=0 end
+        assert(cursor>=0 and cursor%1==0,'factory descriptor cursor invalid')
+        local out={};local stats={scanned=0,matched=0,match_limit=8};local next_row=F.slots
+        for index=cursor,F.slots-1 do
+            stats.scanned=stats.scanned+1
+            local offset=index*F.stride
+            if rows:sub(offset+1,offset+8)==self.factory_resource_bytes and u32(rows,offset+8)~=invalid and bit.band(u32(rows,offset+20),2)==0 then
+                local at=world+F.descriptors_offset+offset
+                local e=entity(rows:sub(offset+1,offset+24),at)
+                assert(read(at,24)==rows:sub(offset+1,offset+24),'factory descriptor changed')
+                e.class_name=profile.health_resources[e.resource].class_name
+                out[#out+1]=e;stats.matched=stats.matched+1
+                if #out>=stats.match_limit then next_row=index+1;break end
+            end
+        end
+        assert(ptr(game+F.world_global)==world,'factory descriptor world changed')
+        stats.cursor=next_row>=F.slots and 0 or next_row;stats.remaining=F.slots-next_row
+        return out,stats
     end
     local function resource(kind,name)
         local app=ptr(exe+27328968);local manager=ptr(app+1016)

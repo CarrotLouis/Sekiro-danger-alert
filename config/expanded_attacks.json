@@ -1,0 +1,759 @@
+{
+  "build": "25480438",
+  "source": "Owner attack captures 2026-10-14/15, named Barrager artillery comparison, and independently decoded current-build code.",
+  "resources": {
+    "1a7fcdff98c664b0": {
+      "behavior": 104,
+      "abilities": {
+        "219": {
+          "move": "charger_heavy_crush",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        }
+      },
+      "excluded": {
+        "220": "charge_or_recovery",
+        "221": "charge_or_recovery",
+        "222": "charge_or_recovery",
+        "223": "charge_or_recovery",
+        "225": "charge_or_recovery"
+      }
+    },
+    "6b202392f4ab605e": {
+      "behavior": 105,
+      "abilities": {
+        "219": {
+          "move": "spore_charger_heavy_crush",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        }
+      },
+      "excluded": {
+        "220": "charge_or_recovery",
+        "221": "charge_or_recovery",
+        "222": "charge_or_recovery",
+        "223": "charge_or_recovery",
+        "225": "charge_or_recovery"
+      }
+    },
+    "a05bd1ec67b3ac4c": {
+      "behavior": 104,
+      "abilities": {
+        "219": {
+          "move": "behemoth_superheavy_crush",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        }
+      },
+      "excluded": {
+        "220": "charge_or_recovery",
+        "221": "charge_or_recovery",
+        "222": "charge_or_recovery",
+        "223": "charge_or_recovery",
+        "225": "charge_or_recovery"
+      }
+    },
+    "0ab7b92b131c228c": {
+      "behavior": 106,
+      "abilities": {
+        "219": {
+          "move": "rupture_hardened_crush",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        }
+      },
+      "excluded": {
+        "220": "charge_or_recovery",
+        "221": "charge_or_recovery",
+        "222": "charge_or_recovery",
+        "223": "charge_or_recovery",
+        "225": "charge_or_recovery"
+      }
+    },
+    "dcf8e74212fbee3b": {
+      "behavior": 113,
+      "abilities": {
+        "328": {
+          "move": "impaler_momentous_slam",
+          "cues": [
+            {
+              "time": 1.6,
+              "last": 1.8,
+              "fire": 2.25
+            }
+          ]
+        }
+      },
+      "excluded": {}
+    },
+    "672f7da17f3ba34a": {
+      "behavior": 114,
+      "abilities": {
+        "336": {
+          "move": "tentacle_slam",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        }
+      },
+      "excluded": {}
+    },
+    "9e2e17f2ccccafdd": {
+      "behavior": 133,
+      "abilities": {
+        "431": {
+          "move": "titan_cataclysmic_slam",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        },
+        "432": {
+          "move": "titan_cataclysmic_slam",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        },
+        "435": {
+          "move": "titan_caustic_surge",
+          "cues": [
+            {
+              "time": 0.65,
+              "last": 0.85,
+              "fire": 1.1666666666666667
+            }
+          ]
+        }
+      },
+      "excluded": {
+        "434": "other_titan_attack"
+      }
+    },
+    "960b48a421a3faaa": {
+      "behavior": 108,
+      "abilities": {
+        "254": {
+          "move": "dragon_alchemical_pyrosis",
+          "cues": [
+            {
+              "time": 1,
+              "last": 1.2,
+              "fire": 1.5
+            }
+          ]
+        }
+      },
+      "excluded": {
+        "252": "hover_breath"
+      }
+    },
+    "ef04cb84d097a497": {
+      "behavior": 134,
+      "abilities": {
+        "431": {
+          "move": "spore_titan_cataclysmic_slam",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        },
+        "432": {
+          "move": "spore_titan_cataclysmic_slam",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        }
+      },
+      "excluded": {
+        "434": "other_titan_attack",
+        "436": "spore_surge"
+      }
+    },
+    "3e0537d606438fea": {
+      "behavior": 56,
+      "abilities": {
+        "821": {
+          "move": "hulk_rotary_saw",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        },
+        "822": {
+          "move": "hulk_rotary_saw",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        },
+        "823": {
+          "move": "hulk_rotary_saw",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        },
+        "824": {
+          "move": "hulk_rotary_saw",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        }
+      },
+      "excluded": {}
+    },
+    "e44ec9f9b3fe1d2a": {
+      "behavior": 57,
+      "abilities": {
+        "821": {
+          "move": "jet_hulk_rotary_saw",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        },
+        "822": {
+          "move": "jet_hulk_rotary_saw",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        },
+        "823": {
+          "move": "jet_hulk_rotary_saw",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        },
+        "824": {
+          "move": "jet_hulk_rotary_saw",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35
+            }
+          ]
+        }
+      },
+      "excluded": {}
+    },
+    "9076eeed17fcee35": {
+      "behavior": 96,
+      "abilities": {
+        "1050": {
+          "move": "reinforced_heavy_rockets",
+          "cues": [
+            {
+              "time": 1.1,
+              "last": 1.3,
+              "fire": 1.6666666666666667
+            }
+          ]
+        }
+      },
+      "excluded": {
+        "1048": "machinegun"
+      }
+    },
+    "53d8919d7b8abd67": {
+      "behavior": 76,
+      "abilities": {
+        "1017": {
+          "move": "annihilator_fusion_cannon",
+          "cues": [
+            {
+              "time": 1,
+              "last": 1.2,
+              "fire": 1.5
+            }
+          ]
+        }
+      },
+      "excluded": {}
+    },
+    "5d142c3a73ebc634": {
+      "behavior": 80,
+      "abilities": {
+        "1018": {
+          "move": "barrager_direct_mlrs",
+          "cues": [
+            {
+              "time": 1.5,
+              "last": 1.7,
+              "fire": 2
+            },
+            {
+              "time": 2.5,
+              "last": 2.7,
+              "fire": 3
+            },
+            {
+              "time": 3.5,
+              "last": 3.7,
+              "fire": 4
+            }
+          ]
+        }
+      },
+      "excluded": {
+        "1019": "artillery"
+      }
+    }
+  },
+  "factory": {
+    "resource": "843d18d4b5512b63",
+    "behavior": 99,
+    "move": "factory_fusion_repeater",
+    "stage": 3,
+    "cue_time": 0.5,
+    "last_warning_time": 0.8,
+    "earliest_fire_time": 1,
+    "clock_global": 53633864,
+    "clock_offset": 24,
+    "stage_start_offset": 392,
+    "ready_offset": 488,
+    "ready_mask": 268435456,
+    "world_global": 54968216,
+    "descriptors_offset": 15937304,
+    "slots": 2048,
+    "stride": 24,
+    "invalid_entity_global": 55068012
+  },
+  "pins": [
+    {
+      "rva": 18205420,
+      "hex": "83181501",
+      "label": "ability 219 dispatcher"
+    },
+    {
+      "rva": 18159747,
+      "hex": "418bd0e8f569f5ff",
+      "label": "ability 219 handler dispatch"
+    },
+    {
+      "rva": 17465984,
+      "hex": "48895c2408574883ec208bfa488bd985d20f8581000000ba0a0c6164e81f7c0f00bab5df5eee41b87fa6b5b9488bcbe8fc910f0083ff320f85800000008d57d0488bcbe8e8e411008b53084c8d053ee43d02e8f9b572ff8d57d2488bcbe8cee411008b53084c8d05a4173e02e8dfb572ff8d57d6488bcbe8b4e411008b53084c8d050ae63d02e8c5b572ff32c0488b5c24304883c4205fc383ff0f75978d57f2e88be411008b53080f57d2e8e05c57ff32c0488b5c24304883c4205fc383ff3e75418d57ca488bcbe823e511008b53084c8d0539173e02e8f4b872ff8d57ca488bcbe809e511004c8d05a2e33d028b5308e8dab872ff32c0488b5c24304883c4205fc383ff4675148d57c2488bcbe8dde411004c8d0576e53d02ebd283ff5075d5488b5c2430b0014883c4205fc3",
+      "label": "ability 219 reviewed handler"
+    },
+    {
+      "rva": 18205424,
+      "hex": "94181501",
+      "label": "ability 220 dispatcher"
+    },
+    {
+      "rva": 18159764,
+      "hex": "418bd0e8846bf5ff",
+      "label": "ability 220 handler dispatch"
+    },
+    {
+      "rva": 17466400,
+      "hex": "40534883ec20488bd985d2753dba01000000e879e311008b53084c8d05cfe53d02e88ab472ffba02000000488bcbe85de311008b53084c8d05b3e43d02e86eb472ff32c04883c4205bc383fa1e753dba02000000e8f7e311008b53084c8d058de53d02e8c8b772ffba02000000488bcbe8dbe311008b53084c8d0571e43d02e8acb772ff32c04883c4205bc383fa3c75b1b0014883c4205bc3",
+      "label": "ability 220 reviewed handler"
+    },
+    {
+      "rva": 18205428,
+      "hex": "a5181501",
+      "label": "ability 221 dispatcher"
+    },
+    {
+      "rva": 18159781,
+      "hex": "418bd0e8636cf5ff",
+      "label": "ability 221 handler dispatch"
+    },
+    {
+      "rva": 17466640,
+      "hex": "40534883ec20488bd985d27525ba7af29504e899790f00bab5df5eee41b87fa6b5b9488bcbe8768f0f0032c04883c4205bc383fa0f7521ba01000000e85fe211008b53084c8d0535ef3d02e870b372ff32c04883c4205bc383fa4b7521ba01000000e8f9e211008b53084c8d050fef3d02e8cab672ff32c04883c4205bc383fa5075a7b0014883c4205bc3",
+      "label": "ability 221 reviewed handler"
+    },
+    {
+      "rva": 18205432,
+      "hex": "b6181501",
+      "label": "ability 222 dispatcher"
+    },
+    {
+      "rva": 18159798,
+      "hex": "418bd0e8126df5ff",
+      "label": "ability 222 handler dispatch"
+    },
+    {
+      "rva": 17466832,
+      "hex": "40534883ec20488bd985d20f8590000000ba01000000e8c5e111008b53084533c941b8ed203972e8a40e55ffba02000000488bcbe8a7e111008b53084533c941b8b5c6deb8e8860e55ffba04000000488bcbe889e111008b53084533c941b85d541b2de8680e55ffba08000000488bcbe86be111008b53084533c941b8030a2f35e84a0e55ffba701bf58a41b87fa6b5b9488bcbe8478e0f0032c04883c4205bc383fa507559ba10000000e830e111008b53084c8d05169a3e02e841b272ffba20000000488bcbe814e111008b53084c8d05ea313e02e825b272ffba40000000488bcbe8f8e011008b53084c8d054ee13d02e809b272ff32c04883c4205bc383fa7875088b5108e8144692ff32c04883c4205bc3",
+      "label": "ability 222 reviewed handler"
+    },
+    {
+      "rva": 18205436,
+      "hex": "c7181501",
+      "label": "ability 223 dispatcher"
+    },
+    {
+      "rva": 18159815,
+      "hex": "418bd0e8e16ef5ff",
+      "label": "ability 223 handler dispatch"
+    },
+    {
+      "rva": 17467312,
+      "hex": "40534883ec30488bd985d20f859d000000ba01000000e8e5df11008b53084533c941b8ed203972e8c40c55ffba02000000488bcbe8c7df11008b53084533c941b8b5c6deb8e8a60c55ffba04000000488bcbe8a9df11008b53084533c941b85d541b2de8880c55ffba08000000488bcbe88bdf11008b53084533c941b8030a2f35e86a0c55ff48ba183480eeeeacb958c64424200141b10141b8e591cfbc488bcbe80aad100032c04883c4305bc383fa03752e8b51084c8d0533983e02e8deb372ff8b53084c8d0514303e02e8cfb372ff8b5308e8674492ff32c04883c4305bc383fa05751dba10000000e810df11008b53080f57d2e8655757ff32c04883c4305bc383fa3c752fba20000000e8eede1100488bcbe836bd0f00ba10000000488bcbe899df11008b5308e8e15757ff32c04883c4305bc383fa410f8566ffffffb0014883c4305bc3",
+      "label": "ability 223 reviewed handler"
+    },
+    {
+      "rva": 18205444,
+      "hex": "e9181501",
+      "label": "ability 225 dispatcher"
+    },
+    {
+      "rva": 18159849,
+      "hex": "418bd0e83f71f5ff",
+      "label": "ability 225 handler dispatch"
+    },
+    {
+      "rva": 17467952,
+      "hex": "40534883ec20488bd985d27558e8aee01100ba3e000000488bcbe871a510008b53084c8d0547963e02e8f2b172ff8b53084c8d05282e3e02e8e3b172ffba63f13ca041b86355119b488bcbe8308a0f00ba1cefddb9488bcbe833740f0032c04883c4205bc381fa2c01000075f0b0014883c4205bc3",
+      "label": "ability 225 reviewed handler"
+    },
+    {
+      "rva": 18205552,
+      "hex": "b41a1501",
+      "label": "ability 252 dispatcher"
+    },
+    {
+      "rva": 18160308,
+      "hex": "418bd0e8147df5ff",
+      "label": "ability 252 handler dispatch"
+    },
+    {
+      "rva": 17471440,
+      "hex": "48895c2420574883ec20488bd985d27549ba01000000e8c5cf110033d2488bcbe8bb041100bac8c71a3c488bcbe86e58110041b9c970558c41b85b53e0ab8b5308488b0db0ce2702e8d31074ff32c0488b5c24484883c4205fc383fa0a752aba044059a3e887660f00baf7040cd541b86355119b488bcbe8647c0f0032c0488b5c24484883c4205fc383fa46752eba02000000e848cf11004885db7411f6431401740b8b53084533c0e862d36dff41b9c970558c41b802fc6f29eb82488d790881faf0000000753bba02000000e8cecf11004885db0f8472fffffff64314010f8468ffffff8b174533c0488b0d5fcb2702e82ad56dff32c0488b5c24484883c4205fc381faf10000000f85d400000048896c2430ba0100000048897424384c89742440e878cf11004885db747df643140174778b07488bdf3b0512a33d02746d488b0d09cb27024533c0448b4938448b5940440fafd8458d71ff4585c9744e488b71308b693c66660f1f840000000000418bce438d14184823d18b0cd64c8d14d63bcd740e3bc8740e41ffc0453bc172dfeb1a3bc8751641837a04ff740f4533c08bd0e858d96dffeb03488bdf8b1341b9c970558c488b0d3ccd270241b84d34fce3e8590f74ff4c8b74244032c0488b742438488b6c2430488b5c24484883c4205fc381faf20000000f855efeffff488b5c2448b0014883c4205fc3cccccccc48895c2408574883ec20488bd9e83ecf1100488bf8a801740a33d2488bcbe88d03110040f6c702741d4885db7418f643140174128b53084533c0488b0d0fca2702e8dad36dff488b5c24304883c4205fc3cccccccccccccccccccccccccccccc",
+      "label": "ability 252 reviewed handler"
+    },
+    {
+      "rva": 18205560,
+      "hex": "d61a1501",
+      "label": "ability 254 dispatcher"
+    },
+    {
+      "rva": 18160342,
+      "hex": "418bd0e82280f5ff",
+      "label": "ability 254 handler dispatch"
+    },
+    {
+      "rva": 17472256,
+      "hex": "40534883ec20488bd985d275368b510841b9c970558c488b0dabcb270241b8ce648ba5e8c80d74ffbad0d15b2c41b86355119b488bcbe875790f0032c04883c4205bc383fa0f752341b9c970558c41b85b53e0ab8b5108488b0d6acb2702e88d0d74ff32c04883c4205bc383fa52750e41b9c970558c41b8dc0e6005ebd683fa5a7531ba01000000e823cc11004885db7411f6431401740b8b53084533c0e83dd06dff8b530841b9c970558c41b8eb8b1c55eba381fa0401000075a7ba01000000e8aacc11004885db0f84b7000000f64314010f84ad0000008b53084533c0488b0d3ac82702e805d26dfff64314010f84910000008b43083b0522a03d020f8482000000488b0d15c827024533c0",
+      "label": "ability 254 reviewed handler"
+    },
+    {
+      "rva": 18205856,
+      "hex": "c01f1501",
+      "label": "ability 328 dispatcher"
+    },
+    {
+      "rva": 18161600,
+      "hex": "418bd0e8b8def5ff",
+      "label": "ability 328 handler dispatch"
+    },
+    {
+      "rva": 17497728,
+      "hex": "48895c2408574883ec308bfa488bd985d27533ba0a0c6164e823000f0083ff7d0f8582000000bad7e6980041b8c970558c488bcbe8f7150f0032c0488b5c24404883c4305fc383ff0a7512ba7fbaa88341b8c970558ce8d5150f00ebc083ff0f75bbbad56d06c241b8e591cfbce8be150f008d57f2488bcbe8b36811008b53080f57d2e808e156ff488bcb8d57f3e89d681100488bcbe8e5460f0032c0488b5c24404883c4305fc381ff87000000753cba3876821d41b8e591cfbc488bcbe86d150f00ba04000000488bcbe8606811008b53084c8d05369c3d02e8713972ff32c0488b5c24404883c4305fc381ff910000007566ba08000000488bcbe82f6811008b53084c8d05054c3d02e8403972ffba10000000488bcbe8136811008b53084c8d05e94a3d02e8243972ff41b101c7442428000000008d57fac64424200141b86f410803488bcbe8d3d40f0032c0488b5c24404883c4305fc381ff960000007510ba5dd24a0541b8e591cfbce9bffeffff81ff9b00000075488d5785488bcbe8ab6711008b53084c8d0581493d02e8bc3872ff41b101c7442428000000008d57f0c64424200141b878e2a3a5488bcbe86bd40f0032c0488b5c24404883c4305fc381ffa5000000752ec7442428000000008d57e641b101c64424200141b877efa3f3488bcbe835d40f0032c0488b5c24404883c4305fc381ffaa000000757dba20000000488bcbe8e36711008b53084c8d05f99a3d02e8b43b72ffba20000000488bcbe8c76711008b53084c8d05dd483d02e8983b72ffba20000000488bcbe8ab6711008b53084c8d05c14a3d02e87c3b72ffba20000000488bcbe88f6711008b53084c8d05a5493d02e8603b72ff32c0488b5c24404883c4305fc381fffa0000000f85b0fdffff488b5c2440b0014883c4305fc3",
+      "label": "ability 328 reviewed handler"
+    },
+    {
+      "rva": 18205888,
+      "hex": "48201501",
+      "label": "ability 336 dispatcher"
+    },
+    {
+      "rva": 18161736,
+      "hex": "418bd0e800eaf5ff",
+      "label": "ability 336 handler dispatch"
+    },
+    {
+      "rva": 17500752,
+      "hex": "48895c2408574883ec308bfa488bd985d20f8589000000bad9890cf941b8e001dce1e8390a0f00ba6c598eb2488bcbe83cf40e004885db742ef64314017428488bd3488d4c2420e874ed0e00488b0d9d5c27024533c941b8d266a52b488b008b5008e8792e79ff83ff287559ba4b97f277488bcbe8f7f30e008d57da488bcbe8dc5c11008b53084c8d0532603d02e8ed2d72ff32c0488b5c24404883c4305fc383ff1475c28d57ede8b35c11008b53080f57d2e808d556ff32c0488b5c24404883c4305fc383ff3c75278d57c6488bcbe84b5d11008b53084c8d05e15f3d02e81c3172ff32c0488b5c24404883c4305fc381ffb4000000759a4885db742ef64314017428488bd3488d4c2420e8afec0e00488b0dd85b27024533c941b8eef44ef6488b008b5008e8b42d79ff488b5c2440b0014883c4305fc3",
+      "label": "ability 336 reviewed handler"
+    },
+    {
+      "rva": 18206268,
+      "hex": "97261501",
+      "label": "ability 431 dispatcher"
+    },
+    {
+      "rva": 18163351,
+      "hex": "418bd0e8d12cf6ff",
+      "label": "ability 431 handler dispatch"
+    },
+    {
+      "rva": 17519472,
+      "hex": "40534883ec30488bd985d2753bba01000000e8291411008b53084533c941b8ed203972e8084154ffba02000000488bcbe80b141100488bcb0f57c9e8708e0f0032c04883c4305bc383fa057525ba1b83b88f41b8c970558ce8e3c00e00badf69d6df488bcbe8e6aa0e0032c04883c4305bc383fa0a7518bac20580ea41b85d54001be8b9c00e0032c04883c4305bc383fa2b751dba04000000e8a21311008b53084533c0e8e75160ff32c04883c4305bc383fa2d7521ba08000000e8801311008b53084c8d0556c93d02e891e471ff32c04883c4305bc383fa34755fba08000000e81a1411008b53084c8d0530c93d02e8ebe771ff4533c9c744242800000000ba06010000c64424200141b85d54001b488bcbe818800f00f30f101d14203101ba3100000041b85d54001b488bcbe8bddc0f0032c04883c4305bc383fa467527f30f1015b8183101ba4a2a4fcde8ceb00e00ba10000000488bcbe8e112110032c04883c4305bc381faa00000007548ba20000000e8c7121100ba01000000488bcbe87a1311008b530841b10141b8ed203972e8993f54ffba04000000488bcbe85c1311008b530841b001e8e15060ff32c04883c4305bc381faa50000000f85e6feffffb0014883c4305bc3",
+      "label": "ability 431 reviewed handler"
+    },
+    {
+      "rva": 18206272,
+      "hex": "a8261501",
+      "label": "ability 432 dispatcher"
+    },
+    {
+      "rva": 18163368,
+      "hex": "418bd0e8302ff6ff",
+      "label": "ability 432 handler dispatch"
+    },
+    {
+      "rva": 17520096,
+      "hex": "40534883ec30488bd985d2753bba01000000e8b91111008b53084533c941b8ed203972e8983e54ffba02000000488bcbe89b111100488bcb0f57c9e8008c0f0032c04883c4305bc383fa057525ba1b83b88f41b8c970558ce873be0e00bab631a099488bcbe876a80e0032c04883c4305bc383fa077518bac20580ea41b85d54001be849be0e0032c04883c4305bc383fa2b751dba04000000e8321111008b53084533c0e8774f60ff32c04883c4305bc383fa2d7521ba08000000e8101111008b53084c8d05e6c63d02e821e271ff32c04883c4305bc383fa34755fba08000000e8aa1111008b53084c8d05c0c63d02e87be571ff4533c9c744242800000000ba06010000c64424200141b85d54001b488bcbe8a87d0f00f30f101da41d3101ba3100000041b85d54001b488bcbe84dda0f0032c04883c4305bc383fa467527f30f101548163101ba4a2a4fcde85eae0e00ba10000000488bcbe87110110032c04883c4305bc381faa00000007548ba20000000e857101100ba01000000488bcbe80a1111008b530841b10141b8ed203972e8293d54ffba04000000488bcbe8ec1011008b530841b001e8714e60ff32c04883c4305bc381faa50000000f85e6feffffb0014883c4305bc3",
+      "label": "ability 432 reviewed handler"
+    },
+    {
+      "rva": 18206280,
+      "hex": "ca261501",
+      "label": "ability 434 dispatcher"
+    },
+    {
+      "rva": 18163402,
+      "hex": "418bd0e8ce33f6ff",
+      "label": "ability 434 handler dispatch"
+    },
+    {
+      "rva": 17521312,
+      "hex": "48895c240848896c241048897424205741544155415641574883ec4033db0f29742430f30f1035d91931018bf2488bf985d27577ba3005971541b8c970558ce8ccb90e00ba6402fe31488bcfe8cfa30e008d5601488bcfe8b40c11008b57084c8d77084533c941b8ed203972e88f3954ff8d5602488bcfe8940c1100418b164533c941b85d541b2de8733954ff8d5604488bcfe8780c1100488bcf0f57c9e8dd860f00498bee4d8bfeeb1f4c8d7108498bee4d8bfe83fe07756ebac20580ea41b85d54001be846b90e00498bc683fe580f85310100008d56b8488bcfe8ef0c1100418b174c8d0505323d02e8c0e071ff4533c9895c2428ba06010000c64424200141b8211ae8d7488bcfe8f1780f000f28de8d562e41b8211ae8d7488bcfe89dd50f00e92702000083fe1e75198d56eae8db0b1100418b164c8d05b1c13d02e8ecdc71ffeb8483fe2d7510bac20580ea41b8211ae8d7e96affffff83fe32754f8d56d6e8680c1100418b164c8d057ec13d02e839e071ff4533c9895c2428ba06010000c64424200141b85d54001b488bcfe86a780f000f28de8d565341b85d54001b488bcfe816d50f00e91bffffff83fe460f8512ffffff8d56cae8500b1100418b164c8d0526313d02e861dc71ffbac20580ea41b85d54001b488bcfe82eb80e00f30f1015e6103101ba4a2a4fcd488bcfe8f9a80e008d56da488bcfe80e0b1100e94801000083fe647532bac20580ea41b8211ae8d7488bcfe8f1b70e008d56dc488bcfe8e60a1100418b174c8d05bcc03d02e8f7db71ffe9110100004c8be883fe7375528d56cd488bcfe87f0b1100418b174c8d0595c03d02e850df71ff4533c9895c2428ba06010000c64424200141b85d54001b488bcfe881770f000f28de8d561441b85d54001b488bcfe82dd40f00e9b700000081fe82000000751bbac20580ea41b85d54001b488bcfe85db70e008d56fee93e01000081fe91000000754d8d56ef488bcfe8020b11008b55004c8d0518303d02e8d3de71ff4533c9895c24288d5675c64424200141b8211ae8d7488bcfe806770f000f28de8d56f741b8211ae8d7488bcfe8b2d30f00eb3f81fea0000000751c8d5660488bcfe8ed0911008b55004c8d05c3bf3d02e8feda71ffeb1b81feaa0000007540bac20580ea41b8211ae8d7488bcfe8c1b60e0081feeb0000000f8553010000ba00040000488bcfe8a80911008b55004c8d057ebf3d02e8b9da71ffe90b01000081feaf00000075508d5651488bcfe8410a11008b55004c8d0557bf3d02e812de71ff4533c9895c24288d5657c64424200141b85d54001b488bcfe845760f000f28de8d56da41b85d54001b488bcfe8f1d20f00e97bffffff81febe0000007510ba77eeaed641b8c970558ce95bffffff81fec80000007521ba00020000488bcfe80f0911008b55004c8d05e52e3d02e820da71ffe93affffff81fecd0000007510bac20580ea41b85d54001be91affffff81fed70000000f8516ffffffba00020000488bcfe88a091100418b55004c8d059f2e3d02e85add71ff4533c9895c24288d562fc64424200141b8211ae8d7488bcfe88d750f000f28de8d56b341b8211ae8d7488bcfe839d20f0032c0488b5c2470488b6c2478488bb424880000000f287424304883c440415f415e415d415c5fc381fef10000007515bac20580ea41b8211ae8d7488bcfe847b50e00ebbc81fefa000000754aba00040000488bcfe8f00811008b55004c8d0506be3d02e8c1dc71ff4533c9895c24288d560cc64424200141b85d54001b488bcfe8f4740f000f28de8d569141b85d54001be962ffffff81fe0e0100007521ba00080000488bcfe8de071100418b164c8d05b42d3d02e8efd871ffe941ffffff81fe1d0100007546ba00080000488bcfe8750811008b55004c8d058b2d3d02e846dc71ff4533c9895c24288d56e9c64424200141b8211ae8d7488bcfe879740f000f28deba8c000000e9e5feffff81fe310100000f8593000000ba00080000488bcfe8230811008b55004c8d0539bd3d02e8f4db71ffba00080000488bcfe8070811008b55004c8d051d2d3d02e8d8db71ffba00100000488bcfe82b071100ba02000000488bcfe8de0711008b550041b10141b8ed203972e8fd3354ffba00200000488bcfe800071100ba02000000488bcfe8b30711008b550041b10141b85d541b2de8d23354ffe954feffff81fe5e0100000f8548feffffb001e943feffff",
+      "label": "ability 434 reviewed handler"
+    },
+    {
+      "rva": 18206284,
+      "hex": "db261501",
+      "label": "ability 435 dispatcher"
+    },
+    {
+      "rva": 18163419,
+      "hex": "418bd0e85d3bf6ff",
+      "label": "ability 435 handler dispatch"
+    },
+    {
+      "rva": 17523264,
+      "hex": "40534883ec30488bd985d27561ba01000000e85905110033d2488bcbe84f3a1000bac8c71a3c488bcbe8028e1000baa3d85d4c41b8c970558c488bcbe82fb20e00bad9fb8762488bcbe8329c0e00ba02000000488bcbe815051100488bcb0f57c9e87a7f0f0032c04883c4305bc383fa417518bafaeb64dd41b8c970558ce8edb10e0032c04883c4305bc383fa467570ba04000000e8d604110033d2448bca448d42038b5308e8e59860ffba980700e5488bcbe8c89b0e00f30f1015700a3101ba4a2a4fcd488bcbe883a20e00ba08000000488bcbe896041100ba10000000488bcbe889041100f643140174968b53084533c0e8a8086dff32c04883c4305bc383fa5a752fba20000000e861041100baf99fdc90488bcbe8b48c1000f30f1015840b31018b5308e8049660ff32c04883c4305bc381fad90000007518bad87295ec41b8c970558ce824b10e0032c04883c4305bc381faf0000000756aba20000000e8ca041100488b0dc301270233d288542428448bca8954242041b8f99fdc908b5308e858577fffba67435736488bcbe8eb9a0e00ba10000000488bcbe88e041100f64314010f84d7feffff8b53084533c0488b0d27002702e8f2096dff32c04883c4305bc381fa0e0100000f85b1feffffba01000000e8540411004885db0f8499000000f64314010f848f0000008b43083b05e8d73c020f8480000000488b0ddbff260233d2",
+      "label": "ability 435 reviewed handler"
+    },
+    {
+      "rva": 18206288,
+      "hex": "ec261501",
+      "label": "ability 436 dispatcher"
+    },
+    {
+      "rva": 18163436,
+      "hex": "418bd0e89c3ef6ff",
+      "label": "ability 436 handler dispatch"
+    },
+    {
+      "rva": 17524112,
+      "hex": "40534883ec30488bd985d27561ba01000000e80902110033d2488bcbe8ff361000bab0c6b2bd488bcbe8b28a1000baa3d85d4c41b8c970558c488bcbe8dfae0e00bad9fb8762488bcbe8e2980e00ba02000000488bcbe8c5011100488bcb0f57c9e82a7c0f0032c04883c4305bc383fa737518bab2e54fde41b8c970558ce89dae0e0032c04883c4305bc383fa787570ba04000000e88601110033d2448bca448d42038b5308e8959560ffba980700e5488bcbe878980e00f30f101520073101ba4a2a4fcd488bcbe8339f0e00ba08000000488bcbe846011100ba10000000488bcbe839011100f643140174968b53084533c0e858056dff32c04883c4305bc381fa91000000752fba20000000e80e011100ba9eafb18e488bcbe861891000f30f1015310831018b5308e8b19260ff32c04883c4305bc381fa510100007518bad87295ec41b8c970558ce8d1ad0e0032c04883c4305bc381fa68010000756aba20000000e877011100488b0d70fe260233d288542428448bca8954242041b89eafb18e8b5308e805547fffba67435736488bcbe898970e00ba10000000488bcbe83b011100f64314010f84d4feffff8b53084533c0488b0dd4fc2602e89f066dff32c04883c4305bc381fa900100000f85aefeffffba01000000e8010111004885db0f8496000000f64314010f848c0000008b43083b0595d43c020f847d000000488b0d88fc260233d2",
+      "label": "ability 436 reviewed handler"
+    },
+    {
+      "rva": 18207828,
+      "hex": "17401501",
+      "label": "ability 821 dispatcher"
+    },
+    {
+      "rva": 18169879,
+      "hex": "418bd0e87174f7ff",
+      "label": "ability 821 handler dispatch"
+    },
+    {
+      "rva": 17609872,
+      "hex": "40534883ec30488bd985d2752eba53e92606e8194a0d00ba01000000488bcbe8fcb20f008b53084c8d05d2393c02e80d8470ff32c04883c4305bc383fa1e7518baa839151941b83ee1c2b0e8d05f0d0032c04883c4305bc383fa2e7543f30f101dafbf2f01ba3000000041b878cec15fe85b7c0e004533c9c744242800000000ba06010000c64424200141b878cec15f488bcbe8181d0e0032c04883c4305bc383fa557521ba01000000e831b30f008b53084c8d0547393c02e8028770ff32c04883c4305bc383fa690f8564ffffffb0014883c4305bc3",
+      "label": "ability 821 reviewed handler"
+    },
+    {
+      "rva": 18207832,
+      "hex": "28401501",
+      "label": "ability 822 dispatcher"
+    },
+    {
+      "rva": 18169896,
+      "hex": "418bd0e87075f7ff",
+      "label": "ability 822 handler dispatch"
+    },
+    {
+      "rva": 17610144,
+      "hex": "40534883ec30488bd985d2752eba53e92606e809490d00ba01000000488bcbe8ecb10f008b53084c8d05c2063c02e8fd8270ff32c04883c4305bc383fa1e7518baa839151941b83ee1c2b0e8c05e0d0032c04883c4305bc383fa2e7543f30f101d9fbe2f01ba3000000041b878cec15fe84b7b0e004533c9c744242800000000ba06010000c64424200141b878cec15f488bcbe8081c0e0032c04883c4305bc383fa557521ba01000000e821b20f008b53084c8d0537063c02e8f28570ff32c04883c4305bc383fa690f8564ffffffb0014883c4305bc3",
+      "label": "ability 822 reviewed handler"
+    },
+    {
+      "rva": 18207836,
+      "hex": "39401501",
+      "label": "ability 823 dispatcher"
+    },
+    {
+      "rva": 18169913,
+      "hex": "418bd0e86f76f7ff",
+      "label": "ability 823 handler dispatch"
+    },
+    {
+      "rva": 17610416,
+      "hex": "40534883ec20488bd985d27512bad23d1fc2e8f9470d0032c04883c4205bc383fa057518baa839151941b83ee1c2b0e8cc5d0d0032c04883c4205bc383fa0f7521ba01000000e8b5b00f008b53084c8d058b373c02e8c68170ff32c04883c4205bc383fa467521ba01000000e84fb10f008b53084c8d0565373c02e8208570ff32c04883c4205bc383fa50758ab0014883c4205bc3",
+      "label": "ability 823 reviewed handler"
+    },
+    {
+      "rva": 18207840,
+      "hex": "4a401501",
+      "label": "ability 824 dispatcher"
+    },
+    {
+      "rva": 18169930,
+      "hex": "418bd0e82e77f7ff",
+      "label": "ability 824 handler dispatch"
+    },
+    {
+      "rva": 17610624,
+      "hex": "40534883ec20488bd985d27512bad23d1fc2e829470d0032c04883c4205bc383fa057518baa839151941b83ee1c2b0e8fc5c0d0032c04883c4205bc383fa0f7521ba01000000e8e5af0f008b53084c8d05bb043c02e8f68070ff32c04883c4205bc383fa467521ba01000000e87fb00f008b53084c8d0595043c02e8508470ff32c04883c4205bc383fa50758ab0014883c4205bc3",
+      "label": "ability 824 reviewed handler"
+    },
+    {
+      "rva": 18208612,
+      "hex": "b54c1501",
+      "label": "ability 1017 dispatcher"
+    },
+    {
+      "rva": 18173109,
+      "hex": "418bd0e8830ef8ff",
+      "label": "ability 1017 handler dispatch"
+    },
+    {
+      "rva": 17652544,
+      "hex": "40534883ec20488bd985d27526ba01000000e8590c0f0033d2488bcbe84f410e0033d2488bcbe825320d0032c04883c4205bc383fa1475254533c0bac263954be84b960e004533c0ba8ef9c7eb488bcbe81bb90c0032c04883c4205bc383fa5a751c33d2e8b73f0e00bad8cfeaf5488bcbe80aa30c0032c04883c4205bc383fa647518ba3c01d55441b86355119be8ddb80c0032c04883c4205bc381fa9600000075b2ba01000000e8830c0f0033d2488bcbe889410e00f30f101571112f0133d2488bcbe847420e0033d2488bcbe83dbb0e00b0014883c4205bc3",
+      "label": "ability 1017 reviewed handler"
+    },
+    {
+      "rva": 18208616,
+      "hex": "c64c1501",
+      "label": "ability 1018 dispatcher"
+    },
+    {
+      "rva": 18173126,
+      "hex": "418bd0e8820ff8ff",
+      "label": "ability 1018 handler dispatch"
+    },
+    {
+      "rva": 17652816,
+      "hex": "40534883ec20488bd985d27526ba01000000e8490b0f0033d2488bcbe83f400e0033d2488bcbe8d5310d0032c04883c4205bc383fa78755a33d2e8d13e0e00488b057206250233d2488b4818488b81880000008b4b0cffd0488b0d91062502ba010000004881c190bb9107f30f1000f30f104804f30f11442440f30f114c24444c8b442440e8d60cf2ff32c04883c4205bc381fab4000000749e81faf0000000749681fa0e0100007581ba01000000e86c0b0f0033d2488bcbe872400e00b0014883c4205bc3",
+      "label": "ability 1018 reviewed handler"
+    },
+    {
+      "rva": 18208620,
+      "hex": "d74c1501",
+      "label": "ability 1019 dispatcher"
+    },
+    {
+      "rva": 18173143,
+      "hex": "418bd0e87110f8ff",
+      "label": "ability 1019 handler dispatch"
+    },
+    {
+      "rva": 17653072,
+      "hex": "40534883ec20488bd985d27526ba01000000e8490a0f0033d2488bcbe83f3f0e00b201488bcbe8d5300d0032c04883c4205bc381fab4000000755a33d2e8ce3d0e00488b056f05250233d2488b4818488b81880000008b4b0cffd0488b0d8e052502ba010000004881c190bb9107f30f1000f30f104804f30f11442440f30f114c24444c8b442440e8d30bf2ff32c04883c4205bc381faf0000000749e81fa2c010000749681fa360100007526ba01000000e8690a0f0033d2488bcbe86f3f0e0033d2488bcbe835300d0032c04883c4205bc381fa680100000f854cffffffb0014883c4205bc3",
+      "label": "ability 1019 reviewed handler"
+    },
+    {
+      "rva": 18208736,
+      "hex": "c44e1501",
+      "label": "ability 1048 dispatcher"
+    },
+    {
+      "rva": 18173636,
+      "hex": "418bd0e86426f8ff",
+      "label": "ability 1048 handler dispatch"
+    },
+    {
+      "rva": 17659184,
+      "hex": "40534883ec20488bd983fa0a751cba01000000e868f20e0033d2488bcbe85e270e0032c04883c4205bc383fa147528ba02000000e847f20e004885db74e4f643140174de8b53084533c0e861f66aff32c04883c4205bc383fa3c752fba02000000e8daf20e004885db74b7f643140174b18b53084533c0488b0d72ee2402e83df86aff32c04883c4205bc381fa82000000758fba01000000e8a3f20e004885db0f84a0000000f64314010f84960000008b43083b0537c63a020f8487000000488b0d2aee24024533c0",
+      "label": "ability 1048 reviewed handler"
+    },
+    {
+      "rva": 18208744,
+      "hex": "e64e1501",
+      "label": "ability 1050 dispatcher"
+    },
+    {
+      "rva": 18173670,
+      "hex": "418bd0e8a229f8ff",
+      "label": "ability 1050 handler dispatch"
+    },
+    {
+      "rva": 17660048,
+      "hex": "40534883ec40488bd985d2755dba01000000e809ef0e00488bcbe851cd0c004885db747ef64314017478488bd3488d4c2430e8497f0c00f30f101d41f82e0141b8ee836be1488b0d64ee2402c644242800488b00f30f115c24208b5008e8bec176ff32c04883c4405bc383fa1e753b4885db742ef64114017428488bd3488d4c2430e8f97e0c004533c941b874bf3ac9488b008b5008488b0d13ee2402e8febf76ff32c04883c4405bc383fa647530ba01000000e817220e004885db74e4f643140174de488bd3488d4c2430e8af7e0c004533c941b8c17ed853488b00ebb483fa6e75beb0014883c4405bc3",
+      "label": "ability 1050 reviewed handler"
+    },
+    {
+      "rva": 1854255,
+      "hex": "488b4b08488b3d0e181603488b471848898190000000488b4308488b13448b80e0010000418bc881e1ffffff0f8988e0010000817a10ff7f00007413413bc8740e8b520841b800000400e832fe6700488b13488b4b08488b471848898180010000817a10ff7f0000744741b800000001eb37488b4b084c8b059c171603498b401848898190000000488b13488b4b08498b401848898188010000817a10ff7f0000740e41b8000000028b5208e8d0fd6700",
+      "label": "factory stage entry writes native microsecond timestamps"
+    },
+    {
+      "rva": 1850063,
+      "hex": "488b0572281603488b4e08f3440f103d813b2002488b5018488b8180010000480540420f00483bc20f87d2070000483991a80000000f87c5070000488d8220a10700488bd6488981a8000000488d4de0",
+      "label": "factory minimum one second preparation and half-second firing decisions"
+    },
+    {
+      "rva": 1852052,
+      "hex": "7630488bcee8a2862f00488b06458bcf488b0dc522160341b8c263954b44887c2428c7442420010000008b5008e85a786e00",
+      "label": "factory successful firing decision and weapon input request"
+    },
+    {
+      "rva": 1849981,
+      "hex": "4c8b4608418b88e00100008bc1c1e81ca801753e488b168bc10fbae81c418980e0010000817a10ff7f000074123bc1740e8b520841b800000400e8f40e6800bac263954b488bcee847a33100eb04450f57db",
+      "label": "factory target-ready flag and preparation light"
+    },
+    {
+      "rva": 1852891,
+      "hex": "488b05661d16034c8b43084c8b4818498b80800100004805c0c62d00493bc1772e488b034d898878010000817810ff7f0000740e8b500841b800008000e893036800ba02000000488bcbe86604000048",
+      "label": "factory native clock and preparation end"
+    },
+    {
+      "rva": 16630188,
+      "hex": "4d03f74e8d34f6e8d83575004533c941895e0845894e0c49893e8b45044189461045894e1444384d00740841c74614010000008b86142ff300458bc10f1f8400000000008bc8488d14498b0d70834a02398cd6202ff3007425ffc08986142ff3003d00080000750a",
+      "label": "canonical entity descriptor array and invalid entity sentinel"
+    }
+  ]
+}

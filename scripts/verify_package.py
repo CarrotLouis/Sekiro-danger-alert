@@ -41,7 +41,8 @@ def main():
     assert source == (ROOT/'build/Sekiro danger alert.lua').read_bytes()
     assert source.startswith(('-- HD2-Addon: '+config['resource']).encode())
     assert not source.startswith(b'\xef\xbb\xbf') and b'\0' not in source
-    assert ("version='"+config['version']+"'").encode() in source
+    assert ('["version"]="'+config['version']+'"').encode() in source
+    assert b'version=project.version' in source
     errors = []
     sheet = Image.new('RGB', (1024, 6*280))
     keys = [0, 6, 11, 19, 33, 41]

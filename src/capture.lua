@@ -18,8 +18,12 @@ local function json(v)
     return '{'..table.concat(out,',')..'}'
 end
 M.json=json
-function M.new(native,path,log,clock,tracking,catalog)
+function M.new(native,path,log,clock,tracking,catalog,version)
     local self={active=false,last={},errors=0,samples=0}
+    local expanded=false
+    for _,move in ipairs(catalog and catalog.moves or {})do
+        if move.status=='enabled_from_capture' then expanded=true;break end
+    end
     local began,deadline,context,next_heartbeat,tracker,file,bytes_written
     local function emit(kind,data)
         if not file then return end
@@ -88,8 +92,8 @@ function M.new(native,path,log,clock,tracking,catalog)
             requested_attack=self.requested_move and self.requested_move.attack_name,
             capture_context=self.mode=='combat' and self.capture_context,
             requested_resources=self.requested_move and self.requested_move.resources,
-            new_moves_automatic_warning=false,automatic_warning_supported=true,
-            manual_marker='F8',version='0.5.0',mod='Sekiro danger alert'})
+            new_moves_automatic_warning=expanded,automatic_warning_supported=true,
+            manual_marker='F8',version=version or 'unknown',mod='Sekiro danger alert'})
         log('capture started: '..self.path)
     end
     function self:stop(reason)

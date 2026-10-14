@@ -49,8 +49,8 @@ class SpawnerCatalog(unittest.TestCase):
         moves={m['id']:m for m in c['moves']}
         self.assertEqual(moves['reinforced_heavy_rockets']['resources'],['9076eeed17fcee35'])
         self.assertEqual(moves['jet_hulk_rotary_saw']['resources'],['e44ec9f9b3fe1d2a'])
-        self.assertEqual(moves['reinforced_heavy_rockets']['status'],'capture_required')
-        self.assertEqual(moves['jet_hulk_rotary_saw']['status'],'capture_required')
+        self.assertEqual(moves['reinforced_heavy_rockets']['status'],'enabled_from_capture')
+        self.assertEqual(moves['jet_hulk_rotary_saw']['status'],'enabled_from_capture')
     def test_pin_extent_and_abi(self):
         p=json.loads((MOD/'config/native.json').read_text(encoding='utf-8'))
         pins={i['label']:i for i in p['pins']}

@@ -1,6 +1,6 @@
 local KEY='SekiroDangerAlert'
 if rawget(_G,KEY) then return rawget(_G,KEY) end
-local api={version='0.5.1',automatic_warning=true,status='starting'}
+local api={version=project.version,automatic_warning=true,status='starting'}
 rawset(_G,KEY,api)
 local loader=rawget(_G,'CowboyBingusModLoader') or {}
 local directory=loader.log_directory or ((os.getenv('LOCALAPPDATA') or '.')..'/CowboyBingus/Helldivers2/Logs')
@@ -13,13 +13,13 @@ local function status(s)
     api.status=s;log('status: '..s)
     local f=io.open(directory..'/Sekiro danger alert-STATUS.txt','wb')
     if f then
-        f:write('Sekiro danger alert 0.5.1 | targeted attack warning\r\n'..s..'\r\n',
-            'Automatic warning: owned enemy targets the local avatar; Crusher melee / heavy cannon preparation; no range gate.\r\n',
+        f:write('Sekiro danger alert '..api.version..' | targeted attack warning\r\n'..s..'\r\n',
+            'Automatic warning: 16 additional moves plus Crusher / heavy cannon; local entity target; no range gate.\r\n',
             'Visual: game-native GUI; live local-avatar head projection.\r\n',
             'Sound: independent PCM playback, not a Wwise event.\r\n');f:close()
     end
 end
-log('Sekiro danger alert loaded 0.5.1; Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
+log('Sekiro danger alert loaded '..api.version..'; Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
 local menu=menu_module.new(log,catalog,profile)
 local memory=memory_module.new(runtime)
 local audio,native,overlay,capture,key,detector
@@ -40,7 +40,7 @@ local function initialize()
     end
     native=native_module.new(memory,profile)
     overlay=overlay_module.new(native,assets,log,function()return menu:appearance()end)
-    capture=capture_module.new(native,directory,log,now,tracking_module,catalog)
+    capture=capture_module.new(native,directory,log,now,tracking_module,catalog,api.version)
     detector=detector_module.new(native,profile,log,function(event)
         log('automatic_trigger '..capture_module.json(event))
         if event.sample_time~=last_warning_sample then

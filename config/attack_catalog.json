@@ -165,7 +165,7 @@
       "label": "强袭虫 · 跺脚",
       "attack_name": "Heavy Crush",
       "wiki_url": "https://helldivers.wiki.gg/wiki/Charger",
-      "status": "capture_required",
+      "status": "enabled_from_capture",
       "default": true,
       "resources": [
         "1a7fcdff98c664b0"
@@ -176,7 +176,7 @@
       "label": "孢子强袭虫 · 跺脚",
       "attack_name": "Heavy Crush",
       "wiki_url": "https://helldivers.wiki.gg/wiki/Spore_Charger",
-      "status": "capture_required",
+      "status": "enabled_from_capture",
       "default": true,
       "resources": [
         "6b202392f4ab605e"
@@ -187,20 +187,20 @@
       "label": "巨兽强袭虫 · 跺脚",
       "attack_name": "Superheavy Crush",
       "wiki_url": "https://helldivers.wiki.gg/wiki/Charger_Behemoth",
-      "status": "capture_required",
+      "status": "enabled_from_capture",
       "default": true,
       "resources": [
         "3aff5fd7d5450b99",
         "a05bd1ec67b3ac4c"
       ],
-      "capture_note": "Variant identity needs live confirmation; paths are candidates, not a resolved wiki identity."
+      "capture_note": "Captured tier2 entity a05bd1ec67b3ac4c uses the bull model; automatic identity is the entity, not the shared model."
     },
     {
       "id": "rupture_hardened_crush",
       "label": "钻地强袭虫 · 跺脚",
       "attack_name": "Hardened Crush",
       "wiki_url": "https://helldivers.wiki.gg/wiki/Rupture_Charger",
-      "status": "capture_required",
+      "status": "enabled_from_capture",
       "default": true,
       "resources": [
         "0ab7b92b131c228c"
@@ -211,7 +211,7 @@
       "label": "穿刺虫 · 跺脚",
       "attack_name": "Momentous Slam",
       "wiki_url": "https://helldivers.wiki.gg/wiki/Impaler",
-      "status": "capture_required",
+      "status": "enabled_from_capture",
       "default": true,
       "resources": [
         "dcf8e74212fbee3b"
@@ -222,7 +222,7 @@
       "label": "穿刺虫触手 · 下砸",
       "attack_name": "Tentacle Slam",
       "wiki_url": "https://helldivers.wiki.gg/wiki/Impaler",
-      "status": "capture_required",
+      "status": "enabled_from_capture",
       "default": true,
       "resources": [
         "dcf8e74212fbee3b",
@@ -234,7 +234,7 @@
       "label": "吐酸泰坦 · 戳腿",
       "attack_name": "Cataclysmic Slam",
       "wiki_url": "https://helldivers.wiki.gg/wiki/Bile_Titan",
-      "status": "capture_required",
+      "status": "enabled_from_capture",
       "default": true,
       "resources": [
         "9e2e17f2ccccafdd"
@@ -245,7 +245,7 @@
       "label": "吐酸泰坦 · 吐酸",
       "attack_name": "Caustic Surge",
       "wiki_url": "https://helldivers.wiki.gg/wiki/Bile_Titan",
-      "status": "capture_required",
+      "status": "enabled_from_capture",
       "default": true,
       "resources": [
         "9e2e17f2ccccafdd"
@@ -253,21 +253,22 @@
     },
     {
       "id": "dragon_alchemical_pyrosis",
-      "label": "蟑龙 · 吐息",
-      "attack_name": "Alchemical Pyrosis",
+      "label": "蟑龙 · 俯冲吐息",
+      "attack_name": "Alchemical Pyrosis (diving breath only)",
       "wiki_url": "https://helldivers.wiki.gg/wiki/Dragonroach",
-      "status": "capture_required",
+      "status": "enabled_from_capture",
       "default": true,
       "resources": [
         "960b48a421a3faaa"
-      ]
+      ],
+      "capture_note": "Owner confirmed diving breath, ability 254. Hovering breath 252 is excluded; saved move ID stays stable."
     },
     {
       "id": "spore_titan_cataclysmic_slam",
       "label": "孢子泰坦 · 戳腿",
       "attack_name": "Cataclysmic Slam",
       "wiki_url": "https://helldivers.wiki.gg/wiki/Spore_Burst_Bile_Titan",
-      "status": "capture_required",
+      "status": "enabled_from_capture",
       "default": true,
       "resources": [
         "ef04cb84d097a497"
@@ -278,7 +279,7 @@
       "label": "巨型者 · 劈砍",
       "attack_name": "Heavy Rotary Saw",
       "wiki_url": "https://helldivers.wiki.gg/wiki/Hulk_Scorcher",
-      "status": "capture_required",
+      "status": "enabled_from_capture",
       "default": true,
       "resources": [
         "3e0537d606438fea"
@@ -289,7 +290,7 @@
       "label": "移动工厂 · 炮击",
       "attack_name": "Fusion Repeater Cannon",
       "wiki_url": "https://helldivers.wiki.gg/wiki/Factory_Strider",
-      "status": "capture_required",
+      "status": "enabled_from_capture",
       "default": true,
       "resources": [
         "d37e8d120d2836e3",
@@ -303,19 +304,19 @@
       "label": "强化纵步者 · 火箭弹",
       "attack_name": "Heavy HE Rockets",
       "wiki_url": "https://helldivers.wiki.gg/wiki/Reinforced_Scout_Strider",
-      "status": "capture_required",
+      "status": "enabled_from_capture",
       "default": true,
       "resources": [
         "9076eeed17fcee35"
       ],
-      "capture_note": "Hash-matched tier2 entity; shared scout-walker model, four mounted weapons. Exact attack mapping requires capture."
+      "capture_note": "Captured tier2 / behavior 96: rockets 1050; machinegun 1048 excluded."
     },
     {
       "id": "annihilator_fusion_cannon",
       "label": "湮灭坦克 · 炮击",
       "attack_name": "Fusion Battle Cannon",
       "wiki_url": "https://helldivers.wiki.gg/wiki/Annihilator_Tank",
-      "status": "capture_required",
+      "status": "enabled_from_capture",
       "default": true,
       "resources": [
         "53d8919d7b8abd67",
@@ -327,25 +328,25 @@
       "label": "铁幕坦克 · 直射火箭",
       "attack_name": "Heavy MLRS (HE), direct only",
       "wiki_url": "https://helldivers.wiki.gg/wiki/Barrager_Tank",
-      "status": "capture_required",
+      "status": "enabled_from_capture",
       "default": true,
       "resources": [
         "63df3d07b7424588",
         "5d142c3a73ebc634"
       ],
-      "capture_note": "Separately mark direct fire and artillery; do not infer firing mode from distance."
+      "capture_note": "Direct 1018 and owner-confirmed artillery comparison 1019 are distinct; do not infer mode from distance."
     },
     {
       "id": "jet_hulk_rotary_saw",
       "label": "巨型炙焰者 · 劈砍",
       "attack_name": "Heavy Rotary Saw",
       "wiki_url": "https://helldivers.wiki.gg/wiki/Jet_Brigade_Hulk_Scorcher",
-      "status": "capture_required",
+      "status": "enabled_from_capture",
       "default": true,
       "resources": [
         "e44ec9f9b3fe1d2a"
       ],
-      "capture_note": "Hash-matched assault_jumppack entity; native saw, flamer and lieutenant_jetpack mounts. Exact attack mapping requires capture."
+      "capture_note": "Captured assault_jumppack / behavior 57: saw 821/823; mirrored 822/824 reviewed statically."
     }
   ],
   "filediver_commit": "6bf7c1ccc4be465a35b4bc9d41087781b47034e6"

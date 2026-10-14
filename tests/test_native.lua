@@ -132,6 +132,7 @@ print('PASS targeting/AI ownership, local-target distinction, position-only mode
 -- Attack-first scanning never reserves the first sixteen enemies or requests positions.
 write(game+pin.rva,pin.bytes)
 for _,ap in ipairs(profile.attack_pins) do region(game+ap.rva,#ap.bytes);write(game+ap.rva,ap.bytes)end
+for _,ap in ipairs(profile.expanded.pins) do region(game+ap.rva,#ap.bytes);write(game+ap.rva,ap.bytes)end
 profile.crusher_resource='00000000000004d2'
 n=dofile(root..'/src/native.lua').new(mem,profile)
 local rows_at,owners_at,descriptors_at=0x45000000,0x45100000,0x45200000
@@ -193,3 +194,65 @@ p(0x47002000,0x41004000);assert(n:weapon_inputs(e)==nil);p(0x47002000,0x41003000
 local cp=profile.combat_pins[1];write(game+cp.rva,string.rep('\0',#cp.bytes))
 n=dofile(root..'/src/native.lua').new(mem,profile);n:begin();assert(not pcall(n.weapon_inputs,n,e))
 print('PASS named health discovery, pinned weapon-input decoding, optional component ownership and raw diagnostic gating')
+
+-- Exercise resource-specific selection in the production Ability scanner, not
+-- only the pure detector. Shared IDs must still be tied to a reviewed actor.
+write(game+ap.rva,ap.bytes)
+u(0x41005000+12,1);u(rows_at,219);write(rows_at+17,'\0')
+local function reviewed_hash(hash)
+    local bytes={};for i=15,1,-2 do bytes[#bytes+1]=string.char(tonumber(hash:sub(i,i+1),16))end
+    write(descriptors_at,table.concat(bytes))
+end
+reviewed_hash('a05bd1ec67b3ac4c')
+n=dofile(root..'/src/native.lua').new(mem,profile);n:begin()
+items,actors=n:attack_candidates(0)
+assert(#items==1 and items[1].id==219 and actors[1].class_name=='charger_tier2')
+reviewed_hash('000000000000ffff');n:begin();assert(#n:attack_candidates(0)==0,'a shared attack ID cannot authorize an unknown resource')
+reviewed_hash('5d142c3a73ebc634');u(rows_at,1019);n:begin();items=n:attack_candidates(0)
+assert(#items==1 and profile.expanded.resources['5d142c3a73ebc634'].excluded[items[1].id]=='artillery')
+print('PASS production expanded Ability selection: exact resource/class pairing, unknown identity refusal and explicit artillery decisions')
+
+-- Production Factory path reads the same canonical world descriptors used by
+-- native creation. All regions here are fake; no game process is opened.
+write(game+cp.rva,cp.bytes)
+local F=profile.expanded.factory
+region(game+F.world_global,8);p(game+F.world_global,0x48000000)
+local descriptors=0x48000000+F.descriptors_offset
+region(descriptors,F.slots*24);region(game+F.invalid_entity_global,4);u(game+F.invalid_entity_global,0xffffffff)
+local function resource_bytes(hash)
+    local out={};for i=15,1,-2 do out[#out+1]=string.char(tonumber(hash:sub(i,i+1),16))end
+    return table.concat(out)
+end
+local function factory(index,id)
+    local at=descriptors+index*24
+    write(at,resource_bytes(F.resource));u(at+8,id);u(at+12,4194307);u(at+20,1)
+end
+factory(0,100)
+n=dofile(root..'/src/native.lua').new(mem,profile);n:begin()
+local selected,scan=n:factory_candidates(0)
+assert(#selected==1 and selected[1].pointer==pointer(descriptors)and scan.cursor==0 and scan.scanned==2048)
+-- The canonical pointer is shared by Behavior and Health, not a cloned row.
+p(0x44002000,descriptors);p(0x41010000,descriptors)
+u(0x44003000,99);u(0x44003008,3);u(0x44003018,777);u(0x44003060,1);write(0x44003078,'\1')
+write(0x44003000+F.stage_start_offset,pack(1000000,8));u(0x44003000+F.ready_offset,F.ready_mask)
+region(game+F.clock_global,8);p(game+F.clock_global,0x49000000);region(0x49000000,64)
+write(0x49000000+F.clock_offset,pack(1600000,8))
+n:begin();local target=n:behavior_target(selected[1],{id=777})
+assert(target.behavior==99 and target.stage==3 and target.target_is_local and target.preparation_ready)
+assert(target.native_time==1600000 and target.preparation_started==1000000)
+local current=n:resolve(n:health_header(),100,profile.health_resources)
+assert(current.pointer==selected[1].pointer and current.identity==selected[1].identity)
+u(descriptors+8,0xffffffff);n:begin();assert(#n:factory_candidates(0)==0,'invalid descriptors cannot be selected')
+factory(0,100);u(descriptors+20,3);n:begin();assert(#n:factory_candidates(0)==0,'destroying descriptors cannot be selected')
+factory(0,100)
+for i=1,24 do factory(i,100+i)end
+local all,cursor={},0
+repeat
+    n:begin();selected,scan=n:factory_candidates(cursor);cursor=scan.cursor
+    assert(n.bytes<1048576 and #selected<=8)
+    for _,actor in ipairs(selected)do assert(not all[actor.id]);all[actor.id]=true end
+until cursor==0
+local count=0;for _ in pairs(all)do count=count+1 end;assert(count==25,'batch limits cannot become permanent observation slots')
+local ep=profile.expanded.pins[1];write(game+ep.rva,string.rep('\0',#ep.bytes))
+n=dofile(root..'/src/native.lua').new(mem,profile);n:begin();assert(not pcall(n.factory_candidates,n,0))
+print('PASS Factory production reader: canonical descriptors, exact native microsecond clocks, readiness flag, lifecycle, fair 25-actor scan and pin rejection')

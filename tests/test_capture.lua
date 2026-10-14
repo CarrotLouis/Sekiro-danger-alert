@@ -50,7 +50,7 @@ print('PASS shared detector capture, explicit F8 sample age, and separate target
 -- A selected research move scopes body and child resources, records unknown abilities,
 -- and tags comparison runs without pretending the requested move is already identified.
 local catalog=dofile(root..'/src/catalog.lua')
-cap=cmod.new(mock,root..'/build/test_logs',function()end,function()return t end,tracking,catalog)
+cap=cmod.new(mock,root..'/build/test_logs',function()end,function()return t end,tracking,catalog,'0.6.0')
 mock.combat_state=function(_,h,actor,local_avatar,raw)
     return {entity=actor.id,unit=actor.unit,resource='test',class_name='tank_turret_rocketlauncher',
         ai={target=70,has_target=true,tracks_entity=true,stage=3},
@@ -62,7 +62,8 @@ t=700.5;cap:mark();cap:stop('test')
 f=assert(io.open(cap.path,'rb'));s=f:read('*a');f:close()
 assert(cap.path:find('Combat-barrager_direct_mlrs-comparison-',1,true))
 assert(s:find('"event":"research_sample"',1,true) and s:find('"id":2999.000000',1,true))
-assert(s:find('"new_moves_automatic_warning":false',1,true) and s:find('"capture_context":"comparison"',1,true))
+assert(s:find('"new_moves_automatic_warning":true',1,true) and s:find('"capture_context":"comparison"',1,true))
+assert(s:find('"version":"0.6.0"',1,true),'capture header must use the actual runtime version')
 assert(s:find('"observation_age":0.500000',1,true) and s:find('"weapon_inputs"',1,true))
 assert(cap.resources['63df3d07b7424588'] and cap.resources['5d142c3a73ebc634'])
 assert(not cap.resources['1a7fcdff98c664b0'],'capture selection must not include unrelated enemies')

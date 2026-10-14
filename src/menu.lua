@@ -17,7 +17,7 @@ function M.new(log,catalog,profile)
                 description='100% 约为原效果字形大小；50% 至 300%。以头顶锚点为中心缩放，保持跟随。'}},
             {'automatic',{type='choice',label='自动预警 / Automatic warning',default=1,
                 choices={'开启 / On','关闭 / Off'},
-                description='Crusher 或普通重炮塔锁定本人并进入已识别的攻击前摇时预警，不限距离。暂只采用本机拥有的敌人 AI 目标。'}},
+                description='Crusher、普通重炮塔及 16 个新增招式锁定本人并进入预警窗口时生效，不限距离。仅采用本机拥有的 AI；蟑龙仅俯冲吐息，铁幕坦克仅直射。'}},
             {'volume',{type='slider',label='音量 / Volume',min=0,max=100,step=1,default=60,
                 description='只调整危提示音。0 为静音。按 APPLY 应用。 / Only this warning sound; 0 mutes it. Apply to save.'}},
             {'preview',{type='choice',label='立即试听 / Preview',default=1,
@@ -57,7 +57,7 @@ function M.new(log,catalog,profile)
             description='控制已识别的能力分支 '..id..'。具体动作名称尚未逐一对应；保留已实测的目标与攻击起点判断。'}end
         moves[#moves+1]={id='cannon_preparation',label='普通重炮塔 · 开火准备',description='控制普通重炮塔锁定本人后的准备阶段预警。'}
         for _,move in ipairs(catalog.moves)do moves[#moves+1]={id=move.id,label=move.label,
-            description=move.attack_name..'。默认开启；本版已提供采集，攻击起点映射待确认后生效。'}end
+            description=move.attack_name..'。默认开启；锁定本人并进入已映射的预警窗口时生效。'}end
         for _,move in ipairs(moves)do
             local id=prefix..'move.'..move.id
             local ok,why=menu.register_option(id,{type='toggle',mod='Sekiro danger alert - Attacks',

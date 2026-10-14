@@ -15,11 +15,33 @@ for h,r in resources.items():
 moves=catalog['moves']
 assert len(moves)==16 and len({m['id'] for m in moves})==16
 for m in moves:
-    assert m['default'] is True and m['status']=='capture_required'
+    assert m['default'] is True and m['status']=='enabled_from_capture'
     assert m['resources'] and set(m['resources'])<=resources.keys()
 by_id={m['id']:m for m in moves}
 assert by_id['titan_caustic_surge']['id']!=by_id['titan_cataclysmic_slam']['id']
 assert by_id['barrager_direct_mlrs']['capture_note'].endswith('distance.')
 assert set(by_id['tentacle_slam']['resources'])=={'dcf8e74212fbee3b','672f7da17f3ba34a'}
 assert '8fb47dd28b398cf7' in by_id['annihilator_fusion_cannon']['resources']
-print('PASS 16 distinct requested moves, default-on settings, verified resource hashes, child scopes and pending status')
+rules=json.loads((ROOT/'config/expanded_attacks.json').read_text(encoding='utf-8'))
+mapped={r['move']for e in rules['resources'].values()for r in e['abilities'].values()}|{rules['factory']['move']}
+assert mapped==set(by_id),'each requested move must have an automatic path'
+assert set(rules['resources'])|{rules['factory']['resource']}<=resources.keys()
+for hash,e in rules['resources'].items():
+    assert resources[hash]['behavior']==e['behavior']
+    assert not(set(e['abilities'])&set(e['excluded']))
+    for id,r in e['abilities'].items():
+        assert hash in by_id[r['move']]['resources'] and int(id)>0
+        assert r['cues'] and all(0<=c['time']<c['last']for c in r['cues'])
+        assert all(c['last']<c['fire']for c in r['cues']if'fire'in c)
+assert set(rules['resources']['960b48a421a3faaa']['abilities'])=={'254'}
+assert rules['resources']['960b48a421a3faaa']['excluded']['252']=='hover_breath'
+assert 'diving breath only'in by_id['dragon_alchemical_pyrosis']['attack_name']
+assert set(rules['resources']['5d142c3a73ebc634']['abilities'])=={'1018'}
+assert rules['resources']['5d142c3a73ebc634']['excluded']['1019']=='artillery'
+assert len(rules['resources']['5d142c3a73ebc634']['abilities']['1018']['cues'])==3
+assert rules['factory']['resource']=='843d18d4b5512b63' and rules['factory']['stage_start_offset']==0x188
+assert rules['factory']['earliest_fire_time']==1 and rules['factory']['last_warning_time']<=.8
+assert len(rules['pins'])>=60
+project=json.loads((ROOT/'project.json').read_text(encoding='utf-8'));assert project['version']=='0.6.0'
+assert 'version=project.version'in(ROOT/'src/entry.lua').read_text(encoding='utf-8')
+print('PASS 16 enabled distinct moves, native identities, independent settings, diving/direct exclusions, burst windows and build-bound Factory preparation')

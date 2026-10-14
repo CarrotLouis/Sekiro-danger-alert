@@ -24,6 +24,14 @@ def lua_bytes(data):
 def module(path):
     return '(function()\n'+path.read_text(encoding='utf-8')+'\nend)()'
 
+def lua(value):
+    if isinstance(value,str):return json.dumps(value,ensure_ascii=False)
+    if isinstance(value,bool):return 'true' if value else 'false'
+    if value is None:return 'nil'
+    if isinstance(value,list):return '{'+','.join(lua(x) for x in value)+'}'
+    if isinstance(value,dict):return '{'+','.join('['+lua(k)+']='+lua(v) for k,v in value.items())+'}'
+    return str(value)
+
 def masks():
     for n in range(EFFECT['frames']):
         target=ROOT/f'assets/frames/{n:03}.png'
@@ -56,6 +64,18 @@ def profile():
     cannon='{'+','.join(k+'='+ ("'%s'"%v if isinstance(v,str) else str(v)) for k,v in attacks['cannon'].items())+'}'
     combat=json.loads((ROOT/'config/combat_probe.json').read_text())
     combat_rows=["{rva=%d,bytes=%s,label='%s'}"%(p['rva'],lua_bytes(bytes.fromhex(p['hex'])),p['label']) for p in combat['pins']]
+    expanded=json.loads((ROOT/'config/expanded_attacks.json').read_text(encoding='utf-8'))
+    expanded.pop('source');expanded.pop('build')
+    expanded_pins=expanded.pop('pins');expanded['ids']={}
+    for rules in expanded['resources'].values():
+        for key in ('abilities','excluded'):
+            rules[key]={int(k):v for k,v in rules[key].items()}
+            for id in rules[key]:expanded['ids'][id]=True
+    encoded=lua(expanded)[:-1]+', ["pins"]={'+','.join(
+        "{rva=%d,bytes=%s,label=%s}"%(p['rva'],lua_bytes(bytes.fromhex(p['hex'])),lua(p['label'])) for p in expanded_pins)+'}}'
+    catalog=json.loads((ROOT/'config/attack_catalog.json').read_text(encoding='utf-8'))
+    automatic_hashes=set(expanded['resources'])|{expanded['factory']['resource']}
+    health_resources=lua({r['hash']:{'class_name':r['class_name']} for r in catalog['resources']if r['hash']in automatic_hashes})
     text="""return {
  steam_build='25480438',
  exe_sha256='F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06',
@@ -68,22 +88,16 @@ def profile():
  attack_pins={%s},
  cannon=%s,
  combat_pins={%s},
+ expanded=%s,
+ health_resources=%s,
  -- 1411/1412 have live capture support. Other branches are statically reviewed;
  -- exact move names / live coverage still need confirmation. Never use shared animation hashes alone.
  attack_states={[1411]=true,[1412]=true,[1413]=true,[1414]=true,[1415]=true,[1416]=true,
                 [1417]=true,[1418]=true,[1419]=true,[1420]=true,[1421]=true,[1422]=true,[1424]=true},
  ignored_stomps={[1409]=true,[1410]=true,[1423]=true},
 }
-"""%(resource_hash(crusher),','.join(rows),','.join(target_rows),','.join(target_resources),','.join(attack_rows),cannon,','.join(combat_rows))
+"""%(resource_hash(crusher),','.join(rows),','.join(target_rows),','.join(target_resources),','.join(attack_rows),cannon,','.join(combat_rows),encoded,health_resources)
     (ROOT/'src/profile.lua').write_text(text,encoding='utf-8')
-    catalog=json.loads((ROOT/'config/attack_catalog.json').read_text(encoding='utf-8'))
-    def lua(value):
-        if isinstance(value,str):return json.dumps(value,ensure_ascii=False)
-        if isinstance(value,bool):return 'true' if value else 'false'
-        if value is None:return 'nil'
-        if isinstance(value,list):return '{'+','.join(lua(x) for x in value)+'}'
-        if isinstance(value,dict):return '{'+','.join('['+lua(k)+']='+lua(v) for k,v in value.items())+'}'
-        return str(value)
     (ROOT/'src/catalog.lua').write_text('-- Generated from config/attack_catalog.json; edit the JSON source.\nreturn '+lua(catalog)+'\n',encoding='utf-8')
 
 def build():
@@ -118,6 +132,7 @@ def build():
     assets="return {fps=%s/%s,rate=48000,channels=2,quad_ratio=%s,colours=%s,frames={%s},pcm=%s}\n"%(EFFECT['fps_numerator'],EFFECT['fps_denominator'],EFFECT['quad_ratio_to_v020'],colours,',\n'.join(frames),lua_bytes(pcm))
     (BUILD/'assets.lua').write_text(assets,encoding='utf-8')
     chunks=['-- HD2-Addon: '+OWNER+'\n',"if rawget(_G,'SekiroDangerAlert') then return rawget(_G,'SekiroDangerAlert') end\n"]
+    chunks.append('local project='+lua(CONFIG)+'\n')
     for name,path in [('runtime','vendor/bingus_runtime.lua'),('memory_module','vendor/bingus_memory.lua'),
                       ('profile','src/profile.lua'),('catalog','src/catalog.lua'),('assets','build/assets.lua'),('menu_module','src/menu.lua'),
                       ('audio_module','src/audio.lua'),('native_module','src/native.lua'),('overlay_module','src/overlay.lua'),
@@ -131,7 +146,8 @@ def build():
     main,gpu=make_resource_archive(resources)
     assert read_archive(main,gpu)==resources
     archive='9ba626afa44a3aa3.patch_0'
-    description=('Sekiro danger alert: target-filtered Crusher and heavy cannon warning, live avatar-head projection and independent sound volume. '
+    description=('Sekiro danger alert: 16 additional targeted enemy attacks, Crusher and heavy cannon warning; diving Dragonroach breath and direct Barrager fire only. '
+                 'Live avatar-head projection and independent sound volume. '
                  'Requires Bingus Shared Loader v18+ and Mod Options Menu v1.2. '
                  'Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
     manifest={'Version':1,'Guid':CONFIG['guid'],'Name':'Sekiro danger alert '+CONFIG['version'],'Description':description,
