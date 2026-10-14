@@ -12,3 +12,7 @@ no AE plugin code or output is included.
 Attack research consulted FileDiver's hash dictionaries (no dictionary files bundled):
 https://github.com/xypwn/filediver/tree/6bf7c1ccc4be465a35b4bc9d41087781b47034e6
 HD2 HUD Plus was inspected only; no source or assets from that mod are redistributed.
+
+0.5.0 read-only combat research also consulted FileDiver plaintext component tables and typelib;
+only derived resource identities/layout facts are included, no game tables or reference source are bundled.
+https://github.com/xypwn/filediver/tree/6bf7c1ccc4be465a35b4bc9d41087781b47034e6/datalibrary

@@ -1,6 +1,6 @@
 local KEY='SekiroDangerAlert'
 if rawget(_G,KEY) then return rawget(_G,KEY) end
-local api={version='0.4.0',automatic_warning=true,status='starting'}
+local api={version='0.5.0',automatic_warning=true,status='starting'}
 rawset(_G,KEY,api)
 local loader=rawget(_G,'CowboyBingusModLoader') or {}
 local directory=loader.log_directory or ((os.getenv('LOCALAPPDATA') or '.')..'/CowboyBingus/Helldivers2/Logs')
@@ -13,14 +13,14 @@ local function status(s)
     api.status=s;log('status: '..s)
     local f=io.open(directory..'/Sekiro danger alert-STATUS.txt','wb')
     if f then
-        f:write('Sekiro danger alert 0.4.0 | targeted attack warning\r\n'..s..'\r\n',
+        f:write('Sekiro danger alert 0.5.0 | targeted attack warning\r\n'..s..'\r\n',
             'Automatic warning: owned enemy targets the local avatar; Crusher melee / heavy cannon preparation; no range gate.\r\n',
             'Visual: game-native GUI; live local-avatar head projection.\r\n',
             'Sound: independent PCM playback, not a Wwise event.\r\n');f:close()
     end
 end
-log('Sekiro danger alert loaded 0.4.0; Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
-local menu=menu_module.new(log)
+log('Sekiro danger alert loaded 0.5.0; Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
+local menu=menu_module.new(log,catalog,profile)
 local memory=memory_module.new(runtime)
 local audio,native,overlay,capture,key,detector
 local last_warning_sample
@@ -40,13 +40,13 @@ local function initialize()
     end
     native=native_module.new(memory,profile)
     overlay=overlay_module.new(native,assets,log,function()return menu:appearance()end)
-    capture=capture_module.new(native,directory,log,now,tracking_module)
+    capture=capture_module.new(native,directory,log,now,tracking_module,catalog)
     detector=detector_module.new(native,profile,log,function(event)
         log('automatic_trigger '..capture_module.json(event))
         if event.sample_time~=last_warning_sample then
             last_warning_sample=event.sample_time;overlay:play(now());play_audio()
         end
-    end)
+    end,function(move)return menu:enabled(move)end)
     key=marker_module.new()
     status('build matched; preparing visual; capture is ready')
 end
@@ -80,11 +80,16 @@ local function step()
     end
     if not native and not refused then initialize() end
     if not native then return end
+    if actions.reset==2 then
+        capture:stop('defaults restored');detector:reset();pending_visual=nil;last_warning_sample=nil
+    end
     if actions.visual==2 then pending_visual=t+3;log('visual preview scheduled in three seconds') end
     if actions.capture==2 then capture:start() end
     if actions.capture==3 then capture:stop('user stopped') end
     if actions.target_capture==2 then capture:start('targeting') end
     if actions.target_capture==3 then capture:stop('user stopped') end
+    if actions.research_capture==2 then capture:start('combat',menu:research_move(),menu:research_context()) end
+    if actions.research_capture==3 then capture:stop('user stopped') end
     if capture.active and key() then
         capture:mark()
         if capture.mode=='crusher' then pending_visual=t end

@@ -1,7 +1,7 @@
 -- Current ModOptionsMenu API v3. Actions are consumed after Apply completes.
 local M={}
-function M.new(log)
-    local self={ready=false,pending=nil}
+function M.new(log,catalog,profile)
+    local self={ready=false,pending=nil,defaults={}}
     local prefix='peril_warning.crusher.'
     local menu
     function self:register()
@@ -32,14 +32,41 @@ function M.new(log)
             {'target_capture',{type='choice',label='炮塔索敌采集 / Turret targeting capture',default=1,
                 choices={'待命 / Ready','开始两分钟采集 / Start 2 minutes','结束采集 / Stop'},
                 description='记录炮塔目标、攻击计时与自动预警决策。看到闪光时按 F8 标记；与 Crusher 采集互斥。'}},
+            {'research_move',{type='choice',label='新招式采集目标 / Capture target',default=1,
+                choices=(function()local out={};for _,m in ipairs(catalog.moves)do out[#out+1]=m.label end;return out end)(),
+                description='选择本次要采集的招式；采集启动后目标固定。它不改变招式开关。'}},
+            {'research_context',{type='choice',label='采集类型 / Capture condition',default=1,
+                choices={'目标招式 / Requested','对照动作 / Comparison'},
+                description='铁幕坦克：目标招式记录直射，对照动作记录抛射。其他敌人可采集容易混淆的动作。'}},
+            {'research_capture',{type='choice',label='新招式采集 / Combat capture',default=1,
+                choices={'待命 / Ready','开始两分钟采集 / Start 2 minutes','结束采集 / Stop'},
+                description='选择采集目标后开始并 APPLY；看到指定招式起手后按 F8。与另外两种采集互斥。'}},
+            {'reset',{type='choice',label='恢复全部默认值 / Restore defaults',default=1,
+                choices={'待命 / Ready','恢复全部默认值 / Restore all'},
+                description='APPLY 后恢复本模组各设置页的全部默认值，所有招式开启，停止采集并取消待执行预览。'}},
         }
         for _,row in ipairs(specs) do
             row[2].mod='Sekiro danger alert';row[2].mod_id='peril_warning.crusher'
             local ok,why=menu.register_option(prefix..row[1],row[2])
             if not ok then log('menu refused '..row[1]..': '..tostring(why));return false end
+            self.defaults[prefix..row[1]]=row[2].default
+        end
+        local moves={};local ids={}
+        for id in pairs(profile.attack_states)do ids[#ids+1]=id end;table.sort(ids)
+        for _,id in ipairs(ids)do moves[#moves+1]={id='crusher_'..id,label='Crusher · 近战分支 '..id,
+            description='控制已识别的能力分支 '..id..'。具体动作名称尚未逐一对应；保留已实测的目标与攻击起点判断。'}end
+        moves[#moves+1]={id='cannon_preparation',label='普通重炮塔 · 开火准备',description='控制普通重炮塔锁定本人后的准备阶段预警。'}
+        for _,move in ipairs(catalog.moves)do moves[#moves+1]={id=move.id,label=move.label,
+            description=move.attack_name..'。默认开启；本版已提供采集，攻击起点映射待确认后生效。'}end
+        for _,move in ipairs(moves)do
+            local id=prefix..'move.'..move.id
+            local ok,why=menu.register_option(id,{type='toggle',mod='Sekiro danger alert - Attacks',
+                mod_id='peril_warning.crusher.moves',label=move.label,description=move.description,default=true})
+            if not ok then log('menu refused '..id..': '..tostring(why));return false end
+            self.defaults[id]=true
         end
         -- A saved action is never replayed on startup. Reset has no callback.
-        for _,key in ipairs({'preview','visual','capture','target_capture'}) do
+        for _,key in ipairs({'preview','visual','capture','target_capture','research_capture','reset'}) do
             menu.set(prefix..key,1)
             menu.on_change(prefix..key,function(value)
                 if value~=1 then
@@ -49,7 +76,7 @@ function M.new(log)
             end)
         end
         self.ready=true
-        log('menu registered: slider 0..100, audio preview, visual preview, capture')
+        log('menu registered: '..#specs..' general options, '..#moves..' move toggles')
         return true
     end
     function self:volume()
@@ -57,6 +84,9 @@ function M.new(log)
         return math.max(0,math.min(100,tonumber(v) or 60))
     end
     function self:automatic()return self.ready and menu.get(prefix..'automatic')==1 end
+    function self:enabled(move)return self.ready and menu.get(prefix..'move.'..move)==true end
+    function self:research_move()return catalog.moves[menu.get(prefix..'research_move') or 1].id end
+    function self:research_context()return menu.get(prefix..'research_context')==2 and 'comparison' or 'requested' end
     function self:appearance()
         local function value(key,default,lo,hi)
             local v=self.ready and tonumber(menu.get(prefix..key)) or default
@@ -68,6 +98,11 @@ function M.new(log)
     end
     function self:consume()
         local actions=self.pending or {};self.pending=nil
+        if actions.reset==2 then
+            for id,value in pairs(self.defaults)do assert(menu.set(id,value),'could not restore '..id)end
+            log('all Sekiro danger alert options restored to defaults')
+            return {reset=2}
+        end
         for key in pairs(actions) do menu.set(prefix..key,1) end
         return actions
     end

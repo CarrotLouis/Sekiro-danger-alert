@@ -31,3 +31,20 @@ assert len(result['targeting_transitions']) == 1 and len(result['ability_runs'])
 assert result['ability_runs'][0]['samples'] == 3
 assert abs(result['marker_ability_context'][0]['candidates'][0]['marker_after_estimated_start']-1.6) < 1e-9
 print('PASS ability cycles and delayed marker context remain distinct from unchanged AI stages')
+
+# A cannon part without an Ability component can still contribute input/AI observations.
+rows = [dict(event='capture_start', t=0, mode='combat', requested_move='barrager_direct_mlrs', capture_context='comparison')]
+for t, mask in [(0, 0), (.1, 2), (.2, 2)]:
+    rows.append(dict(event='research_sample', t=t, abilities=[], states=[dict(entity=1, unit=2,
+        resource='test', ai={'stage': 3, 'has_target': True, 'tracks_entity': True},
+        aim={'aim_target': 7, 'aim_target_is_local': True, 'entity_target_valid': True},
+        weapon_inputs={'replicated_input_bits': mask})]))
+    rows.append(dict(event='detector_sample', t=t, decisions=[]))
+rows += [dict(event='user_attack_mark', t=.7), dict(event='capture_stop', t=1)]
+result = module.analyze(rows)
+assert result['requested_move'] == 'barrager_direct_mlrs' and result['capture_context'] == 'comparison'
+assert not result['ability_runs'] and len(result['targeting_transitions']) == 2
+assert abs(result['sample_gap_s']['median']-.1) < 1e-9
+assert result['targeting_transitions'][1]['weapon_inputs']['replicated_input_bits'] == 2
+assert result['targeting_transitions'][1]['aim_local']
+print('PASS combat inputs without ability rows, comparison labels and independent probe sample timing')

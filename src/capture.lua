@@ -18,7 +18,7 @@ local function json(v)
     return '{'..table.concat(out,',')..'}'
 end
 M.json=json
-function M.new(native,path,log,clock,tracking)
+function M.new(native,path,log,clock,tracking,catalog)
     local self={active=false,last={},errors=0,samples=0}
     local began,deadline,context,next_heartbeat,tracker,file,bytes_written
     local function emit(kind,data)
@@ -31,16 +31,42 @@ function M.new(native,path,log,clock,tracking)
     local function nearby(selected)
         local out={}
         for _,e in ipairs(selected) do
-            out[#out+1]={entity=e.id,unit=e.unit,distance=e.distance,owned=e.owned,health=e.health,class_name=e.class_name}
+            out[#out+1]={entity=e.id,unit=e.unit,resource=e.resource,distance=e.distance,owned=e.owned,health=e.health,class_name=e.class_name}
         end
         return out
     end
-    function self:start(mode)
+    local function animations(selected)
+        -- Animation reads are optional and rotated; inability to read one is diagnostic.
+        for _=1,math.min(4,#selected) do
+            self.animation_cursor=self.animation_cursor%#selected+1
+            local e=selected[self.animation_cursor]
+            local good,states=pcall(native.animation,native,e.unit)
+            local stamp=good and json(states) or tostring(states)
+            if self.last[e.id].stamp~=stamp then
+                emit(good and 'animation_change' or 'animation_unavailable',
+                    {entity=e.id,unit=e.unit,resource=e.resource,distance=e.distance,owned=e.owned,
+                    states=good and states or nil,reason=not good and stamp or nil})
+                self.last[e.id].stamp=stamp
+            end
+        end
+    end
+    function self:start(mode,move_id,capture_context)
         if self.active then self:stop('restarted') end
-        self.mode=mode=='targeting' and 'targeting' or 'crusher'
+        self.mode=mode=='combat' and 'combat' or mode=='targeting' and 'targeting' or 'crusher'
+        self.requested_move=nil;self.resources=nil
+        self.capture_context=capture_context=='comparison' and 'comparison' or 'requested'
+        if self.mode=='combat' then
+            for _,move in ipairs(catalog.moves)do if move.id==move_id then self.requested_move=move end end
+            assert(self.requested_move,'unknown capture move')
+            local allowed={};for _,hash in ipairs(self.requested_move.resources)do allowed[hash]=true end
+            self.resources={};for _,resource in ipairs(catalog.resources)do
+                if allowed[resource.hash] then self.resources[resource.hash]=resource end
+            end
+        end
         self.serial=(self.serial or 0)+1
         local timestamp=os.date('%Y%m%d-%H%M%S')..'-'..math.floor(clock()*1000)..'-'..self.serial
-        self.path=path..'/Sekiro danger alert-'..(self.mode=='targeting' and 'Targeting-' or 'Crusher-')..timestamp..'.jsonl'
+        local label=self.mode=='combat' and 'Combat-'..move_id..'-'..self.capture_context..'-' or self.mode=='targeting' and 'Targeting-' or 'Crusher-'
+        self.path=path..'/Sekiro danger alert-'..label..timestamp..'.jsonl'
         file=assert(io.open(self.path,'wb'),'cannot create capture log')
         began=clock();deadline=began+120;next_heartbeat=0;context=nil
         bytes_written=0;self.active=true;self.last={};self.errors=0;self.samples=0;self.cost=0
@@ -50,11 +76,20 @@ function M.new(native,path,log,clock,tracking)
             source={discover=function(_,h,c,n)return native:targeting_discover(h,c,n)end,
                 resolve=function(_,h,id)return native:targeting_resolve(h,id)end,
                 position=function(_,unit)return native:position(unit)end}
+        elseif self.mode=='combat' then
+            source={discover=function(_,h,c,n)return native:discover(h,c,n,self.resources)end,
+                resolve=function(_,h,id)return native:resolve(h,id,self.resources)end,
+                position=function(_,unit)return native:position(unit)end}
         end
-        tracker=tracking.new(source,self.mode=='targeting' and 2000 or 50,self.mode=='targeting' and 8 or 16)
+        tracker=tracking.new(source,self.mode~='crusher' and 2000 or 50,self.mode~='crusher' and 8 or 16)
         emit('capture_start',{build='25480438',nominal_sample_hz=20,adaptive_sampling=true,
-            diagnostic_range_m=self.mode=='targeting' and 2000 or 50,warning_rule='local_entity_target_and_attack',mode=self.mode,
-            automatic_warning_supported=true,manual_marker='F8',version='0.4.0',mod='Sekiro danger alert'})
+            diagnostic_range_m=self.mode~='crusher' and 2000 or 50,warning_rule='local_entity_target_and_attack',mode=self.mode,
+            requested_move=self.requested_move and self.requested_move.id,
+            requested_attack=self.requested_move and self.requested_move.attack_name,
+            capture_context=self.mode=='combat' and self.capture_context,
+            requested_resources=self.requested_move and self.requested_move.resources,
+            new_moves_automatic_warning=false,automatic_warning_supported=true,
+            manual_marker='F8',version='0.5.0',mod='Sekiro danger alert'})
         log('capture started: '..self.path)
     end
     function self:stop(reason)
@@ -120,29 +155,27 @@ function M.new(native,path,log,clock,tracking)
             for id in pairs(self.last) do
                 if not selected_ids[id] then emit('observation_removed',{entity=id});self.last[id]=nil end
             end
-            if self.mode=='targeting' then
+            if self.mode=='combat' then
+                local states={};local aim_header=native:targeting_header()
+                for _,e in ipairs(selected) do
+                    states[#states+1]=native:combat_state(aim_header,e,scene.avatar,now>=next_heartbeat)
+                end
+                self.observation={sample_t=now-began,source='combat_probe',states=states,
+                    requested_move=self.requested_move.id,capture_context=self.capture_context,tracking=stats}
+                emit('research_sample',{sample_t=now-began,states=states,abilities=active,tracking=stats,
+                    requested_move=self.requested_move.id,avatar_entity=scene.avatar.id,
+                    avatar_unit=scene.avatar.unit,local_position=scene.position})
+            elseif self.mode=='targeting' then
                 local states={}
                 for _,e in ipairs(selected) do states[#states+1]=native:targeting_state(h,e,scene.avatar) end
                 self.observation={sample_t=now-began,source='targeting_probe',states=states,tracking=stats}
                 emit('targeting_sample',{sample_t=now-began,states=states,abilities=active,tracking=stats,
                     avatar_entity=scene.avatar.id,avatar_unit=scene.avatar.unit,local_position=scene.position})
             else
-                -- Animation layers are expensive; abilities and automatic decisions stay at their own rate.
-                for _=1,math.min(4,#selected) do
-                    self.animation_cursor=self.animation_cursor%#selected+1
-                    local e=selected[self.animation_cursor]
-                    local good,states=pcall(native.animation,native,e.unit)
-                    local stamp=good and json(states) or tostring(states)
-                    if self.last[e.id].stamp~=stamp then
-                        emit(good and 'animation_change' or 'animation_unavailable',
-                            {entity=e.id,unit=e.unit,distance=e.distance,owned=e.owned,states=good and states or nil,
-                             reason=not good and stamp or nil})
-                        self.last[e.id].stamp=stamp
-                    end
-                end
                 self.observation={sample_t=now-began,source='capture_only',nearby=near,tracking=stats}
                 emit('abilities',{items=active,nearby=near,source='capture_only'})
             end
+            if self.mode~='targeting' then animations(selected) end
             if now>=next_heartbeat then
                 emit('heartbeat',{nearby=near,component_records=h.count,tracking=stats,reads=native.reads,
                     bytes=native.bytes,avatar_entity=scene.avatar.id,avatar_unit=scene.avatar.unit,

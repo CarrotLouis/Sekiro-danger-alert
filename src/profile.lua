@@ -101,6 +101,23 @@ return {
 "\128\124\059\017\000"
 }),label='ability paused flag'}},
  cannon={resource='2cf3488c4845f8bd',ability=1037,cue_time=1.0,last_warning_time=1.2,fire_time=1.5,end_time=2.5},
+ combat_pins={{rva=18586509,bytes=table.concat({
+"\072\139\029\140\200\022\002"
+}),label='weapon wielder manager'},{rva=7893269,bytes=table.concat({
+"\068\139\083\056"
+}),label='weapon wielder map capacity'},{rva=7893291,bytes=table.concat({
+"\072\139\115\048"
+}),label='weapon wielder map keys'},{rva=18586641,bytes=table.concat({
+"\073\105\202\208\001\000\000"
+}),label='weapon wielder record stride'},{rva=18586654,bytes=table.concat({
+"\072\003\075\096"
+}),label='weapon wielder records'},{rva=18586662,bytes=table.concat({
+"\076\003\075\088"
+}),label='weapon input states'},{rva=18586731,bytes=table.concat({
+"\072\139\067\104"
+}),label='weapon replicated input masks'},{rva=18586768,bytes=table.concat({
+"\072\139\067\072"
+}),label='weapon wielder owner handles'}},
  -- 1411/1412 have live capture support. Other branches are statically reviewed;
  -- exact move names / live coverage still need confirmation. Never use shared animation hashes alone.
  attack_states={[1411]=true,[1412]=true,[1413]=true,[1414]=true,[1415]=true,[1416]=true,

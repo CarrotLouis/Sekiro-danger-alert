@@ -12,7 +12,7 @@ local function upvalue(f,key)
     error('missing upvalue '..key)
 end
 local state=upvalue(menu.register_option,'state')
-local adapter=dofile(root..'/src/menu.lua').new(function()end)
+local adapter=dofile(root..'/src/menu.lua').new(function()end,dofile(root..'/src/catalog.lua'),dofile(root..'/src/profile.lua'))
 assert(adapter:register());assert(adapter.ready)
 assert(adapter:automatic())
 local p='peril_warning.crusher.'
@@ -48,3 +48,27 @@ assert(adapter:consume().target_capture==2 and menu.get(p..'target_capture')==1)
 -- set() never invokes actions, including a saved value reloaded at startup.
 assert(menu.set(p..'preview',2));assert(next(adapter:consume())==nil)
 print('PASS real ModOptionsMenu API v'..menu.version..': slider, applied volume, independent one-shot actions')
+
+-- Every new requested move has its own applied toggle, and the real host accepts both pages.
+local catalog=dofile(root..'/src/catalog.lua');assert(#catalog.moves==16)
+for _,move in ipairs(catalog.moves)do assert(adapter:enabled(move.id))end
+assert(#state.options[p..'research_move'].choices==16)
+assert(menu.set(p..'move.titan_caustic_surge',false));assert(not adapter:enabled('titan_caustic_surge'))
+assert(adapter:enabled('titan_cataclysmic_slam'),'one Titan move must not disable another')
+assert(menu.set(p..'research_move',15));assert(adapter:research_move()=='barrager_direct_mlrs')
+assert(menu.set(p..'research_context',2));assert(adapter:research_context()=='comparison')
+local counts={};for _,mod in ipairs(state.mods)do counts[mod.id]=#mod.order;assert(#mod.order<=32)end
+assert(counts['peril_warning.crusher']==13 and counts['peril_warning.crusher.moves']==30)
+assert(menu.register_option('test.unrelated',{type='toggle',mod='Unrelated',mod_id='test.unrelated',label='Unrelated',default=false}))
+assert(menu.set('test.unrelated',true))
+-- Reset takes precedence over queued one-shot actions and restores every registered setting.
+for id,default in pairs(adapter.defaults)do
+    if type(default)=='boolean' then assert(menu.set(id,not default))end
+end
+for _,cb in ipairs(state.callbacks[p..'preview'])do cb(2)end
+for _,cb in ipairs(state.callbacks[p..'research_capture'])do cb(2)end
+for _,cb in ipairs(state.callbacks[p..'reset'])do cb(2)end
+local actions=adapter:consume();assert(actions.reset==2 and not actions.preview and not actions.research_capture)
+for id,default in pairs(adapter.defaults)do assert(menu.get(id)==default,'reset missed '..id)end
+assert(menu.get('test.unrelated')==true and next(adapter:consume())==nil)
+print('PASS 30 independent move toggles, 16 capture targets, real 32-row limit, cross-page reset and action priority')

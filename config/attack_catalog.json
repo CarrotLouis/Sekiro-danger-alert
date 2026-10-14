@@ -1,0 +1,339 @@
+{
+  "build": "25480438",
+  "entities_sha256": "21377252b81fdbc670eba1e59a8ab64b170323df208f175e708992e4c1fb515e",
+  "typelib_sha256": "4d04870d0a0d4dc1284998c72cdfa6f8ff6d21aba0e36b6f758c6f73dd0417a4",
+  "source": "FileDiver datalibrary, hash-matched to HD2Runtime profile F5FEE03DCFDB; current-build Behavior/Ability/Health component tables. User supplied attack names.",
+  "resources": [
+    {
+      "class_name": "big_walker_turret_cannon",
+      "path": "content/fac_cyborgs/turrets/cyborg_big_walker_turret_cannon/cyborg_big_walker_turret_cannon",
+      "hash": "843d18d4b5512b63",
+      "behavior": 99,
+      "health_component": true
+    },
+    {
+      "class_name": "charger",
+      "path": "content/fac_bugs/cha_charger/cha_charger",
+      "hash": "1a7fcdff98c664b0",
+      "behavior": 104,
+      "health_component": true
+    },
+    {
+      "class_name": "charger_acid",
+      "path": "content/fac_bugs/cha_charger_acid/cha_charger_acid",
+      "hash": "6b202392f4ab605e",
+      "behavior": 105,
+      "health_component": true
+    },
+    {
+      "class_name": "charger_bull",
+      "path": "content/fac_bugs/cha_charger_bull/cha_charger_bull",
+      "hash": "3aff5fd7d5450b99",
+      "behavior": 104,
+      "health_component": true
+    },
+    {
+      "class_name": "charger_burrower",
+      "path": "content/fac_bugs/cha_charger_burrower/cha_charger_burrower",
+      "hash": "0ab7b92b131c228c",
+      "behavior": 106,
+      "health_component": true
+    },
+    {
+      "class_name": "charger_tier2",
+      "path": "content/fac_bugs/cha_charger/cha_charger_tier2",
+      "hash": "a05bd1ec67b3ac4c",
+      "behavior": 104,
+      "health_component": true
+    },
+    {
+      "class_name": "dragon",
+      "path": "content/fac_bugs/cha_dragon/cha_dragon",
+      "hash": "960b48a421a3faaa",
+      "behavior": 108,
+      "health_component": true
+    },
+    {
+      "class_name": "impaler",
+      "path": "content/fac_bugs/cha_impaler/cha_impaler",
+      "hash": "dcf8e74212fbee3b",
+      "behavior": 113,
+      "health_component": true
+    },
+    {
+      "class_name": "impaler_tentacle",
+      "path": "content/fac_bugs/cha_impaler/cha_impaler_tentacle",
+      "hash": "672f7da17f3ba34a",
+      "behavior": 114,
+      "health_component": true
+    },
+    {
+      "class_name": "lieutenant_assault",
+      "path": "content/fac_cyborgs/cha_lieutenant/cha_lieutenant_assault",
+      "hash": "3e0537d606438fea",
+      "behavior": 56,
+      "health_component": true
+    },
+    {
+      "class_name": "lieutenant_ivory_legion_assault",
+      "path": "content/fac_cyborgs/cha_lieutenant/cha_lieutenant_ivory_legion_assault",
+      "hash": "1897bdd32105d2dc",
+      "behavior": 56,
+      "health_component": true
+    },
+    {
+      "class_name": "spawner",
+      "path": "content/fac_cyborgs/vehicles/cyborg_spawner/cyborg_spawner",
+      "hash": "d37e8d120d2836e3",
+      "behavior": 97,
+      "health_component": true
+    },
+    {
+      "class_name": "spawner_jammer",
+      "path": "content/fac_cyborgs/vehicles/cyborg_spawner/cyborg_spawner_jammer",
+      "hash": "30f2dee2333f227a",
+      "behavior": 97,
+      "health_component": true
+    },
+    {
+      "class_name": "strider",
+      "path": "content/fac_bugs/cha_strider/cha_strider",
+      "hash": "9e2e17f2ccccafdd",
+      "behavior": 133,
+      "health_component": true
+    },
+    {
+      "class_name": "strider_gloom",
+      "path": "content/fac_bugs/cha_strider/cha_strider_gloom",
+      "hash": "ef04cb84d097a497",
+      "behavior": 134,
+      "health_component": true
+    },
+    {
+      "class_name": "tank_heavycannon",
+      "path": "content/fac_cyborgs/vehicles/cyborg_tank/cyborg_tank_heavycannon",
+      "hash": "53d8919d7b8abd67",
+      "behavior": 76,
+      "health_component": true
+    },
+    {
+      "class_name": "tank_rocketlauncher",
+      "path": "content/fac_cyborgs/vehicles/cyborg_tank/cyborg_tank_rocketlauncher",
+      "hash": "63df3d07b7424588",
+      "behavior": 78,
+      "health_component": true
+    },
+    {
+      "class_name": "tank_turret_heavycannon",
+      "path": "content/fac_cyborgs/turrets/cyborg_tank_turret_cannon/cyborg_tank_turret_heavycannon",
+      "hash": "8fb47dd28b398cf7",
+      "behavior": 79,
+      "health_component": true
+    },
+    {
+      "class_name": "tank_turret_rocketlauncher",
+      "path": "content/fac_cyborgs/turrets/cyborg_tank_turret_rocketlauncher/cyborg_tank_turret_rocketlauncher",
+      "hash": "5d142c3a73ebc634",
+      "behavior": 80,
+      "health_component": true
+    },
+    {
+      "class_name": "walker_scout",
+      "path": "content/fac_cyborgs/vehicles/cyborg_walker_scout/cyborg_walker_scout",
+      "hash": "f8131632aa867107",
+      "behavior": 94,
+      "health_component": true
+    }
+  ],
+  "moves": [
+    {
+      "id": "charger_heavy_crush",
+      "label": "强袭虫 · 跺脚",
+      "attack_name": "Heavy Crush",
+      "wiki_url": "https://helldivers.wiki.gg/wiki/Charger",
+      "status": "capture_required",
+      "default": true,
+      "resources": [
+        "1a7fcdff98c664b0"
+      ]
+    },
+    {
+      "id": "spore_charger_heavy_crush",
+      "label": "孢子强袭虫 · 跺脚",
+      "attack_name": "Heavy Crush",
+      "wiki_url": "https://helldivers.wiki.gg/wiki/Spore_Charger",
+      "status": "capture_required",
+      "default": true,
+      "resources": [
+        "6b202392f4ab605e"
+      ]
+    },
+    {
+      "id": "behemoth_superheavy_crush",
+      "label": "巨兽强袭虫 · 跺脚",
+      "attack_name": "Superheavy Crush",
+      "wiki_url": "https://helldivers.wiki.gg/wiki/Charger_Behemoth",
+      "status": "capture_required",
+      "default": true,
+      "resources": [
+        "3aff5fd7d5450b99",
+        "a05bd1ec67b3ac4c"
+      ],
+      "capture_note": "Variant identity needs live confirmation; paths are candidates, not a resolved wiki identity."
+    },
+    {
+      "id": "rupture_hardened_crush",
+      "label": "钻地强袭虫 · 跺脚",
+      "attack_name": "Hardened Crush",
+      "wiki_url": "https://helldivers.wiki.gg/wiki/Rupture_Charger",
+      "status": "capture_required",
+      "default": true,
+      "resources": [
+        "0ab7b92b131c228c"
+      ]
+    },
+    {
+      "id": "impaler_momentous_slam",
+      "label": "穿刺虫 · 跺脚",
+      "attack_name": "Momentous Slam",
+      "wiki_url": "https://helldivers.wiki.gg/wiki/Impaler",
+      "status": "capture_required",
+      "default": true,
+      "resources": [
+        "dcf8e74212fbee3b"
+      ]
+    },
+    {
+      "id": "tentacle_slam",
+      "label": "穿刺虫触手 · 下砸",
+      "attack_name": "Tentacle Slam",
+      "wiki_url": "https://helldivers.wiki.gg/wiki/Impaler",
+      "status": "capture_required",
+      "default": true,
+      "resources": [
+        "dcf8e74212fbee3b",
+        "672f7da17f3ba34a"
+      ]
+    },
+    {
+      "id": "titan_cataclysmic_slam",
+      "label": "吐酸泰坦 · 戳腿",
+      "attack_name": "Cataclysmic Slam",
+      "wiki_url": "https://helldivers.wiki.gg/wiki/Bile_Titan",
+      "status": "capture_required",
+      "default": true,
+      "resources": [
+        "9e2e17f2ccccafdd"
+      ]
+    },
+    {
+      "id": "titan_caustic_surge",
+      "label": "吐酸泰坦 · 吐酸",
+      "attack_name": "Caustic Surge",
+      "wiki_url": "https://helldivers.wiki.gg/wiki/Bile_Titan",
+      "status": "capture_required",
+      "default": true,
+      "resources": [
+        "9e2e17f2ccccafdd"
+      ]
+    },
+    {
+      "id": "dragon_alchemical_pyrosis",
+      "label": "蟑龙 · 吐息",
+      "attack_name": "Alchemical Pyrosis",
+      "wiki_url": "https://helldivers.wiki.gg/wiki/Dragonroach",
+      "status": "capture_required",
+      "default": true,
+      "resources": [
+        "960b48a421a3faaa"
+      ]
+    },
+    {
+      "id": "spore_titan_cataclysmic_slam",
+      "label": "孢子泰坦 · 戳腿",
+      "attack_name": "Cataclysmic Slam",
+      "wiki_url": "https://helldivers.wiki.gg/wiki/Spore_Burst_Bile_Titan",
+      "status": "capture_required",
+      "default": true,
+      "resources": [
+        "ef04cb84d097a497"
+      ]
+    },
+    {
+      "id": "hulk_rotary_saw",
+      "label": "巨型者 · 劈砍",
+      "attack_name": "Heavy Rotary Saw",
+      "wiki_url": "https://helldivers.wiki.gg/wiki/Hulk_Scorcher",
+      "status": "capture_required",
+      "default": true,
+      "resources": [
+        "3e0537d606438fea"
+      ]
+    },
+    {
+      "id": "factory_fusion_repeater",
+      "label": "移动工厂 · 炮击",
+      "attack_name": "Fusion Repeater Cannon",
+      "wiki_url": "https://helldivers.wiki.gg/wiki/Factory_Strider",
+      "status": "capture_required",
+      "default": true,
+      "resources": [
+        "d37e8d120d2836e3",
+        "30f2dee2333f227a",
+        "843d18d4b5512b63",
+        "8fb47dd28b398cf7"
+      ]
+    },
+    {
+      "id": "reinforced_heavy_rockets",
+      "label": "强化纵步者 · 火箭弹",
+      "attack_name": "Heavy HE Rockets",
+      "wiki_url": "https://helldivers.wiki.gg/wiki/Reinforced_Scout_Strider",
+      "status": "capture_required",
+      "default": true,
+      "resources": [
+        "f8131632aa867107"
+      ],
+      "capture_note": "Variant identity needs live confirmation; paths are candidates, not a resolved wiki identity."
+    },
+    {
+      "id": "annihilator_fusion_cannon",
+      "label": "湮灭坦克 · 炮击",
+      "attack_name": "Fusion Battle Cannon",
+      "wiki_url": "https://helldivers.wiki.gg/wiki/Annihilator_Tank",
+      "status": "capture_required",
+      "default": true,
+      "resources": [
+        "53d8919d7b8abd67",
+        "8fb47dd28b398cf7"
+      ]
+    },
+    {
+      "id": "barrager_direct_mlrs",
+      "label": "铁幕坦克 · 直射火箭",
+      "attack_name": "Heavy MLRS (HE), direct only",
+      "wiki_url": "https://helldivers.wiki.gg/wiki/Barrager_Tank",
+      "status": "capture_required",
+      "default": true,
+      "resources": [
+        "63df3d07b7424588",
+        "5d142c3a73ebc634"
+      ],
+      "capture_note": "Separately mark direct fire and artillery; do not infer firing mode from distance."
+    },
+    {
+      "id": "jet_hulk_rotary_saw",
+      "label": "巨型炙焰者 · 劈砍",
+      "attack_name": "Heavy Rotary Saw",
+      "wiki_url": "https://helldivers.wiki.gg/wiki/Jet_Brigade_Hulk_Scorcher",
+      "status": "capture_required",
+      "default": true,
+      "resources": [
+        "3e0537d606438fea",
+        "1897bdd32105d2dc"
+      ],
+      "capture_note": "Variant identity needs live confirmation; paths are candidates, not a resolved wiki identity."
+    }
+  ],
+  "filediver_commit": "6bf7c1ccc4be465a35b4bc9d41087781b47034e6"
+}

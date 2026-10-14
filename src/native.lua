@@ -187,7 +187,7 @@ function M.new(memory,profile)
         assert(cap>0 and cap<=4096 and live<=cap,'health counts invalid')
         return {manager=manager,count=live,descriptors=assert(memory.pointer(h,56)),records=assert(memory.pointer(h,72))}
     end
-    function self:discover(header,start,limit)
+    function self:discover(header,start,limit,resources)
         local out={};local last=math.min(header.count,start+limit)
         if last<=start then return out,0 end
         local rows=read(header.descriptors+start*8,(last-start)*8)
@@ -195,17 +195,22 @@ function M.new(memory,profile)
             local at=memory.pointer(rows,i*8)
             if at then
                 local s=read(at,24)
-                if hex(s:sub(1,8))==profile.crusher_resource then out[#out+1]=entity(s,at) end
+                local hash=hex(s:sub(1,8));local named=resources and resources[hash]
+                if named or not resources and hash==profile.crusher_resource then
+                    local e=entity(s,at);e.class_name=named and named.class_name;out[#out+1]=e
+                end
             end
         end
         return out,last>=header.count and 0 or last
     end
-    function self:resolve(header,id)
+    function self:resolve(header,id,resources)
         local index=map_index(header.manager+4144,id,65536)
         if not index or index>=header.count then return nil end
         local at=nullable(header.descriptors+index*8);if not at then return nil end
         local e=entity(read(at,24),at)
-        if e.id~=id or e.resource~=profile.crusher_resource then return nil end
+        local named=resources and resources[e.resource]
+        if e.id~=id or (resources and not named) or (not resources and e.resource~=profile.crusher_resource) then return nil end
+        e.class_name=named and named.class_name
         local health=read(header.records+index*440,440)
         e.health=u32(health,20);e.life=u32(health,412)
         if e.health==0 or e.health>=2147483648 then return nil end
@@ -298,7 +303,7 @@ function M.new(memory,profile)
             and read(e.pointer,20)==e.identity,'targeting identity changed')
         return result
     end
-    function self:behavior_target(e,avatar)
+    function self:behavior_target(e,avatar,include_raw)
         self:verify_targeting()
         assert(read(e.pointer,24):sub(1,20)==e.identity,'AI owner changed')
         -- A peer's cached AI is not authoritative. Return observations for diagnosis;
@@ -309,17 +314,60 @@ function M.new(memory,profile)
         if index and index<4096 then
             local handles=assert(memory.pointer(bh,0x18));local records=assert(memory.pointer(bh,0x20))
             if nullable(handles+index*8)==e.pointer then
-                local ai=read(records+index*0x1f8,0x80)
+                local ai=read(records+index*0x1f8,include_raw and 0x1f8 or 0x80)
                 result={behavior=u32(ai,0),stage=u32(ai,8),pending_stage=u32(ai,12),
                     target=u32(ai,0x18),has_target=ai:byte(0x79)~=0,flags=u32(ai,0x60)}
                 result.target_is_local=result.target==avatar.id and result.has_target
                 result.tracks_entity=bit.band(result.flags,1)~=0
+                if include_raw then result.raw_hex=(ai:gsub('.',function(c)return string.format('%02x',c:byte())end)) end
                 assert(read(mgr+0x40,40)==bh and nullable(handles+index*8)==e.pointer,'AI table changed')
             end
         end
         local descriptor=read(e.pointer,24)
         assert(descriptor:sub(1,20)==e.identity and (bit.band(u32(descriptor,20),1)~=0)==e.owned
             and bit.band(u32(descriptor,20),2)==0,'AI identity or ownership changed')
+        return result
+    end
+    -- Research only: expose bounded weapon input observations, never call a trigger.
+    function self:weapon_inputs(e,include_raw)
+        if not self.combat_proven then
+            assert(profile.combat_pins and #profile.combat_pins>0,'combat pins missing')
+            for _,pin in ipairs(profile.combat_pins) do
+                assert(read(game+pin.rva,#pin.bytes)==pin.bytes,'combat layout mismatch: '..pin.label)
+            end
+            self.combat_proven=true
+        end
+        local mgr=ptr(game+0x3326420);local header=read(mgr+0x30,24)
+        local index=map_index(mgr+0x30,e.id,65536)
+        if not index or index>=4096 then return nil end
+        local handles=ptr(mgr+0x48)
+        if nullable(handles+index*8)~=e.pointer then return nil end
+        assert(read(e.pointer,20)==e.identity,'weapon input owner changed')
+        local row=read(ptr(mgr+0x60)+index*0x1d0,0x1d0)
+        local inputs=read(ptr(mgr+0x58)+index*32,32)
+        local mask=u32(read(ptr(mgr+0x68)+index*4,4),0)
+        local result={replicated_input_bits=mask,local_input_bytes={},slot_head_words={}}
+        for i=0,4 do
+            result.local_input_bytes[i+1]=inputs:byte(i+1)
+            result.slot_head_words[i+1]={u32(row,i*0x50),u32(row,i*0x50+4)}
+        end
+        if include_raw then result.raw_hex=(row:gsub('.',function(c)return string.format('%02x',c:byte())end)) end
+        assert(read(mgr+0x30,24)==header and nullable(handles+index*8)==e.pointer
+            and read(e.pointer,20)==e.identity,'weapon input identity changed')
+        return result
+    end
+    function self:combat_state(h,e,avatar,include_raw)
+        local result={entity=e.id,unit=e.unit,resource=e.resource,class_name=e.class_name,
+            distance=e.distance,owned=e.owned,ai=self:behavior_target(e,avatar,true),
+            weapon_inputs=self:weapon_inputs(e,include_raw)}
+        local index=map_index(h.manager+0x150,e.id,65536)
+        if index and index<h.count and nullable(assert(h.descriptors)+index*8)==e.pointer then
+            e.targeting_index=index
+            result.aim=self:targeting_state(h,e,avatar)
+        end
+        -- Root facing is diagnostic only: it may differ from an animated barrel.
+        local object=unit_object(e.unit);local pose=read(ptr(object+136),64)
+        result.root_forward={x=f32(pose,16),y=f32(pose,20),z=f32(pose,24)}
         return result
     end
     -- Scan the active ability table first, without reserving permanent enemy slots

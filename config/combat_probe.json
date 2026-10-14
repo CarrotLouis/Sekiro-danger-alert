@@ -1,0 +1,45 @@
+{
+  "build": "25480438",
+  "pins": [
+    {
+      "rva": 18586509,
+      "hex": "488b1d8cc81602",
+      "label": "weapon wielder manager"
+    },
+    {
+      "rva": 7893269,
+      "hex": "448b5338",
+      "label": "weapon wielder map capacity"
+    },
+    {
+      "rva": 7893291,
+      "hex": "488b7330",
+      "label": "weapon wielder map keys"
+    },
+    {
+      "rva": 18586641,
+      "hex": "4969cad0010000",
+      "label": "weapon wielder record stride"
+    },
+    {
+      "rva": 18586654,
+      "hex": "48034b60",
+      "label": "weapon wielder records"
+    },
+    {
+      "rva": 18586662,
+      "hex": "4c034b58",
+      "label": "weapon input states"
+    },
+    {
+      "rva": 18586731,
+      "hex": "488b4368",
+      "label": "weapon replicated input masks"
+    },
+    {
+      "rva": 18586768,
+      "hex": "488b4348",
+      "label": "weapon wielder owner handles"
+    }
+  ]
+}

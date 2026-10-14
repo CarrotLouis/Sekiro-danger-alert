@@ -54,6 +54,8 @@ def profile():
     attack_rows=["{rva=%d,bytes=%s,label='%s'}"%(p['rva'],lua_bytes(bytes.fromhex(p['hex'])),p['label'])
                  for p in attacks['pins']]
     cannon='{'+','.join(k+'='+ ("'%s'"%v if isinstance(v,str) else str(v)) for k,v in attacks['cannon'].items())+'}'
+    combat=json.loads((ROOT/'config/combat_probe.json').read_text())
+    combat_rows=["{rva=%d,bytes=%s,label='%s'}"%(p['rva'],lua_bytes(bytes.fromhex(p['hex'])),p['label']) for p in combat['pins']]
     text="""return {
  steam_build='25480438',
  exe_sha256='F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06',
@@ -65,14 +67,24 @@ def profile():
  targeting_resources={%s},
  attack_pins={%s},
  cannon=%s,
+ combat_pins={%s},
  -- 1411/1412 have live capture support. Other branches are statically reviewed;
  -- exact move names / live coverage still need confirmation. Never use shared animation hashes alone.
  attack_states={[1411]=true,[1412]=true,[1413]=true,[1414]=true,[1415]=true,[1416]=true,
                 [1417]=true,[1418]=true,[1419]=true,[1420]=true,[1421]=true,[1422]=true,[1424]=true},
  ignored_stomps={[1409]=true,[1410]=true,[1423]=true},
 }
-"""%(resource_hash(crusher),','.join(rows),','.join(target_rows),','.join(target_resources),','.join(attack_rows),cannon)
+"""%(resource_hash(crusher),','.join(rows),','.join(target_rows),','.join(target_resources),','.join(attack_rows),cannon,','.join(combat_rows))
     (ROOT/'src/profile.lua').write_text(text,encoding='utf-8')
+    catalog=json.loads((ROOT/'config/attack_catalog.json').read_text(encoding='utf-8'))
+    def lua(value):
+        if isinstance(value,str):return json.dumps(value,ensure_ascii=False)
+        if isinstance(value,bool):return 'true' if value else 'false'
+        if value is None:return 'nil'
+        if isinstance(value,list):return '{'+','.join(lua(x) for x in value)+'}'
+        if isinstance(value,dict):return '{'+','.join('['+lua(k)+']='+lua(v) for k,v in value.items())+'}'
+        return str(value)
+    (ROOT/'src/catalog.lua').write_text('-- Generated from config/attack_catalog.json; edit the JSON source.\nreturn '+lua(catalog)+'\n',encoding='utf-8')
 
 def build():
     masks();profile()
@@ -107,7 +119,7 @@ def build():
     (BUILD/'assets.lua').write_text(assets,encoding='utf-8')
     chunks=['-- HD2-Addon: '+OWNER+'\n',"if rawget(_G,'SekiroDangerAlert') then return rawget(_G,'SekiroDangerAlert') end\n"]
     for name,path in [('runtime','vendor/bingus_runtime.lua'),('memory_module','vendor/bingus_memory.lua'),
-                      ('profile','src/profile.lua'),('assets','build/assets.lua'),('menu_module','src/menu.lua'),
+                      ('profile','src/profile.lua'),('catalog','src/catalog.lua'),('assets','build/assets.lua'),('menu_module','src/menu.lua'),
                       ('audio_module','src/audio.lua'),('native_module','src/native.lua'),('overlay_module','src/overlay.lua'),
                       ('tracking_module','src/tracking.lua'),('capture_module','src/capture.lua'),
                       ('marker_module','src/marker.lua'),('detector_module','src/detector.lua')]:

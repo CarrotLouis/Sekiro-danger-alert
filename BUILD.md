@@ -44,3 +44,5 @@ python scripts/build.py
 生成方式与观感调整记录见 [动画预览 R2](docs/ANIMATION-PREVIEW-R2.md)。实际游戏混合效果仍需实测。
 
 0.3.2 的索敌探针配置在 `config/targeting_probe.json`；构建将资源哈希及关键指令写入生成的 `src/profile.lua`。0.4.0 的自动预警也使用其中的行为目标读取与校验。攻击时序和额外指令校验在 `config/attack_probe.json`。采集分析可运行 `python scripts/analyze_capture.py <日志路径>`，报告写入 `outputs/`。
+
+0.5.0 资源和招式目录在 `config/attack_catalog.json`，构建生成 `src/catalog.lua`。新目录的 `capture_required` 表示尚未验证攻击映射，并不直接启用自动规则。武器输入诊断校验在 `config/combat_probe.json`；这些路径仅在手动开启新招式采集时读取。

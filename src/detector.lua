@@ -1,7 +1,8 @@
 -- Resource-specific attack windows plus a currently authoritative entity target.
 -- No range predicate. AI selection alone and stale/replicated aim IDs cannot warn.
 local M={}
-function M.new(native,profile,log,trigger)
+function M.new(native,profile,log,trigger,enabled)
+    enabled=enabled or function()return true end
     local self={previous={},fired={},errors=0,cursor=0}
     function self:reset()
         self.previous={};self.fired={};self.snapshot=nil;self.cursor=0
@@ -19,6 +20,7 @@ function M.new(native,profile,log,trigger)
                 old.time=a.time;old.seen=t;self.previous[key]=old
                 local crusher=e.resource==profile.crusher_resource
                 local cannon=e.resource==profile.cannon.resource and a.id==profile.cannon.ability
+                local move=crusher and 'crusher_'..a.id or cannon and 'cannon_preparation' or nil
                 local cue=cannon and profile.cannon.cue_time or 0
                 local last=cannon and profile.cannon.last_warning_time or 0.35
                 local ai=e.ai
@@ -26,6 +28,7 @@ function M.new(native,profile,log,trigger)
                 local reason
                 if crusher and (profile.ignored_stomps or {})[a.id] then reason='stomp'
                 elseif not (cannon or crusher and profile.attack_states[a.id]) then reason='unmapped'
+                elseif not enabled(move) then reason='move_disabled'
                 elseif a.paused or not a.speed or a.speed<=0 then reason='inactive_clock'
                 elseif old.warned then reason='already_warned'
                 elseif a.time<cue then reason='before_cue'
@@ -38,7 +41,7 @@ function M.new(native,profile,log,trigger)
                 elseif not avatar or ai.target~=avatar.id then reason='other_target'
                 elseif t-(self.fired[identity] or -math.huge)<=0.7 then reason='cooldown'
                 else reason='trigger' end
-                local decision={entity=a.entity,unit=e.unit,class_name=e.class_name,ability=a.id,
+                local decision={entity=a.entity,unit=e.unit,class_name=e.class_name,move=move,ability=a.id,
                     ability_time=a.time,ability_speed=a.speed,sample_time=t,reason=reason,owned=e.owned,
                     target_entity=ai and ai.target,has_target=ai and ai.has_target,
                     tracks_entity=ai and ai.tracks_entity,behavior=ai and ai.behavior,

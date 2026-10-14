@@ -95,3 +95,11 @@ d:step(5);assert(#events==2 and d.snapshot==nil,'mid-read avatar change must rej
 n.scene=function()error('unreadable')end
 for i=6,12 do d:step(i)end;assert(d.disabled)
 print('PASS Crusher branch rules, incomplete legacy evidence, canonical owner/lifecycle and eight-error shutdown')
+
+-- Toggle filtering is per native attack branch, independent of the global automatic switch.
+e.resource=profile.crusher_resource;e.unit=2;e.owned=true;e.alive=true;lock()
+events={};d=module.new({},profile,function()end,function(x)events[#events+1]=x end,
+    function(move)return move=='crusher_1411' end)
+assert(sample(0,1412,0)[1].reason=='move_disabled');sample(1,1411,0);assert(#events==1)
+e.resource=profile.cannon.resource;assert(sample(3,1037,1)[1].reason=='move_disabled');assert(#events==1)
+print('PASS independent attack settings filter recognized Crusher and cannon warnings')

@@ -21,19 +21,21 @@ def analyze(rows):
     runs, active_runs = [], {}
     for r in rows:
         kind = r.get('event')
-        if kind == 'targeting_sample':
+        if kind in ('targeting_sample', 'research_sample'):
             t = r.get('sample_t', r['t']); times.append(t)
             for state in r.get('states', []) or []:
                 key = (state['entity'], state.get('unit'))
                 selected.add(key)
                 ai = state.get('ai') or {}
+                aim = state.get('aim') or state
                 observation = dict(t=t, entity=key[0], unit=key[1], class_name=state.get('class_name'),
                     distance=state.get('distance'), owned=state.get('owned'),
-                    aim_target=state.get('aim_target'), aim_local=state.get('aim_target_is_local'),
-                    entity_target_valid=state.get('entity_target_valid'), position_only=state.get('position_only'),
-                    network_target=state.get('network_target'), network_flags=state.get('network_flags'),
-                    resolved_network_target=state.get('resolved_network_target'),
-                    network_target_consistent=state.get('network_target_consistent'),
+                    resource=state.get('resource'), weapon_inputs=state.get('weapon_inputs'),
+                    aim_target=aim.get('aim_target'), aim_local=aim.get('aim_target_is_local'),
+                    entity_target_valid=aim.get('entity_target_valid'), position_only=aim.get('position_only'),
+                    network_target=aim.get('network_target'), network_flags=aim.get('network_flags'),
+                    resolved_network_target=aim.get('resolved_network_target'),
+                    network_target_consistent=aim.get('network_target_consistent'),
                     ai_available=state.get('ai_available', bool(ai)), behavior=ai.get('behavior'),
                     stage=ai.get('stage'), pending_stage=ai.get('pending_stage'), ai_target=ai.get('target'),
                     ai_local=ai.get('target_is_local'), ai_has_target=ai.get('has_target'),
@@ -60,13 +62,18 @@ def analyze(rows):
                 current_runs[key] = run
             active_runs = current_runs
         elif kind == 'detector_sample':
-            t = r.get('sample_t', r['t']); times.append(t)
+            t = r.get('sample_t', r['t'])
+            if start.get('mode') not in ('targeting', 'combat'): times.append(t)
             for decision in r.get('decisions', []) or []:
                 decisions[decision['reason']] += 1
                 if decision['reason'] not in ('already_observed', 'late_sample'):
                     observations.append(dict(t=t, **decision))
+        elif kind == 'animation_change':
+            observations.append(dict(t=r['t'], source='animation', entity=r.get('entity'),
+                unit=r.get('unit'), resource=r.get('resource'), animation_states=r.get('states')))
     gaps = sorted(b - a for a, b in zip(times, times[1:]) if b >= a)
     return dict(mode=start.get('mode', 'legacy_crusher'), version=start.get('version'),
+        requested_move=start.get('requested_move'), capture_context=start.get('capture_context'),
         duration_s=stop.get('t'), stop_reason=stop.get('reason'), event_counts=dict(events),
         marker_times=markers, observed_targeting_entities=len(selected), decision_sample_counts=dict(decisions),
         sample_gap_s=dict(max=max(gaps) if gaps else None, median=gaps[len(gaps)//2] if gaps else None),

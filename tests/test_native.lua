@@ -168,3 +168,28 @@ u(0x41005000+12,8193);n:begin();assert(not pcall(n.attack_candidates,n,0));u(0x4
 local ap=profile.attack_pins[1];write(game+ap.rva,string.rep('\0',#ap.bytes))
 n=dofile(root..'/src/native.lua').new(mem,profile);n:begin();assert(not pcall(n.attack_candidates,n,0))
 print('PASS bounded attack-table sweep, 40 simultaneous actors, no permanent slots, pause/resource/count/pin rejection')
+
+-- Research health discovery uses a named whitelist; it also sees actors without Ability components.
+u(0x41004000+20,6000);u(0x44001000,100)
+n=dofile(root..'/src/native.lua').new(mem,profile);n:begin();h=n:health_header()
+local names={['00000000000004d2']={class_name='named_test_actor'}}
+found=n:discover(h,0,128,names);assert(#found==1 and found[1].class_name=='named_test_actor')
+e=n:resolve(h,100,names);assert(e and e.class_name=='named_test_actor')
+assert(n:resolve(h,100,{})==nil)
+for _,cp in ipairs(profile.combat_pins)do region(game+cp.rva,#cp.bytes);write(game+cp.rva,cp.bytes)end
+region(game+0x3326420,8);p(game+0x3326420,0x47000000);region(0x47000000,0x70)
+p(0x47000030,0x47001000);u(0x47000038,1);u(0x4700003c,0xffffffff);u(0x47000040,1)
+region(0x47001000,8);u(0x47001000,100);u(0x47001004,0)
+p(0x47000048,0x47002000);region(0x47002000,8);p(0x47002000,0x41003000)
+p(0x47000058,0x47003000);region(0x47003000,32);write(0x47003000,'\1')
+p(0x47000060,0x47004000);region(0x47004000,0x1d0);u(0x47004000,321);u(0x47004004,654)
+p(0x47000068,0x47005000);region(0x47005000,4);u(0x47005000,2)
+n:begin();local inputs=n:weapon_inputs(e,true)
+assert(inputs.replicated_input_bits==2 and inputs.local_input_bytes[1]==1)
+assert(inputs.slot_head_words[1][1]==321 and inputs.slot_head_words[1][2]==654 and #inputs.raw_hex==0x1d0*2)
+local aimh=n:targeting_header();local combat=n:combat_state(aimh,e,{id=777},true)
+assert(combat.ai.has_target and #combat.ai.raw_hex==0x1f8*2 and combat.weapon_inputs and combat.root_forward)
+p(0x47002000,0x41004000);assert(n:weapon_inputs(e)==nil);p(0x47002000,0x41003000)
+local cp=profile.combat_pins[1];write(game+cp.rva,string.rep('\0',#cp.bytes))
+n=dofile(root..'/src/native.lua').new(mem,profile);n:begin();assert(not pcall(n.weapon_inputs,n,e))
+print('PASS named health discovery, pinned weapon-input decoding, optional component ownership and raw diagnostic gating')
