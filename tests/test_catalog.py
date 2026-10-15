@@ -43,7 +43,7 @@ assert len(rules['resources']['5d142c3a73ebc634']['abilities']['1018']['cues'])=
 assert rules['factory']['resource']=='843d18d4b5512b63' and rules['factory']['stage_start_offset']==0x188
 assert rules['factory']['earliest_fire_time']==1 and rules['factory']['last_warning_time']<=.8
 assert len(rules['pins'])>=60
-assert {m['id']for m in moves if m['status']=='enabled_from_native_pending_capture'}=={'harvester_tesla_ripper','harvester_disintegration_beamer'}
+assert all(m['status']=='enabled_from_capture' for m in moves)
 assert resources['965eae5a51acdd4a']['behavior']==280
 assert set(rules['resources']['965eae5a51acdd4a']['abilities'])=={'1956','1957','1961','1962'}
 harvester=json.loads((ROOT/'config/harvester.json').read_text(encoding='utf-8'))
@@ -57,4 +57,5 @@ assert any(p['rva']==harvester['slot_binding_rva']for p in rules['pins'])
 project=json.loads((ROOT/'project.json').read_text(encoding='utf-8'))
 assert project['guid']=='1dc82965-3c84-4eec-bb72-88e8121ac0dc'
 assert 'version=project.version'in(ROOT/'src/entry.lua').read_text(encoding='utf-8')
-print('PASS 18 enabled distinct moves, two native-reviewed Harvester paths pending capture, resource identities and existing exclusions')
+assert harvester['captured_abilities']==[1956,1957,1961]
+print('PASS 18 enabled distinct moves, captured Harvester IDs with native-only 1962 recorded, resource identities and existing exclusions')

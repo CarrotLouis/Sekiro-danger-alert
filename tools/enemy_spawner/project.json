@@ -1,6 +1,6 @@
 {
   "name": "Sekiro danger alert - Enemy Spawner",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "resource": "mods/peril_warning/enemy_spawner",
   "guid": "e2481445-39ce-5af2-9ff2-5052a6a76fd4"
 }

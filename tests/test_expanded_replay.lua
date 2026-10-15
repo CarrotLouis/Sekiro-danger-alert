@@ -2,8 +2,12 @@ local root=arg[1]
 local detector=dofile(root..'/src/detector.lua')
 local profile=dofile(root..'/src/profile.lua')
 local replay=dofile(root..'/tests/fixtures/expanded_attack_replay.lua')
+local harvester=dofile(root..'/tests/fixtures/harvester_attack_replay.lua')
+for _,capture in ipairs(harvester.captures)do capture.resources=harvester.resources;replay.captures[#replay.captures+1]=capture end
 local covered={};local counts={};local samples=0;local total=0;local artillery_rows,hover_rows=0,0
 local expected={
+    harvester_tesla_ripper={harvester_tesla_ripper=10,harvester_disintegration_beamer=7},
+    harvester_disintegration_beamer={harvester_tesla_ripper=5,harvester_disintegration_beamer=7},
     ['annihilator_fusion_cannon-1']={annihilator_fusion_cannon=10},
     ['barrager_direct_mlrs-1']={barrager_direct_mlrs=9},['barrager_direct_mlrs-2']={barrager_direct_mlrs=3},
     ['behemoth_superheavy_crush-1']={behemoth_superheavy_crush=6},['charger_heavy_crush-1']={charger_heavy_crush=9},
@@ -32,7 +36,7 @@ for _,capture in ipairs(replay.captures)do
         local row={};for cell in line:gmatch('[^,]+')do row[#row+1]=assert(tonumber(cell))end
         assert(#row==14);samples=samples+1
         if last_t~=row[1]then submit();last_t=row[1];items={};targets={}end
-        local resource=assert(replay.resources[row[4]])
+        local resource=assert((capture.resources or replay.resources)[row[4]])
         targets[row[2]]={id=row[2],unit=row[3],resource=resource,owned=row[9]==1,alive=true,
             ai={has_target=row[10]==1,tracks_entity=row[11]==1,target=row[12]==1 and 7 or 8,
                 behavior=row[13],stage=row[14]}}
@@ -56,4 +60,4 @@ end
 assert(artillery_rows>100 and hover_rows>100,'negative comparisons must be real captured rows')
 assert(samples>5000 and total>100)
 assert(counts['barrager_direct_mlrs-1'].barrager_direct_mlrs==9,'three direct bursts should warn for each of nine shots')
-print('PASS '..samples..' captured anonymous samples: 15 ability-based moves, direct burst shots, excluded artillery/hover, stable target filters and deduplication')
+print('PASS '..samples..' captured anonymous samples: 17 ability-based moves including Harvester, excluded modes, stable target filters and deduplication')

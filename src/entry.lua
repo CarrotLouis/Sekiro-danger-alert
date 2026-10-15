@@ -40,7 +40,7 @@ local function initialize()
         if event.sample_time~=last_warning_sample then
             last_warning_sample=event.sample_time;overlay:play(now());play_audio()
         end
-    end,function(move)return menu:enabled(move)end)
+    end,function(move)return menu:enabled(move)end,function(move)return menu:delay(move)end)
     if instrumentation then instrumentation:initialize(native,detector,now,log,directory)end
     status('build matched; preparing visual')
 end

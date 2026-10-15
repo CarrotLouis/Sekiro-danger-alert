@@ -1,23 +1,25 @@
-# Sekiro danger alert - Enemy Spawner 0.2.0
+# Sekiro danger alert - Enemy Spawner 0.3.0
 
-独立 Bingus Lua 生成工具，依赖 Bingus Shared Loader v18+、Mod Options Menu v1.2 / API 3，无需安装 HD2Runtime 或警报本体。
+用于警报实测的独立 Bingus Lua addon，支持 16 类敌人。GUID / 入口 / 选择索引保持稳定。与警报本体分别启用，不把生成按钮塞进警报设置页。
 
-由房主在对应阵营的地面任务使用，支持 1–4 人；客机不直接创建。选择敌人，将“生成一只”改为生成并 APPLY，关闭菜单。资源就绪后等待三秒，在执行时镜头水平前方约 20m 生成一只，初始 AI 目标指向房主。按实际位置和高度放置，没有地形射线校准，请选开阔平地。
+房主可在自己菜单直接生成。客机也可选择敌人并 APPLY，**双方都必须装并启用本版**：客机发起请求，由房主准备资源并创建在请求者前方约 20m，初始目标也是请求者。只装客机一端不能让未装工具的房主响应。双方在地面任务且潜兵存活，阵营匹配；粉碎者、猎杀器在光能族任务测试。首次等待资源，之后有 3 秒倒计时。镜头朝向在请求时取值，位置在实际生成时更新；请选平地，未进行地形射线校准。
 
-列表前 14 项不变：四种强袭虫、穿刺虫、吐酸泰坦、蟑龙、孢裂泰坦、巨型者、移动工厂、强化纵步者、湮灭坦克、铁幕坦克、巨型炙焰者。最后追加 **粉碎者、猎杀器**，共 16 项，恰好符合 MOM 的 16 项下拉上限。光能族敌人只能在光能族任务生成。
+通信使用游戏已接入的 PlayFab lobby member data，独占 `sda_spawn` 键。沿用 HD2Runtime 已核对的 ABI / 布局，并与本机保留代码复核；没有聊天消息、任意 RPC、内存写入或客机本地权威创建。无需安装 HD2Runtime。首次发现 lobby 后等 10–20 秒，属性异步传递还可能等数秒；发布间隔至少 5 秒。客机等待结果最长 180 秒，忙碌 / 失败后可重试，避免连续 APPLY。
 
-联机采集时，房主生成后避开，让客机靠近，等待敌人实际转向并攻击客机；**采集版安装在客机电脑，由客机按 F8**。生成位置和初始目标仍是房主，本版不新增目标玩家选择或客机请求转发。
+房主根据 SDK 中的发送 peer，绑定当前玩家列表、网络 avatar、Health / Unit 和位置；请求不携带坐标、资源哈希、代码或地址。重放 / 过期请求不生成。任务 / 房主 / 请求者死亡或增援会取消；所有客机共享房主侧每任务 32 次、至少 3 秒间隔和容量 / 资源门禁。穿刺虫仍需 **5–10 难度**，并检查当前触手正权重、表身份和独立模型；保留此前低难度闪退修复。
 
-仍保留穿刺虫 5–10 难度检查、当前触手生成权重 / 表身份 / 资源就绪检查，避免 1–4 难度召唤空指针。每次一只，间隔至少三秒，每任务最多 32 次；资源等待最多 90 秒，死亡 / 换场景 / 丧失房主身份取消请求，未校验成功的创建会停止该任务后续生成。
+每个客户端的日志和状态在 `%LOCALAPPDATA%/CowboyBingus/Helldivers2/Logs/Sekiro danger alert - Enemy Spawner.log` 与同名前缀 `-STATUS.txt`。客机不出怪时同时保留房主和客机日志。双方启用此测试工具后，会响应同房间内有效的白名单生成请求；平时可禁用独立工具。
 
-状态写入设置说明、`Sekiro danger alert - Enemy Spawner.log` 和同名 `-STATUS.txt`，位于 `%LOCALAPPDATA%/CowboyBingus/Helldivers2/Logs/`。
+离线已用真实游戏 LuaJIT 和真实 ModOptionsMenu 检查菜单 / 封包、native ABI、资源等待与召唤检查、双端请求 / ACK、一次性、当前房主 / 请求者绑定、超时、换任务 / 死亡取消、消息边界、发布限流和故障隔离。**新联机传递、跨端模型 / AI / 攻击同步及房主迁移没有实机结论**。旧单人创建证据不能替代这些检查。详情见 [0.8.1 验证记录](../../docs/VALIDATION-0.8.1.md)。
 
-离线证明：真实游戏 LuaJIT 编译、真实 MOM 注册 16 项、合成 1–4 人房主门禁及客机零创建调用、原有原生创建 ABI / 资源加载 / 召唤拒绝检查。未增加新的原生调用、内存写入或补丁。**多人创建后的跨端可见性、新增两类完整 AI / 武器行为和地形落点仍需实测**，不把合成测试说成实机确认。
+构建：
 
-构建：在根目录设置 `HD2_LUA51_DLL` 后执行 `python scripts/build.py`、`python scripts/test.py --mom-source work/ModOptionsMenu`、`python tools/enemy_spawner/build.py --mom-source work/ModOptionsMenu`。源码门禁 / 测试失败不封包，无自动部署或发布。GUID / 入口与 0.1.1 相同。
+```powershell
+$env:HD2_LUA51_DLL = '你的游戏目录/bin/lua51.dll'
+python tools/enemy_spawner/build.py --mom-source work/ModOptionsMenu
+```
 
-本轮证据见 [0.8.0 验证范围](../../docs/VALIDATION-0.8.0.md)，旧穿刺虫问题见 [0.1.1 证据](../../docs/ENEMY-SPAWNER-0.1.1.md)。
+未自动部署或发布 Release，ZIP 只写入忽略的 `outputs/`。完整随包说明来自 [入口内嵌指南](src/entry.lua)。
 
-Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime
-
-Bingus helpers: CowboyBingus, 0BSD；资源映射：FileDiver by xypwn。许可证和来源见工程 `vendor/` 与 `CREDITS.txt`。
+Uses code / research from HD2Runtime by SkyeShade (MIT)
+https://github.com/SkyeShade/HD2Runtime

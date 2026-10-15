@@ -1,0 +1,460 @@
+{
+  "source": {
+    "exeSha256": "F5FEE03DCFDB2E553A4752C283590950AC13316B376D8196AA556FF0400D5F06",
+    "build": "F5FEE03DCFDB",
+    "research": "peer-messaging-F5FEE03DCFDB.json",
+    "gameDllSha256": "2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E"
+  },
+  "context": {
+    "hostPeer": 45992,
+    "localPeer": 45976,
+    "global": 55037680,
+    "wrapper": 119920
+  },
+  "wrapper": {
+    "engineLobby": 0,
+    "active": 7078,
+    "platformPosted": 7079
+  },
+  "playfab": {
+    "lobby": 16,
+    "handle": 288,
+    "state": 280,
+    "joined": 3,
+    "memberCount": 256,
+    "members": 264
+  },
+  "api": {
+    "tableRva": 41737840,
+    "registry": 41717120,
+    "setMemberData": 288,
+    "setMemberDataRva": 9203728,
+    "registryGlobal": 53633800,
+    "memberData": 280,
+    "memberDataRva": 9203504,
+    "table": 248
+  },
+  "key": "sda_spawn",
+  "pins": [
+    {
+      "label": "T+0xF0: the engine lobby's state (+0x8)",
+      "hex": "8b4108",
+      "module": "exe",
+      "rva": 9202784
+    },
+    {
+      "label": "member_data(engine lobby, peer, key) ...",
+      "hex": "48895c2410",
+      "module": "exe",
+      "rva": 9203504
+    },
+    {
+      "label": "... PlayfabLobby ...",
+      "hex": "488b5910",
+      "module": "exe",
+      "rva": 9203514
+    },
+    {
+      "label": "... the key ...",
+      "hex": "498bf8",
+      "module": "exe",
+      "rva": 9203518
+    },
+    {
+      "label": "... the member peer ids (+0x108) ...",
+      "hex": "488b8308010000",
+      "module": "exe",
+      "rva": 9203521
+    },
+    {
+      "label": "... their count (+0x100) ...",
+      "hex": "448b8b00010000",
+      "module": "exe",
+      "rva": 9203528
+    },
+    {
+      "label": "... the peer must be a member ...",
+      "hex": "483910",
+      "module": "exe",
+      "rva": 9203544
+    },
+    {
+      "label": "... else NULL",
+      "hex": "33c0",
+      "module": "exe",
+      "rva": 9203558
+    },
+    {
+      "label": "the handle ...",
+      "hex": "488b8b20010000",
+      "module": "exe",
+      "rva": 9203612
+    },
+    {
+      "label": "... &value ...",
+      "hex": "4c8d4c2460",
+      "module": "exe",
+      "rva": 9203629
+    },
+    {
+      "label": "... the key ...",
+      "hex": "4c8bc7",
+      "module": "exe",
+      "rva": 9203641
+    },
+    {
+      "label": "... PFLobbyGetMemberProperty",
+      "hex": "ff152c01b300",
+      "module": "exe",
+      "rva": 9203654
+    },
+    {
+      "label": "returns the value (the SDK clears it on failure)",
+      "hex": "488b442460",
+      "module": "exe",
+      "rva": 9203711
+    },
+    {
+      "label": "set_member_data(engine lobby, n, keys, values) ...",
+      "hex": "4883ec58",
+      "module": "exe",
+      "rva": 9203728
+    },
+    {
+      "label": "... PlayfabLobby = engine lobby +0x10 (no null check) ...",
+      "hex": "488b4910",
+      "module": "exe",
+      "rva": 9203732
+    },
+    {
+      "label": "xor eax, eax",
+      "hex": "33c0",
+      "module": "exe",
+      "rva": 9203736
+    },
+    {
+      "label": "... member update: the count ...",
+      "hex": "89542430",
+      "module": "exe",
+      "rva": 9203738
+    },
+    {
+      "label": "... the keys ...",
+      "hex": "4c89442438",
+      "module": "exe",
+      "rva": 9203742
+    },
+    {
+      "label": "... no lobby update ...",
+      "hex": "4533c0",
+      "module": "exe",
+      "rva": 9203747
+    },
+    {
+      "label": "... the values ...",
+      "hex": "4c894c2440",
+      "module": "exe",
+      "rva": 9203750
+    },
+    {
+      "label": "... &member update ...",
+      "hex": "4c8d4c2430",
+      "module": "exe",
+      "rva": 9203755
+    },
+    {
+      "label": "... &the local user (PlayfabLobby +0x130) ...",
+      "hex": "488d9130010000",
+      "module": "exe",
+      "rva": 9203760
+    },
+    {
+      "label": "mov dword ptr [rsp + 0x34], eax",
+      "hex": "89442434",
+      "module": "exe",
+      "rva": 9203767
+    },
+    {
+      "label": "... the PFLobbyHandle (+0x120) ...",
+      "hex": "488b8920010000",
+      "module": "exe",
+      "rva": 9203771
+    },
+    {
+      "label": "... async context NULL ...",
+      "hex": "4889442420",
+      "module": "exe",
+      "rva": 9203778
+    },
+    {
+      "label": "... PFLobbyPostUpdate: one post per call",
+      "hex": "ff159b00b300",
+      "module": "exe",
+      "rva": 9203783
+    },
+    {
+      "label": "its result is returned",
+      "hex": "4883c458",
+      "module": "exe",
+      "rva": 9203789
+    },
+    {
+      "label": "ret ",
+      "hex": "c3",
+      "module": "exe",
+      "rva": 9203793
+    },
+    {
+      "label": "kick_member: PlayfabLobby ...",
+      "hex": "488b5910",
+      "module": "exe",
+      "rva": 9232282
+    },
+    {
+      "label": "... its state (+0x118) ...",
+      "hex": "48638318010000",
+      "module": "exe",
+      "rva": 9232286
+    },
+    {
+      "label": "... must be 3 (joined) before its own post",
+      "hex": "83f803",
+      "module": "exe",
+      "rva": 9232293
+    },
+    {
+      "label": "the handle it posts with",
+      "hex": "488b8b20010000",
+      "module": "exe",
+      "rva": 9232317
+    },
+    {
+      "label": "PostUpdateCompleted: the result ...",
+      "hex": "8b4b04",
+      "module": "exe",
+      "rva": 9239202
+    },
+    {
+      "label": "... success: one log line ...",
+      "hex": "85c9",
+      "module": "exe",
+      "rva": 9239205
+    },
+    {
+      "label": "... only \"the lobby doesn't exist\" ...",
+      "hex": "817b0426622389",
+      "module": "exe",
+      "rva": 9239248
+    },
+    {
+      "label": "... looks up the lobby by its handle (+8): the async context (+0x20) is never read",
+      "hex": "488b5308",
+      "module": "exe",
+      "rva": 9239261
+    },
+    {
+      "label": "the network context global ...",
+      "hex": "488b1dc44df602",
+      "module": "game",
+      "rva": 5341477
+    },
+    {
+      "label": "... + 0x1D470: the game's lobby wrapper (the lobby key setter takes it)",
+      "hex": "488d8b70d40100",
+      "module": "game",
+      "rva": 5341491
+    },
+    {
+      "label": "... the lobby key setter (wrapper, key, value)",
+      "hex": "e891a4b700",
+      "module": "game",
+      "rva": 5341498
+    },
+    {
+      "label": "game_session_disconnect: the network context ...",
+      "hex": "488b05ea813f02",
+      "module": "game",
+      "rva": 17321215
+    },
+    {
+      "label": "... its session host peer (+0xB3A8) ...",
+      "hex": "4c8b80a8b30000",
+      "module": "game",
+      "rva": 17321222
+    },
+    {
+      "label": "... compared with the sending peer ...",
+      "hex": "4c3bc7",
+      "module": "game",
+      "rva": 17321229
+    },
+    {
+      "label": "... logged as \"host=%llx\" when they differ",
+      "hex": "488d1527e11d01",
+      "module": "game",
+      "rva": 17321282
+    },
+    {
+      "label": "the lobby leave: the flag ...",
+      "hex": "80b9a61b000000",
+      "module": "game",
+      "rva": 17374922
+    },
+    {
+      "label": "... the engine lobby (wrapper +0) ...",
+      "hex": "488b0b",
+      "module": "game",
+      "rva": 17375056
+    },
+    {
+      "label": "... the engine API registry ...",
+      "hex": "488b05a9432902",
+      "module": "game",
+      "rva": 17375064
+    },
+    {
+      "label": "... its PlayFab table T ...",
+      "hex": "488b90f8000000",
+      "module": "game",
+      "rva": 17375071
+    },
+    {
+      "label": "... T+0xB8 destroys the engine lobby ...",
+      "hex": "ff92b8000000",
+      "module": "game",
+      "rva": 17375078
+    },
+    {
+      "label": "... wrapper +0 = 0 ...",
+      "hex": "48893b",
+      "module": "game",
+      "rva": 17375084
+    },
+    {
+      "label": "... and the flag cleared: no dangling lobby",
+      "hex": "4088bba61b0000",
+      "module": "game",
+      "rva": 17375094
+    },
+    {
+      "label": "the wrapper update uses the lobby only while +0x1BA6 is set ...",
+      "hex": "80b9a61b000000",
+      "module": "game",
+      "rva": 17381316
+    },
+    {
+      "label": "... (rdi = the wrapper)",
+      "hex": "488bf9",
+      "module": "game",
+      "rva": 17381323
+    },
+    {
+      "label": "the game's own member-data read: the context ...",
+      "hex": "488b0515913e02",
+      "module": "game",
+      "rva": 17382868
+    },
+    {
+      "label": "... it skips the local peer ...",
+      "hex": "483b9098b30000",
+      "module": "game",
+      "rva": 17382875
+    },
+    {
+      "label": "... the registry ...",
+      "hex": "488b051d252902",
+      "module": "game",
+      "rva": 17382884
+    },
+    {
+      "label": "... T ...",
+      "hex": "488b88f8000000",
+      "module": "game",
+      "rva": 17382891
+    },
+    {
+      "label": "... T+0x118 member_data ...",
+      "hex": "488b8118010000",
+      "module": "game",
+      "rva": 17382898
+    },
+    {
+      "label": "... the engine lobby ...",
+      "hex": "488b0f",
+      "module": "game",
+      "rva": 17382905
+    },
+    {
+      "label": "... called (rdx = the peer)",
+      "hex": "ffd0",
+      "module": "game",
+      "rva": 17382908
+    },
+    {
+      "label": "a NULL value: the member has no such property",
+      "hex": "4885c0",
+      "module": "game",
+      "rva": 17382910
+    },
+    {
+      "label": "the game's own member-data post: the registry ...",
+      "hex": "488b059f222902",
+      "module": "game",
+      "rva": 17383522
+    },
+    {
+      "label": "... &value ...",
+      "hex": "4c8d4c2420",
+      "module": "game",
+      "rva": 17383529
+    },
+    {
+      "label": "... the engine lobby (wrapper +0) ...",
+      "hex": "488b0f",
+      "module": "game",
+      "rva": 17383534
+    },
+    {
+      "label": "... &key ...",
+      "hex": "4c8d442450",
+      "module": "game",
+      "rva": 17383537
+    },
+    {
+      "label": "... one property ...",
+      "hex": "ba01000000",
+      "module": "game",
+      "rva": 17383547
+    },
+    {
+      "label": "... T ...",
+      "hex": "4c8b90f8000000",
+      "module": "game",
+      "rva": 17383552
+    },
+    {
+      "label": "... T+0x120 set_member_data",
+      "hex": "41ff9220010000",
+      "module": "game",
+      "rva": 17383559
+    },
+    {
+      "label": "its \"platform_lobby\" key is posted once per join, whatever the result",
+      "hex": "c687a71b000001",
+      "module": "game",
+      "rva": 17383566
+    },
+    {
+      "module": "exe",
+      "rva": 9203504,
+      "hex": "48895c2410574883ec50488b5910498bf8488b8308010000448b8b000100004e8d14c8493bc2740e48391074164883c008493bc275f233c0488b5c24684883c4505fc333c04c8d05d419de000f57c0894424404c8bca88442444488d4c24308d50150f11442430e8f4b086ff488b8b20010000488d44243048894424204c8d4c2460488d058fd2dd004c8bc7488d5424204889442428ff152c01b3008bd885c0742d833deb73a9010075248bc8ff159d00b3004c8d0576ebd9008bd34885c0488d0d4a1bde004c0f45c0e8e1a6cfff488b442460488b5c24684883c4505fc3",
+      "label": "complete PlayFab memberDataRva wrapper"
+    },
+    {
+      "module": "exe",
+      "rva": 9203728,
+      "hex": "4883ec58488b491033c0895424304c894424384533c04c894c24404c8d4c2430488d913001000089442434488b89200100004889442420ff159b00b3004883c458c3",
+      "label": "complete PlayFab setMemberDataRva wrapper"
+    }
+  ]
+}

@@ -74,4 +74,21 @@ class SpawnerCatalog(unittest.TestCase):
         for i in p['pins']:
             self.assertIn(i['module'],{'game','exe'});self.assertGreater(i['rva'],4096)
             self.assertGreaterEqual(len(bytes.fromhex(i['hex'])),5)
+    def test_peer_channel_pins_and_whitelist(self):
+        p=json.loads((MOD/'config/peer_channel.json').read_text(encoding='utf-8'))
+        self.assertEqual(p['key'],'sda_spawn')
+        self.assertEqual(p['api']['memberDataRva'],0x8c6f30)
+        self.assertEqual(p['api']['setMemberDataRva'],0x8c7010)
+        self.assertEqual(p['context']['hostPeer'],0xb3a8)
+        self.assertEqual(len(p['pins']),70)
+        pins={i['label']:i for i in p['pins']}
+        self.assertEqual(len(bytes.fromhex(pins['complete PlayFab memberDataRva wrapper']['hex'])),223)
+        self.assertEqual(len(bytes.fromhex(pins['complete PlayFab setMemberDataRva wrapper']['hex'])),66)
+        source=(MOD/'src/channel.lua').read_text(encoding='utf-8')
+        for forbidden in ['WriteProcessMemory','VirtualProtect','CreateRemoteThread','ffi.cdef']:
+            self.assertNotIn(forbidden,source)
+        native=json.loads((MOD/'config/native.json').read_text(encoding='utf-8'))
+        self.assertEqual(native['remote_players']['players']['peers'],0x2c8)
+        self.assertEqual(native['remote_players']['avatars']['avatarId'],0x3a8)
+        self.assertEqual(native['remote_players']['avatars']['entityBase'],0xf32f20)
 if __name__=='__main__':unittest.main()

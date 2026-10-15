@@ -26,3 +26,9 @@ package residency, component tables and mission authority. The native implementa
 no HD2Runtime runtime is bundled. Code pins were re-decoded from the owner's retained build 25480438 module sections.
 EnemyPackageComponentData, UnitComponentData, MountComponentData and BehaviorComponentData mapping facts
 were derived from the matching FileDiver tables/typelib. No tables, dictionaries or original module dumps are bundled.
+
+Enemy Spawner 0.3.0 adapts the PlayFab member-data read/post ABI and lobby safety layout from
+HD2Runtime runtime/peer_channel.lua, runtime/windows_write.lua and domains/peer_messaging.lua (MIT).
+Uses its own sda_spawn property and independent bounded spawn-intent protocol, not Runtime's private keys.
+The exact native wrappers and player/avatar layouts were re-proved against retained build 25480438 code.
+The MIT license is included with the companion ZIP; no full HD2Runtime dependency or game binaries are bundled.

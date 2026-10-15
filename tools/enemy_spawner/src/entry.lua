@@ -1,40 +1,48 @@
-local GUIDE=[===[Sekiro danger alert - Enemy Spawner — 测试说明
+local GUIDE=[===[Sekiro danger alert - Enemy Spawner 0.3.0 — 测试说明
 
 依赖：Bingus Shared Loader v18+、Mod Options Menu v1.2。
-这是独立测试工具，可与 Sekiro danger alert 同时启用。
+独立测试工具，可与 Sekiro danger alert 同时启用。无需安装 HD2Runtime。
 
-1. 导入并启用本 ZIP，启动游戏后等待至少 20 秒。
-2. 由房主进入对应阵营任务（支持 1–4 人），找开阔平地，平视前方。
+1. 导入并启用本 ZIP，完整重启游戏，等待至少 20 秒。
+2. 进入对应阵营地面任务，找开阔平地，平视前方。
 3. 在 MODS → Sekiro danger alert - Enemy Spawner 中选择敌人。
-4. 将“生成一只”改为“生成一只”，点击 APPLY 并关闭设置。
-5. 首次使用会等待资源加载；就绪后再等 3 秒，在镜头前方约 20m 生成一只。
-6. 下次生成时再次选择“生成一只”并 APPLY。切换敌人本身不生成。
-   重开设置并选中“生成一只”，说明区可查看当前状态。
+4. 将“生成一只”改为“生成一只”，APPLY 并关闭设置。
+5. 房主直接准备资源；客机则先请求房主。资源就绪后倒计时 3 秒，在请求者前方约 20m 生成一只。
+6. 下次再次选择生成并 APPLY。切换敌人本身不生成；说明区可查看当前状态。
 
-包含 16 类敌人，新增粉碎者和猎杀器，位于列表最后。穿刺虫由自身 AI 召唤触手；不单独伪造触手。
-穿刺虫请在 5–10 难度测试。1–4 难度的原生触手生成权重为 0，工具会拒绝生成并显示原因。
-生成前还会检查当前任务的触手生成表和独立触手模型；仅加载本体资源无法保证召唤安全。
-敌人保留原生血量、武器和行为，创建时目标指向本人。
-仅限对应阵营的房主，支持 1–4 人任务；客机不能本地直接创建。
-联机采集时，房主生成后避开，让客机靠近并等待敌人转向客机。
-客机必须在自己的电脑采集本人被攻击，不能由主机代采。
-菜单选择、资源等待和版本检查不会直接生成实体。
-每次一只、间隔至少 3 秒，每任务最多 32 次；实体容量不足会拒绝。
-资源最多等待 90 秒；潜兵死亡或场景变化会取消待执行请求。
-坐标按镜头水平前方和当前高度计算，没有地形射线校准，请避开坡地、悬崖和建筑。
+客机用法
+房主和客机均需安装并启用本版 0.3.0。房主无需代操作菜单；启用本工具会处理同房间客机的白名单生成请求。
+客机只提交请求，权威创建在房主执行。只装客机一端无法让未装工具的房主响应。
+请求者镜头水平朝向在 APPLY 时固定，位置按实际创建时房主读到的请求者当前位置取得。
+初始目标指向发起请求的潜兵。房主自己生成仍在房主前方并以房主为初始目标。
+双方进入任务后，联机通道需等 10–20 秒就绪；成员属性通过游戏联机服务异步传递，可能再等数秒。
+单次请求等待结果最多 180 秒，房主只处理一项生成任务；提示忙碌 / 失败后检查房主状态，再重新 APPLY。
+不要连续重复 APPLY。同一 token 只处理一次，过期请求、任务 / 房主 / 请求者变化会取消或拒绝。
+房主必须仍在任务中且潜兵存活；请求者死亡、增援或离开任务会取消资源等待 / 倒计时。
+没有聊天消息、任意 RPC、内存写入或客户端直接创建。网络请求和接收只针对独立 sda_spawn 成员属性。
+客机采集仍在自己的电脑记录本人被攻击，不能让主机代采。
 
-状态和日志：
+包含 16 类敌人，粉碎者和猎杀器在列表最后，旧 14 项索引不变。
+只在对应阵营生成，粉碎者和猎杀器请进入光能族任务。
+穿刺虫由原生 AI 召唤触手，不单独伪造触手。需 5–10 难度；1–4 难触手权重为 0 会被拒绝。
+生成前检查当前触手生成表、正权重和独立模型，保留此前低难度闪退修复。
+每次一只，实际创建间隔至少 3 秒；每任务本工具合计最多 32 次，客机请求不会绕过总数。
+资源最多等待 90 秒，包与全部本体 / 挂载 / 召唤物模型就绪后才创建；容量不足会拒绝。
+坐标没有地形射线校准，请避开坡地、悬崖和建筑。
+
+日志 / 状态：
 %LOCALAPPDATA%/CowboyBingus/Helldivers2/Logs/Sekiro danger alert - Enemy Spawner.log
 %LOCALAPPDATA%/CowboyBingus/Helldivers2/Logs/Sekiro danger alert - Enemy Spawner-STATUS.txt
-“native spawn begin”没有对应“returned”可定位到原生调用阶段；不要持续重复尝试。
+“native spawn begin”没有对应“returned”可定位到原生调用阶段，不要持续重复尝试。
 
-离线已检查菜单、一次性动作、资源 / 召唤门禁、生成参数和封包。
-日志已确认多种强袭虫和穿刺虫本体创建；穿刺虫 1 难召唤闪退已从两次转储定位。
-本版对危险条件的拒绝经过离线验证；5 难召唤触手、多人房主创建后的跨端可见性、新增两类完整行为和地形落点仍需实测。
-不自动发布 GitHub Release；成品仅在本地 outputs/。
+离线已检查菜单、ABI / 布局 pin、请求 / ACK、精确一次、超时、死亡 / 换任务取消、请求者绑定、资源 / 召唤门禁与封包。
+旧版有单人创建证据；0.3.0 新增客机请求传递、跨端模型 / AI / 攻击同步、房主迁移仍需联机实测。
+仅提供本地 outputs/ 测试包，不自动发布 GitHub Release。
 
-Uses code / research from HD2Runtime by SkyeShade
+Uses code / research from HD2Runtime by SkyeShade (MIT; bundled license)
 https://github.com/SkyeShade/HD2Runtime
+PlayFab member-data ABI and lobby guards adapted from peer_channel.lua / windows_write.lua;
+re-decoded against retained build 25480438 code. Independent protocol and key; Runtime not bundled.
 Enemy resource/package mappings researched from FileDiver by xypwn.
 https://github.com/xypwn/filediver
 ]===]
@@ -59,7 +67,12 @@ end
 log(project.name..' '..project.version..' build '..build_id..' loaded; Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
 local memory=memory_module.new(runtime)
 menu=menu_module.new(catalog,log)
-local origin=memory.time();local controller,refused
+local origin=memory.time();local controller,remote,refused
+local nonce_sequence=0
+local function nonce()
+    nonce_sequence=nonce_sequence+1
+    return string.format('%08x%08x',os.time()%4294967296,(math.floor(memory.time()*1000000)+nonce_sequence)%4294967296)
+end
 local function step()
     local now=memory.time()-origin
     if not menu:register()then status('等待 ModOptionsMenu v1.2 / Waiting for ModOptionsMenu');return end
@@ -74,16 +87,22 @@ local function step()
         local core=core_module.new(memory,profile)
         local native=native_module.new(memory,spawn_profile,catalog,core,log)
         native:begin();native:prove()
-        controller=controller_module.new(native,log,status)
+        controller=controller_module.new(native,log,status,function(requester,success,reason)
+            if remote then remote:complete(requester,success,reason)end
+        end)
+        local channel=channel_module.new(memory,peer_profile,log)
+        remote=remote_module.new(native,controller,channel,catalog,log,status,nonce,memory.time)
         status('已就绪 / Ready')
     end
     if not controller then return end
-    if enemy then controller:request(enemy,now)end
+    if enemy then remote:request(enemy,now)end
     controller:step(now)
+    remote:step(now)
 end
 runtime.guard({name=project.name,step=step,log=log,errors=1,
     stop=function(reason)
         if controller then controller:stop(reason)end
+        if remote then remote:stop()end
         status('已停止 / Stopped: '..tostring(reason))
     end}):install()
 return api

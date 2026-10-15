@@ -49,10 +49,16 @@ function M.new(log,catalog,profile)
         for index,move in ipairs(moves)do
             if not register('move.'..move.id,{type='toggle',label=move.label,description=move.description,
                 default=true,gap=move.gap})then return false end
+            if move.id=='harvester_tesla_ripper' or move.id=='harvester_disintegration_beamer' then
+                local label=move.id=='harvester_tesla_ripper' and '电击' or '激光'
+                if not register('delay.'..move.id,{type='slider',label='猎杀器 · '..label..'延迟 / Delay (s)',
+                    min=0,max=2,step=.1,default=0,
+                    description='在原预警时机之后延迟 0–2 秒，步进 0.1 秒，0 保持原时机。图标和音效同时延后；攻击结束、取消、转向队友或潜兵死亡会取消待发提示。按 APPLY 生效。'})then return false end
+            end
         end
         if not register('reset',{type='choice',label='恢复全部默认值 / Restore defaults',default=1,gap=true,
             choices={'待命 / Ready','恢复全部默认值 / Restore all'},
-            description='APPLY 后恢复本模组全部默认值：所有招式开启、偏移 0、大小 100%、音量 60，并取消待执行预览。'})then return false end
+            description='APPLY 后恢复本模组全部默认值：所有招式开启、偏移和延迟 0、大小 100%、音量 60，并取消待执行预警和预览。'})then return false end
         -- Saved actions never replay on startup; set() does not run callbacks.
         for _,key in ipairs({'preview','visual','reset'})do
             menu.set(prefix..key,1)
@@ -61,7 +67,7 @@ function M.new(log,catalog,profile)
             end)
         end
         self.ready=true
-        log('menu registered: '..(#moves+7)..' options on one page; '..#moves..' attack toggles grouped by faction')
+        log('menu registered: '..(#moves+9)..' options on one page; '..#moves..' attack toggles grouped by faction')
         return true
     end
     function self:volume()
@@ -75,6 +81,12 @@ function M.new(log,catalog,profile)
             move='crusher_melee'
         end
         return self.ready and menu.get(prefix..'move.'..tostring(move))==true
+    end
+    function self:delay(move)
+        if move~='harvester_tesla_ripper' and move~='harvester_disintegration_beamer' then return 0 end
+        local value=self.ready and tonumber(menu.get(prefix..'delay.'..move)) or 0
+        if not value or value~=value then return 0 end
+        return math.floor(math.max(0,math.min(2,value))*10+.5)/10
     end
     function self:appearance()
         local function value(key,default,lo,hi)

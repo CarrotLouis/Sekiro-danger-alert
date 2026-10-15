@@ -17,6 +17,7 @@ local saved=upvalue(menu.register_option,'saved_values')()
 -- Real persisted values from the old two-page build, including retired actions.
 saved[p..'offset_x']='25';saved[p..'size']='150';saved[p..'volume']='42'
 saved[p..'move.titan_caustic_surge']='false';saved[p..'move.crusher_1411']='false'
+saved[p..'delay.harvester_tesla_ripper']='0.7'
 for _,key in ipairs({'automatic','capture','target_capture','research_capture','preview','visual','reset'})do saved[p..key]='2'end
 local catalog=dofile(root..'/src/catalog.lua');local profile=dofile(root..'/src/profile.lua')
 local adapter=dofile(root..'/src/menu.lua').new(function()end,catalog,profile)
@@ -34,7 +35,7 @@ for _,mod in ipairs(state.mods)do
     assert(mod.id~='peril_warning.crusher.moves','release must not create a second page')
     if mod.id=='peril_warning.crusher'then category=mod end
 end
-assert(category and category.source=='Sekiro danger alert' and #category.order==27)
+assert(category and category.source=='Sekiro danger alert' and #category.order==29)
 assert(menu.max_options==32 and #category.order<=menu.max_options)
 local switches=0
 for _,option in ipairs(category.order)do if option.kind=='toggle'then switches=switches+1 end end
@@ -44,7 +45,10 @@ local expected={};for _,faction in ipairs({2,8,4})do
     if faction==4 then expected[#expected+1]='crusher_melee'end
     for _,move in ipairs(catalog.moves)do if move.faction==faction then expected[#expected+1]=move.id end end
 end
-for index,id in ipairs(expected)do assert(category.order[index+6].id==p..'move.'..id,'faction order changed')end
+local index=0
+for _,option in ipairs(category.order)do if option.kind=='toggle'then
+    index=index+1;assert(option.id==p..'move.'..expected[index],'faction order changed')
+end end
 assert(expected[#expected-2]=='crusher_melee'and expected[#expected-1]=='harvester_tesla_ripper'
     and expected[#expected]=='harvester_disintegration_beamer')
 assert(state.options[p..'move.crusher_melee'].label=='粉碎者 · 危险近战')
@@ -71,6 +75,14 @@ local appearance=adapter:appearance();assert(appearance.x==-1 and appearance.y==
 assert(menu.set(p..'size',50));assert(adapter:appearance().scale==.5)
 assert(menu.set(p..'volume',0));assert(adapter:volume()==0)
 assert(menu.set(p..'volume',100));assert(adapter:volume()==100)
+assert(adapter:delay('harvester_tesla_ripper')==.7 and adapter:delay('harvester_disintegration_beamer')==0)
+assert(adapter:delay('crusher_1411')==0)
+for _,move in ipairs({'harvester_tesla_ripper','harvester_disintegration_beamer'})do
+    local o=state.options[p..'delay.'..move]
+    assert(o.kind=='slider'and o.min==0 and o.max==2 and o.step==.1 and o.default==0)
+    assert(menu.set(p..'delay.'..move,2));assert(adapter:delay(move)==2)
+    assert(menu.set(p..'delay.'..move,.1));assert(adapter:delay(move)==.1)
+end
 for _,cb in ipairs(state.callbacks[p..'preview'])do cb(2)end
 assert(menu.set(p..'volume',27))
 local actions=adapter:consume();assert(actions.preview==2 and not actions.visual and not actions.capture)
@@ -85,5 +97,5 @@ for _,key in ipairs({'preview','visual','reset'})do for _,cb in ipairs(state.cal
 local reset=adapter:consume();assert(reset.reset==2 and not reset.preview and not reset.visual)
 local count=0
 for id,default in pairs(adapter.defaults)do count=count+1;assert(menu.get(id)==default,'reset missed '..id)end
-assert(count==27 and menu.get('test.unrelated')==true and next(adapter:consume())==nil)
-print('PASS real MOM API v3: one 27-row page, 20 switches in faction order, stable retained values, independent Harvester controls and complete reset')
+assert(count==29 and menu.get('test.unrelated')==true and next(adapter:consume())==nil)
+print('PASS real MOM API v3: one 29-row page, 20 switches, two 0-2s/.1s delay sliders, persisted values and complete reset')

@@ -1,8 +1,9 @@
 -- Resource-specific attack windows plus a coherent local-player entity target.
 -- Owners use authoritative AI; peers use verified, processed network target IDs.
 local M={}
-function M.new(native,profile,log,trigger,enabled)
+function M.new(native,profile,log,trigger,enabled,delay)
     enabled=enabled or function()return true end
+    delay=delay or function()return 0 end
     local self={previous={},fired={},peer_factory={},errors=0,cursor=0}
     function self:reset()
         self.previous={};self.fired={};self.peer_factory={};self.peer_sequence=0
@@ -17,7 +18,10 @@ function M.new(native,profile,log,trigger,enabled)
                 local key=source..':'..a.entity..':'..e.unit..':'..a.slot
                 local old=self.previous[key]
                 if not old or old.id~=a.id or old.token~=a.token or a.time<old.time-0.1 or t-old.seen>2 then
-                    old={id=a.id,token=a.token,warned={}}
+                    old={id=a.id,token=a.token,warned={},pending={}}
+                end
+                if old.seen and t-old.seen>.35 then
+                    for shot in pairs(old.pending)do old.warned[shot]=true;old.pending[shot]=nil end
                 end
                 if old.time and t>old.seen and a.time>old.time+.00001
                     and a.time-old.time<=(t-old.seen)*math.max(a.speed or 0,1)*4+.1 then
@@ -41,6 +45,7 @@ function M.new(native,profile,log,trigger,enabled)
                 local shot=1
                 for index,c in ipairs(cues)do if a.time>=c.time then shot=index end end
                 local window=cues[shot]
+                local pending=old.pending[shot]
                 local ai=e.ai
                 local target=ai;if not e.owned then target=e.peer_target end
                 local peer=not e.owned and target and target.verified and target.source=='replicated_aim'
@@ -53,9 +58,9 @@ function M.new(native,profile,log,trigger,enabled)
                 elseif not enabled(move) then reason='move_disabled'
                 elseif a.paused or not a.speed or a.speed<=0 or a.time~=a.time or a.time<0 then reason='inactive_clock'
                 elseif old.warned[shot] then reason='already_warned'
-                elseif a.time<window.time then reason='before_cue'
-                elseif a.time>window.last then reason='late_sample'
-                elseif window.fire and (window.fire-a.time)/a.speed<0.2 then reason='insufficient_lead'
+                elseif not pending and a.time<window.time then reason='before_cue'
+                elseif not pending and a.time>window.last then reason='late_sample'
+                elseif not pending and window.fire and (window.fire-a.time)/a.speed<0.2 then reason='insufficient_lead'
                 elseif e.alive==false then reason='dead_or_replaced'
                 elseif not e.owned and not peer then reason='unverified_peer_target'
                 elseif not e.owned and source=='factory_stage' then reason='unverified_peer_preparation'
@@ -72,15 +77,41 @@ function M.new(native,profile,log,trigger,enabled)
                 elseif peer_factory and a.target_network~=avatar.network_id then reason='other_target'
                 elseif t-(self.fired[identity] or -math.huge)<=0.7 then reason='cooldown'
                 else reason='trigger' end
+                -- Only an originally eligible Harvester attack can arm a delay.
+                -- Every subsequent sample must still prove that same living actor,
+                -- advancing ability and local target. No detached wall-clock timer.
+                if pending and reason~='trigger' then
+                    old.pending[shot]=nil;old.warned[shot]=true
+                elseif reason=='trigger' then
+                    if not pending and (move=='harvester_tesla_ripper' or move=='harvester_disintegration_beamer')then
+                        local seconds=tonumber(delay(move))or 0
+                        if seconds~=seconds then seconds=0 end
+                        seconds=math.floor(math.max(0,math.min(2,seconds))*10+.5)/10
+                        if seconds>0 then
+                            pending={due=t+seconds,at=t,seconds=seconds,avatar=avatar.id,avatar_unit=avatar.unit,
+                                avatar_network=avatar.network_id,owned=e.owned}
+                            old.pending[shot]=pending
+                        end
+                    end
+                    if pending then
+                        if pending.avatar~=avatar.id or pending.avatar_unit~=avatar.unit
+                            or pending.avatar_network~=avatar.network_id or pending.owned~=e.owned then
+                            reason='delay_cancelled';old.pending[shot]=nil;old.warned[shot]=true
+                        elseif t-pending.at>.15 and (not old.progress_at or t-old.progress_at>.15)then
+                            reason='delay_clock_stalled';old.pending[shot]=nil;old.warned[shot]=true
+                        elseif t<pending.due then reason='delayed' end
+                    end
+                end
                 local decision={entity=a.entity,unit=e.unit,class_name=e.class_name,move=move,ability=a.id,
                     ability_time=a.time,ability_speed=a.speed,sample_time=t,reason=reason,owned=e.owned,
                     target_entity=target and target.target,has_target=target and target.has_target,
                     tracks_entity=target and target.tracks_entity,behavior=behavior and behavior.behavior,
                     stage=behavior and behavior.stage,target_source=target and (e.owned and 'behavior' or target.source),avatar_entity=avatar and avatar.id,
-                    attack_source=source,shot_index=shot,attack_token=a.token}
+                    attack_source=source,shot_index=shot,attack_token=a.token,
+                    warning_delay=pending and pending.seconds or 0,detected_at=pending and pending.at or t}
                 decisions[#decisions+1]=decision
                 if reason=='trigger' then
-                    old.warned[shot]=true;self.fired[identity]=t;trigger(decision)
+                    old.pending[shot]=nil;old.warned[shot]=true;self.fired[identity]=t;trigger(decision)
                 end
             end
         end

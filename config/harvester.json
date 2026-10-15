@@ -1,6 +1,6 @@
 {
   "build": "25480438",
-  "source": "Pinned FileDiver entity tables and native weapon-input handlers; live capture pending. See docs/VALIDATION-0.8.0.md.",
+  "source": "Pinned native mapping plus solo captures: 1961 and 1956/1957 observed. 1962 remains native-reviewed only. See docs/VALIDATION-0.8.1.md.",
   "entity": "965eae5a51acdd4a",
   "behavior": 280,
   "faction": 4,
@@ -68,5 +68,10 @@
     1963,
     1966
   ],
-  "slot_binding_rva": 3167101
+  "slot_binding_rva": 3167101,
+  "captured_abilities": [
+    1956,
+    1957,
+    1961
+  ]
 }

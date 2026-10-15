@@ -20,7 +20,7 @@ def lua(value):
 
 def module(path):return '(function()\n'+path.read_text(encoding='utf-8')+'\nend)()'
 
-def assemble(project,catalog,native):
+def encode_profile(native):
     # Config contains only build-relative facts, never live pointers or game files.
     native=dict(native)
     # Binary code pins need decimal byte escapes (UTF-8 would corrupt bytes above 127).
@@ -29,13 +29,18 @@ def assemble(project,catalog,native):
     encoded=encoded[:-1]+',["pins"]={'+','.join('{module='+lua(p['module'])+',rva='+str(p['rva'])+
         ',label='+lua(p['label'])+',bytes="'+''.join('\\%03d'%b for b in bytes.fromhex(p['hex']))+'"}'
         for p in pins)+'}}'
+    return encoded
+
+def assemble(project,catalog,native,peer):
     files=[('runtime',ROOT/'vendor/bingus_runtime.lua'),('memory_module',ROOT/'vendor/bingus_memory.lua'),
         ('profile',ROOT/'src/profile.lua'),('core_module',ROOT/'src/native.lua'),
         ('menu_module',MOD/'src/menu.lua'),('native_module',MOD/'src/native.lua'),
-        ('controller_module',MOD/'src/controller.lua')]
+        ('controller_module',MOD/'src/controller.lua'),('channel_module',MOD/'src/channel.lua'),
+        ('remote_module',MOD/'src/remote.lua')]
     chunks=['-- HD2-Addon: '+project['resource']+'\n',
         "if rawget(_G,'SekiroDangerAlertEnemySpawner') then return rawget(_G,'SekiroDangerAlertEnemySpawner') end\n",
-        'local project='+lua(project)+'\n','local catalog='+lua(catalog)+'\n','local spawn_profile='+encoded+'\n']
+        'local project='+lua(project)+'\n','local catalog='+lua(catalog)+'\n','local spawn_profile='+encode_profile(native)+'\n',
+        'local peer_profile='+encode_profile(peer)+'\n']
     for name,path in files:chunks.append('local '+name+'='+module(path)+'\n')
     chunks.append((MOD/'src/entry.lua').read_text(encoding='utf-8'))
     pre=''.join(chunks);build_id=hashlib.sha256(pre.encode()).hexdigest()[:12]
@@ -58,7 +63,8 @@ def main():
     assert re.fullmatch(r'mods/[A-Za-z0-9_]+/[A-Za-z0-9_/]+',project['resource'])
     catalog=json.loads((MOD/'config/enemies.json').read_text(encoding='utf-8'))
     native=json.loads((MOD/'config/native.json').read_text(encoding='utf-8'))
-    entry,build_id=assemble(project,catalog,native)
+    peer=json.loads((MOD/'config/peer_channel.json').read_text(encoding='utf-8'))
+    entry,build_id=assemble(project,catalog,native,peer)
     assert not entry.startswith(b'\xef\xbb\xbf')and b'\0'not in entry,'source encoding refused'
     assert not re.search(rb'WriteProcessMemory|VirtualProtect|CreateRemoteThread',entry),'memory writing is refused'
     guide=re.search(r'local GUIDE=\[===\[(.*?)\]===\]',entry.decode('utf-8'),re.S)
@@ -70,12 +76,15 @@ def main():
     subprocess.run([sys.executable,str(ROOT/'vendor/game_lua.py'),str(compile_script),str(source)],check=True,cwd=ROOT)
     subprocess.run([sys.executable,str(ROOT/'tests/test_spawner_catalog.py')],check=True,cwd=ROOT)
     subprocess.run([sys.executable,str(ROOT/'vendor/game_lua.py'),str(ROOT/'tests/test_spawner.lua'),str(ROOT)],check=True,cwd=ROOT)
+    subprocess.run([sys.executable,str(ROOT/'vendor/game_lua.py'),str(ROOT/'tests/test_spawner_remote.lua'),str(ROOT)],check=True,cwd=ROOT)
+    subprocess.run([sys.executable,str(ROOT/'vendor/game_lua.py'),str(ROOT/'tests/test_spawner_channel.lua'),str(ROOT)],check=True,cwd=ROOT)
+    subprocess.run([sys.executable,str(ROOT/'vendor/game_lua.py'),str(ROOT/'tests/test_spawner_entry.lua'),str(ROOT)],check=True,cwd=ROOT)
     subprocess.run([sys.executable,str(ROOT/'vendor/game_lua.py'),str(ROOT/'tests/test_spawner_menu.lua'),str(ROOT),str(args.mom_source.resolve())],check=True,cwd=ROOT)
     if args.validate_only:print('PASS Enemy Spawner source gates and offline checks');return
     archive=make_archive({resource_hash(project['resource']):lua_resource(entry)})
     assert read_archive(archive)=={(LUA_TYPE,resource_hash(project['resource'])):(lua_resource(entry),b'')}
-    description=('Independent host-authoritative enemy test spawner for Sekiro danger alert; 16 types, '
-        'native package loading and one-shot menu action. Impaler requires difficulty 5–10 and eligible tentacles. '
+    description=('Independent host/client-request enemy test spawner for Sekiro danger alert; 16 types, '
+        'host-authoritative creation, both peers need this version; native package loading and one-shot menu action. Impaler requires difficulty 5–10 and eligible tentacles. '
         'Requires Bingus Shared Loader v18+ and ModOptionsMenu v1.2. '
         'Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
     manifest={'Version':1,'Guid':project['guid'],'Name':project['name']+' '+project['version'],

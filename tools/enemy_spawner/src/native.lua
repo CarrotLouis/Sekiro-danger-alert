@@ -1,6 +1,7 @@
 -- Read-only checks plus TWO proven engine requests. No game-memory writes, patches or hooks.
 -- Uses research from HD2Runtime by SkyeShade; native code re-decoded from build 25480438.
 local ffi=require('ffi')
+local bit=require('bit')
 local M={}
 local ZERO8=string.rep('\0',8)
 local function u32(s,o)
@@ -89,7 +90,45 @@ function M.new(memory,profile,catalog,core,log,calls)
         end
         error('entity settings probe limit')
     end
-    function self:scene()
+    local function remote_avatar(peer,network,resource)
+        local R=assert(profile.remote_players,'missing player layout');local P,A=R.players,R.avatars
+        assert(type(peer)=='string'and #peer==16 and peer:match('^%x+$'),'invalid requester peer')
+        assert(type(network)=='number'and network>=1 and network<A.noNetworkId and network%1==0,'invalid requester avatar')
+        local players=ptr(game+P.global);local count=u32(read(players+P.count,4),0)
+        assert(count>=1 and count<=P.maxPlayers,'player roster bounds')
+        local found
+        for slot=0,count-1 do
+            local id=hex(read(players+P.peers+slot*P.peerStride,8))
+            if id==peer:lower() then
+                if u32(read(players+A.lifecycle+slot*A.lifecycleStride,4),0)~=3
+                    or u32(read(players+A.avatarId+slot*A.avatarIdStride,4),0)~=network then return nil end
+                found=slot;break
+            end
+        end
+        if not found then return nil end
+        local manager=ptr(game+A.entities);local h=read(manager+A.mapSlots,20)
+        local cap,empty,mult=u32(h,8),u32(h,12),u32(h,16)
+        assert(cap>=1 and cap<=1048576 and bit.band(cap,cap-1)==0,'network map bounds')
+        local rows=assert(memory.pointer(h));local start=(network*(mult%65536)+((network*math.floor(mult/65536))%65536)*65536)%4294967296
+        for i=0,63 do
+            local row=read(rows+bit.band(start+i,cap-1)*8,8);local key=u32(row,0)
+            if key==empty then return nil end
+            if key==network then
+                local index=u32(row,4);assert(index<262144,'network entity index')
+                local descriptor=read(manager+A.entityBase+index*A.entityStride-8,24)
+                if hex(descriptor:sub(1,8))~=resource or u32(descriptor,16)~=network then return nil end
+                local avatar=core:resolve(core:health_header(),u32(descriptor,8),{[resource]={class_name='avatar'}})
+                if not avatar or avatar.unit~=u32(descriptor,12)or avatar.network_id~=network then return nil end
+                if ptr(game+P.global)~=players or u32(read(players+P.count,4),0)~=count
+                    or hex(read(players+P.peers+found*P.peerStride,8))~=peer:lower()
+                    or u32(read(players+A.avatarId+found*A.avatarIdStride,4),0)~=network then return nil end
+                avatar.position=core:position(avatar.unit)
+                return avatar
+            end
+        end
+        error('network map probe limit')
+    end
+    local function scene_context(requester,allow_peer)
         local scene=core:scene()
         if not(scene and scene.mission and scene.avatar and scene.position)then
             return nil,'需要存活潜兵和地面任务 / Need a living avatar in a mission'
@@ -100,7 +139,8 @@ function M.new(memory,profile,catalog,core,log,calls)
         local mode=ptr(game+53634720)
         if u32(read(mode+8,4),0)~=1 then return nil,'游戏模式尚未就绪 / Mission not ready'end
         local descriptor=read(ptr(mode+56),24)
-        if u32(descriptor,20)%2~=1 then return nil,'需要本机主持任务 / Host required'end
+        scene.host=u32(descriptor,20)%2==1
+        if not scene.host and not allow_peer then return nil,'由房主执行生成请求 / Host creation required'end
         local avatar=core:resolve(core:health_header(),scene.avatar.id,{[scene.avatar.resource]={class_name='avatar'}})
         if not avatar or avatar.unit~=scene.avatar.unit then return nil,'潜兵已死亡 / Avatar unavailable'end
         scene.faction=u32(read(ptr(game+profile.ai_global)+profile.ai_faction,4),0)
@@ -108,7 +148,21 @@ function M.new(memory,profile,catalog,core,log,calls)
         scene.key=scene.key..'/'..tostring(scene.world)..'/'..u32(descriptor,8)
         scene.avatar.position=scene.position
         scene.player_count=count
+        if requester then
+            assert(scene.host,'remote creation requires host')
+            local avatar=remote_avatar(requester.peer,requester.network,scene.avatar.resource)
+            if not avatar then return nil,'请求者已离开、死亡或换潜兵 / Requester unavailable'end
+            scene.avatar=avatar;scene.position=avatar.position;scene.requester=requester
+        end
         return scene
+    end
+    function self:scene(requester)return scene_context(requester,false)end
+    function self:peer_scene()return scene_context(nil,true)end
+    function self:direction()
+        local camera=core:camera();local fx,fy=camera.forward[1],camera.forward[2]
+        local length=math.sqrt(fx*fx+fy*fy)
+        if length<0.1 then return nil,'请平视空地 / Look toward open ground'end
+        return {x=fx/length,y=fy/length}
     end
     local function identities(enemy,scene)
         local ep=record(scene.world,'EnemyPackageComponentData',enemy.hash)
@@ -229,13 +283,20 @@ function M.new(memory,profile,catalog,core,log,calls)
     end
     function self:spawn(enemy,scene)
         self:prove()
-        local latest,why=self:scene()
+        local latest,why=self:scene(scene.requester)
         if not latest then return nil,why end
-        if latest.key~=scene.key or latest.avatar.id~=scene.avatar.id or latest.faction~=enemy.faction then
+        local function same(a,b)
+            return a.key==b.key and a.world==b.world and a.avatar.id==b.avatar.id and a.avatar.unit==b.avatar.unit
+                and a.avatar.network_id==b.avatar.network_id and a.faction==enemy.faction
+        end
+        if not same(latest,scene) then
             return nil,'场景已变化 / Scene changed'
         end
         local ready,detail=self:prepare(enemy,latest)
         if not ready then return nil,'资源尚未就绪 / Resources not ready: '..tostring(detail)end
+        local checked,why=self:scene(scene.requester)
+        if not checked or not same(checked,latest)then return nil,why or'场景已变化 / Scene changed'end
+        latest=checked
         assert(read(latest.world+profile.default_context,profile.context_size)==string.rep('\0',profile.context_size),
             'world default spawn context differs')
         -- The engine's insert assumes a free descriptor. Leave ample room for mounts and future tentacles.
@@ -243,17 +304,19 @@ function M.new(memory,profile,catalog,core,log,calls)
         local handles=read(latest.world+profile.entity_handles,profile.entity_slots*24);local free=0
         for i=0,profile.entity_slots-1 do if u32(handles,i*24+8)==invalid then free=free+1 end end
         if free<64 then return nil,'实体容量不足 / Entity capacity too low'end
-        local camera=core:camera();local fx,fy=camera.forward[1],camera.forward[2]
-        local length=math.sqrt(fx*fx+fy*fy)
-        if length<0.1 then return nil,'请平视空地 / Look toward open ground'end
-        fx,fy=fx/length,fy/length
+        local direction,why
+        if latest.requester then direction=latest.requester.direction else direction,why=self:direction()end
+        if not direction then return nil,why end
+        local fx,fy=direction.x,direction.y
+        assert(coordinate(fx)and coordinate(fy)and math.abs(fx*fx+fy*fy-1)<.001,'invalid requested direction')
         local position={x=latest.position.x+20*fx,y=latest.position.y+20*fy,z=latest.position.z+0.2}
         -- Enemy faces the caller. Position is taken at execution, so moving during countdown is supported.
         local args=M.descriptor(enemy,latest.avatar,position,{x=-fx,y=-fy})
         assert(#self.contexts<256,'session spawn context limit')
         self.contexts[#self.contexts+1]=args.context_storage
         assert(ptr(game+profile.world_global)==latest.world,'component world changed before spawn')
-        log(('native spawn begin %s at=(%.2f,%.2f,%.2f) free_slots=%d'):format(enemy.id,position.x,position.y,position.z,free))
+        log(('native spawn begin %s target=%d requester=%s at=(%.2f,%.2f,%.2f) free_slots=%d'):format(
+            enemy.id,latest.avatar.id,latest.requester and latest.requester.peer or 'local',position.x,position.y,position.z,free))
         local id=calls.spawn(game+profile.spawn_rva,args)
         log('native spawn returned '..tostring(id))
         local result={entity=id,position=position,verified=false}

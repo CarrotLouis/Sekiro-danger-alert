@@ -219,3 +219,50 @@ guarded:begin();assert(guarded:prepare(impaler,s)==true)
 print('PASS Impaler regression: low difficulty has zero native calls; eligible roster, live weight, tags, identity, layout, child readiness and pre-spawn recheck')
 put(game+0x1000,'WRONG');n:begin();assert(not pcall(n.prepare,n,enemy,s)and native_calls.spawns==before_spawns+1)
 print('PASS production native gates: 1–4 player host authority, peer rejection, exact resources and bounded native insertion')
+
+-- Real production requester lookup: peer roster -> network avatar map ->
+-- canonical health/unit -> current authoritative position, never a supplied XYZ.
+put(game+0x1000,'PROOF');put(players+132,bytes(2,4))
+local avatar_hash='f123456789abcdef';local remote_alive=true
+local net_manager,net_rows=0x35000000,0x35001000
+profile.remote_players={players={global=53634152,count=132,maxPlayers=4,peers=0x2c8,peerStride=56},
+    avatars={lifecycle=0x2e0,lifecycleStride=56,avatarId=0x3a8,avatarIdStride=32,noNetworkId=32767,
+        entities=0x38,mapSlots=0x100,entityBase=0x200,entityStride=24}}
+pointer(players+0x2c8,1);pointer(players+0x2c8+56,2)
+put(players+0x2e0,bytes(3,4));put(players+0x2e0+56,bytes(3,4))
+put(players+0x3a8,bytes(11,4));put(players+0x3a8+32,bytes(22,4))
+pointer(game+0x38,net_manager)
+put(net_manager+0x100,bytes(net_rows,8)..bytes(2,4)..bytes(0xffffffff,4)..bytes(1,4))
+put(net_rows,bytes(22,4)..bytes(0,4)..bytes(0xffffffff,4)..bytes(0,4))
+put(net_manager+0x200-8,unhex(avatar_hash)..bytes(222,4)..bytes(700,4)..bytes(22,4)..bytes(0,4))
+function core:scene()return {mission=true,key='world',position={x=0,y=0,z=0},
+    avatar={id=123,unit=500,network_id=11,resource=avatar_hash,owned=true}}end
+function core:position(unit)assert(unit==700);return {x=50,y=60,z=7}end
+function core:resolve(_,id)
+    if id==222 then if not remote_alive then return nil end;return {id=222,unit=700,network_id=22,owned=false,resource=avatar_hash}end
+    return {id=id,unit=id==123 and 500 or 600,owned=true,network_id=11,resource=id==123 and avatar_hash or enemy.hash}
+end
+ffi.cast('uint32_t *',ai_record+0x18)[0]=222;put(records,ffi.string(ai_record,0x1f8))
+local remote_spawns=0
+local remote_native=module.new(mem,profile,catalog,core,function()end,{request=invoke.request,spawn=function(_,args)
+    assert(ffi.cast('uint32_t *',args.context+0x66c)[0]==222)
+    local pose=ffi.cast('float *',args.at+8);assert(pose[12]==70 and pose[13]==60)
+    local target=ffi.cast('float *',args.context+0x670);assert(target[0]==50 and target[1]==60 and target[2]==7)
+    remote_spawns=remote_spawns+1;return 321
+end})
+local requester={peer='0000000000000002',network=22,direction={x=1,y=0}}
+remote_native:begin();local remote_scene=assert(remote_native:scene(requester))
+assert(remote_scene.avatar.id==222 and remote_scene.avatar.owned==false and remote_scene.position.x==50)
+remote_native:begin();assert(remote_native:spawn(enemy,remote_scene).verified and remote_spawns==1)
+remote_alive=false;remote_native:begin();assert(not remote_native:scene(requester))
+remote_native:begin();assert(not remote_native:spawn(enemy,remote_scene)and remote_spawns==1)
+remote_alive=true;put(players+0x3a8+32,bytes(23,4));remote_native:begin();assert(not remote_native:scene(requester))
+put(players+0x3a8+32,bytes(22,4));put(players+0x2e0+56,bytes(2,4))
+remote_native:begin();assert(not remote_native:scene(requester))
+put(players+0x2e0+56,bytes(3,4));pointer(players+0x2c8+56,3)
+remote_native:begin();assert(not remote_native:scene(requester),'another peer cannot claim this avatar')
+pointer(players+0x2c8+56,2)
+put(0x20001000,string.rep('\0',8)..bytes(99,4)..string.rep('\0',12))
+remote_native:begin();assert(remote_native:peer_scene().host==false,'clients may inspect/queue requests')
+remote_native:begin();assert(not remote_native:spawn(enemy,remote_scene)and remote_spawns==1,'clients never directly create')
+print('PASS production remote creation: current peer/network/lifecycle/health binding, host-chosen requester position/target and peer create rejection')

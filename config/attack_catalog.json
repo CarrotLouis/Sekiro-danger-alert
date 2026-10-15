@@ -383,24 +383,24 @@
       "label": "猎杀器 · 电击",
       "attack_name": "Tesla Ripper",
       "default": true,
-      "status": "enabled_from_native_pending_capture",
+      "status": "enabled_from_capture",
       "faction": 4,
       "resources": [
         "965eae5a51acdd4a"
       ],
-      "capture_note": "Build-pinned Tripod weapon ability handlers; requires live host/client capture for actual trigger and dodge timing."
+      "capture_note": "Solo capture validates 1961 (Tesla) and 1956/1957 (beam); 1962 remains native-reviewed only. Timing sliders require live tuning. See docs/VALIDATION-0.8.1.md."
     },
     {
       "id": "harvester_disintegration_beamer",
       "label": "猎杀器 · 激光",
       "attack_name": "Disintegration Beamer",
       "default": true,
-      "status": "enabled_from_native_pending_capture",
+      "status": "enabled_from_capture",
       "faction": 4,
       "resources": [
         "965eae5a51acdd4a"
       ],
-      "capture_note": "Build-pinned Tripod weapon ability handlers; requires live host/client capture for actual trigger and dodge timing."
+      "capture_note": "Solo capture validates 1961 (Tesla) and 1956/1957 (beam); 1962 remains native-reviewed only. Timing sliders require live tuning. See docs/VALIDATION-0.8.1.md."
     }
   ],
   "filediver_commit": "6bf7c1ccc4be465a35b4bc9d41087781b47034e6"

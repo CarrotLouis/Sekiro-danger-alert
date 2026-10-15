@@ -1,6 +1,6 @@
 # Development-only collection sources
 
-These modules are retained for offline regression and optional collection. The ordinary 0.8.0 ZIP does **not** contain them. `python scripts/build.py --diagnostics` produces an alternative ZIP with the **same addon GUID and entry**, a separate six-row capture page and F8 only while recording. Enable either variant, never both. See [采集说明](README-采集说明.txt).
+These modules are retained for offline regression and optional collection. The ordinary 0.8.1 ZIP does **not** contain them. `python scripts/build.py --diagnostics` produces an alternative ZIP with the **same addon GUID and entry**, a separate six-row capture page and F8 only while recording. Enable either variant, never both. See [采集说明](README-采集说明.txt).
 
 - `src/capture.lua`: bounded JSONL capture and delayed F8 annotation logic from the research builds.
 - `src/tracking.lua`: distance-prioritized diagnostic candidate selection; this is not the production attack scan.

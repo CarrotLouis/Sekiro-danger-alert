@@ -158,6 +158,90 @@
       "rva": 9753555,
       "hex": "83f902741c83f904740e83f9087520488d05c7e88701eb10488d051e158801eb07488d0565e9870149898360060000",
       "label": "mission faction installs roster"
+    },
+    {
+      "module": "game",
+      "hex": "486bc1384283bc08",
+      "label": "player block stride",
+      "rva": 6327084
+    },
+    {
+      "module": "game",
+      "hex": "42899c08e0020000",
+      "label": "player lifecycle state",
+      "rva": 6327116
+    },
+    {
+      "module": "game",
+      "hex": "488b0d479dcf02",
+      "label": "player manager global",
+      "rva": 6473498
+    },
+    {
+      "module": "game",
+      "hex": "448b9184000000",
+      "label": "player count",
+      "rva": 6473508
+    },
+    {
+      "module": "game",
+      "hex": "4c8d89c8020000",
+      "label": "player peer ids",
+      "rva": 6473520
+    },
+    {
+      "module": "game",
+      "hex": "4983c138413bc272",
+      "label": "player peer id stride",
+      "rva": 6473534
+    },
+    {
+      "module": "game",
+      "hex": "48c1e0054d03e642",
+      "label": "player avatar network id stride",
+      "rva": 11322981
+    },
+    {
+      "module": "game",
+      "hex": "428b9430a8030000",
+      "label": "player avatar network id",
+      "rva": 11322988
+    },
+    {
+      "module": "game",
+      "hex": "4c8b1ded234902",
+      "label": "entity manager global (network id map)",
+      "rva": 16620452
+    },
+    {
+      "module": "game",
+      "hex": "458b93d02ef200",
+      "label": "network id map capacity",
+      "rva": 16620489
+    },
+    {
+      "module": "game",
+      "hex": "418b9bd82ef200",
+      "label": "network id map multiplier",
+      "rva": 16620503
+    },
+    {
+      "module": "game",
+      "hex": "498bbbc82ef200",
+      "label": "network id map slots",
+      "rva": 16620537
+    },
+    {
+      "module": "game",
+      "hex": "418bb3d42ef200",
+      "label": "network id map empty key",
+      "rva": 16620544
+    },
+    {
+      "module": "game",
+      "hex": "8b4004488d044048",
+      "label": "network id map value = record slot",
+      "rva": 16620617
     }
   ],
   "summon_gate": {
@@ -170,5 +254,36 @@
     "weights": 48,
     "tags": 88,
     "tag_bytes": 32
+  },
+  "remote_players": {
+    "players": {
+      "peerStride": 56,
+      "peers": 712,
+      "maxPlayers": 4,
+      "localUser": 55037680,
+      "global": 53634152,
+      "descriptorEntity": 8,
+      "count": 132,
+      "localPeer": 45976,
+      "descriptors": 232
+    },
+    "avatars": {
+      "mapSlots": 15871688,
+      "lifecycle": 736,
+      "entityBase": 15937312,
+      "avatarId": 936,
+      "noNetworkId": 32767,
+      "mapMultiplier": 15871704,
+      "mapEmpty": 15871700,
+      "lifecycleNames": {
+        "2": "waiting_for_respawn",
+        "3": "spawned"
+      },
+      "mapCapacity": 15871696,
+      "lifecycleStride": 56,
+      "entityStride": 24,
+      "avatarIdStride": 32,
+      "entities": 54968216
+    }
   }
 }

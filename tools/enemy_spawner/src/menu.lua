@@ -11,11 +11,11 @@ function M.new(catalog,log)
         for _,enemy in ipairs(catalog.enemies)do choices[#choices+1]=enemy.label end
         local specs={
             {'enemy',{type='choice',label='选择敌人 / Enemy',default=1,choices=choices,
-                description='16 种测试敌人。由房主在对应阵营任务的开阔平地生成，支持多人；穿刺虫需 5–10 难度。'}},
+                description='16 种测试敌人。房主可直接生成；客机可请求房主生成，双方均需启用 0.3.0+。请进入对应阵营任务；穿刺虫需 5–10 难度。'}},
             {'spawn',{type='choice',label='生成一只 / Spawn one',default=1,
                 choices={'待命 / Ready','生成一只 / Spawn one'},
                 description=function()
-                    return '选择生成后 APPLY 并关闭菜单。资源就绪后等待 3 秒，在镜头前方约 20m 生成一只。当前状态 / Status: '..self.status
+                    return '选择生成后 APPLY 并关闭菜单。客机请求通过联机服务传给房主，可能需等待；房主资源就绪后倒计时 3 秒，在请求者前方约 20m 生成并以请求者为初始目标。当前状态 / Status: '..self.status
                 end}},
         }
         for _,row in ipairs(specs)do

@@ -2,11 +2,11 @@ local root=arg[1]
 local file=assert(io.open(root..'/src/entry.lua','rb'));local source=file:read('*a');file:close()
 local factory=assert(loadstring('return function(project,runtime,memory_module,menu_module,catalog,profile,assets,audio_module,native_module,overlay_module,detector_module,instrumentation)\n'..source..'\nend'))()
 _G.CowboyBingusModLoader={log_directory=root..'/build/test_logs'}
-local t=0;local actions={};local frame,trigger,allowed
+local t=0;local actions={};local frame,trigger,allowed,delay
 local volume=37;local sounds,visuals,steps,resets,releases,closed=0,0,0,0,0,0
 local menu={register=function()return true end,consume=function()local out=actions;actions={};return out end,
     volume=function()return volume end,appearance=function()return {x=0,y=0,scale=1}end,
-    enabled=function(_,move)return move~='disabled' end}
+    enabled=function(_,move)return move~='disabled' end,delay=function(_,move)return move=='harvester_tesla_ripper'and .7 or 0 end}
 local memory={time=function()return t end,verify_build=function()return true end}
 local native={begin=function()end}
 local overlay={ready=false,warmup=function(self)self.ready=true;return true end,
@@ -20,12 +20,13 @@ local received_extension
 local function load(instrument)
     return factory(params,runtime,{new=function()return memory end},{new=function()return menu end},{},{pins={}},
         {pcm='',rate=48000,channels=2},{new=function()return audio end},{new=function(_,_,ext)received_extension=ext;return native end},
-        {new=function()return overlay end},{new=function(_,_,_,callback,enabled)trigger=callback;allowed=enabled;return detector end},instrument)
+        {new=function()return overlay end},{new=function(_,_,_,callback,enabled,delayed)trigger=callback;allowed=enabled;delay=delayed;return detector end},instrument)
 end
 local api=load();assert(load()==api,'duplicate load must reuse the cached release')
 actions={preview=2};frame.step();assert(sounds==1 and visuals==0 and steps==0)
 t=20;frame.step();assert(overlay.ready and steps==1 and api.automatic_warning)
 assert(allowed('enabled') and not allowed('disabled'))
+assert(delay('harvester_tesla_ripper')==.7 and delay('other')==0,'entry connects the applied per-move delay')
 trigger({sample_time=20});trigger({sample_time=20});assert(sounds==2 and visuals==1,'same batch must merge sound and visual')
 actions={visual=2};t=21;frame.step();t=23.9;frame.step();assert(visuals==1)
 t=24;frame.step();assert(visuals==2 and sounds==3)
