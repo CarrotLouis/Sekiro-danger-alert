@@ -33,8 +33,8 @@ function M.new(log,catalog,profile)
         }
         for _,row in ipairs(specs)do if not register(row[1],row[2])then return false end end
         local moves={
-            {id='crusher_melee',label='Crusher · 危险近战',
-                description='统一控制 Crusher 已识别的所有危险近战变体；跺脚不预警。'},
+            {id='crusher_melee',label='粉碎者 · 危险近战',
+                description='统一控制粉碎者已识别的所有危险近战变体；跺脚不预警。'},
             {id='cannon_preparation',label='普通重炮塔 · 开火准备',
                 description='控制普通重炮塔锁定本人后的准备阶段预警。'},
         }
@@ -55,7 +55,7 @@ function M.new(log,catalog,profile)
             end)
         end
         self.ready=true
-        log('menu registered: 25 release options on one page; '..#moves..' attack toggles')
+        log('menu registered: 25 options on one page; '..#moves..' attack toggles')
         return true
     end
     function self:volume()

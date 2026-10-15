@@ -38,7 +38,7 @@ function M.new(memory,profile,extension)
     local function nullable(at)return memory.pointer(read(at,8)) end
     local function numptr(s,o)return u32(s,o)+u32(s,o+4)*4294967296 end
     local function entity(s,p)
-        return {resource=hex(s:sub(1,8)),id=u32(s,8),unit=u32(s,12),owned=bit.band(u32(s,20),1)~=0,
+        return {resource=hex(s:sub(1,8)),id=u32(s,8),unit=u32(s,12),network_id=u32(s,16),owned=bit.band(u32(s,20),1)~=0,
             identity=s:sub(1,20),pointer=p}
     end
     local function map_index(at,id,limit)
@@ -217,6 +217,65 @@ function M.new(memory,profile,extension)
             and bit.band(u32(descriptor,20),2)==0,'AI identity or ownership changed')
         return result
     end
+    function self:verify_peer()
+        if self.peer_proven then return end
+        assert(profile.peer_pins and #profile.peer_pins>0,'peer sync pins missing')
+        for _,pin in ipairs(profile.peer_pins)do
+            assert(read(game+pin.rva,#pin.bytes)==pin.bytes,'peer sync layout mismatch: '..pin.label)
+        end
+        self.peer_proven=true
+    end
+    local function check_descriptor(e)
+        local descriptor=read(e.pointer,24)
+        assert(descriptor:sub(1,20)==e.identity and (bit.band(u32(descriptor,20),1)~=0)==e.owned
+            and bit.band(u32(descriptor,20),2)==0,'replicated owner changed')
+    end
+    -- The remote update resolves the network target into aim[0] and caches the
+    -- processed network ID in aim[4]. All three identities must agree; a cached
+    -- entity ID alone is not evidence of a current lock.
+    function self:replicated_target(e,avatar)
+        self:verify_targeting();self:verify_peer();check_descriptor(e)
+        local mgr=ptr(game+0x3326d30);local h=read(mgr+0x140,72)
+        local local_count,count=u32(h,0),u32(h,4)
+        assert(count<=4096 and local_count<=count,'replicated target counts invalid')
+        local index=map_index(mgr+0x150,e.id,65536)
+        if not index or index>=count then return nil end
+        local handles=assert(memory.pointer(h,0x28))
+        if nullable(handles+index*8)~=e.pointer then return nil end
+        local aim_at=assert(memory.pointer(h,0x38))+index*0xd0
+        local net_at=assert(memory.pointer(h,0x40))+index*0x18
+        local aim=read(aim_at,8);local net=read(net_at,24)
+        local target,processed,network=u32(aim,0),u32(aim,4),u32(net,0)
+        local valid=network~=0x7fff and processed==network and net:byte(0x15)==0
+        -- Resolve against this spawn of the local avatar, not a player slot or
+        -- a previous reinforcement's entity/network ID.
+        if target==avatar.id then
+            valid=valid and avatar.network_id~=nil and avatar.network_id~=0x7fff and network==avatar.network_id
+        end
+        assert(read(mgr+0x140,72)==h and nullable(handles+index*8)==e.pointer
+            and read(aim_at,8)==aim and read(net_at,24)==net,'replicated target changed')
+        check_descriptor(e)
+        return {source='replicated_aim',verified=valid,target=target,network_target=network,
+            has_target=valid,tracks_entity=valid,target_is_local=valid and target==avatar.id}
+    end
+    -- Behavior's incoming decoder writes the network array, not the authoritative
+    -- AI clock. Stage/type/ready are read together from that array for peers.
+    function self:replicated_behavior(e)
+        self:verify_peer();check_descriptor(e)
+        local mgr=ptr(game+0x3326740);local h=read(mgr+0x40,48)
+        local index=map_index(mgr+0x40,e.id,65536)
+        if not index or index>=4096 then return nil end
+        local handles=assert(memory.pointer(h,0x18))
+        if nullable(handles+index*8)~=e.pointer then return nil end
+        local at=assert(memory.pointer(h,0x28))+index*0xa0
+        local state=read(at,0x7c)
+        local result={source='replicated_behavior',verified=true,stage=u32(state,0),behavior=u32(state,4),
+            preparation_ready=bit.band(u32(state,0x78),0x10000000)~=0}
+        assert(read(mgr+0x40,48)==h and nullable(handles+index*8)==e.pointer
+            and read(at,0x7c)==state,'replicated behavior changed')
+        check_descriptor(e)
+        return result
+    end
     -- Scan the active ability table first, without reserving permanent enemy slots
     -- or reading positions. Limits bound work per poll; the cursor resumes at the
     -- next unprocessed row, including when many attacks start simultaneously.
@@ -231,9 +290,11 @@ function M.new(memory,profile,extension)
             self.attack_proven=true
         end
         local manager=ptr(game+53634624);local h=read(manager+8,56)
-        local cap,count=u32(h,0),u32(h,4)
-        assert(cap<=8192 and count<=cap,'ability counts invalid')
-        local stats={ability_records=count,scan_limit=2048,match_limit=32,scanned=0,matched=0}
+        -- +8 is the total instance count; +12 bounds the native update prefix.
+        -- Scanning only the prefix omits replicated instances on peers.
+        local count,local_count=u32(h,0),u32(h,4)
+        assert(count<=8192 and local_count<=count,'ability counts invalid')
+        local stats={ability_records=count,local_ability_records=local_count,scan_limit=2048,match_limit=32,scanned=0,matched=0}
         if count==0 then stats.cursor=0;return {},{},stats end
         cursor=cursor or 0;if cursor>=count then cursor=0 end
         local last=math.min(count,cursor+stats.scan_limit)

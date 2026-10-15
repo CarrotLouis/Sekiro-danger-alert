@@ -58,6 +58,9 @@ def profile():
     attacks=json.loads((ROOT/'config/attack_probe.json').read_text())
     attack_rows=["{rva=%d,bytes=%s,label='%s'}"%(p['rva'],lua_bytes(bytes.fromhex(p['hex'])),p['label'])
                  for p in attacks['pins']]
+    peer=json.loads((ROOT/'config/peer_sync.json').read_text(encoding='utf-8'))
+    peer_rows=["{rva=%d,bytes=%s,label='%s'}"%(p['rva'],lua_bytes(bytes.fromhex(p['hex'])),p['label'])
+               for p in peer['pins']]
     cannon='{'+','.join(k+'='+ ("'%s'"%v if isinstance(v,str) else str(v)) for k,v in attacks['cannon'].items())+'}'
     combat=json.loads((ROOT/'config/combat_probe.json').read_text())
     combat_rows=["{rva=%d,bytes=%s,label='%s'}"%(p['rva'],lua_bytes(bytes.fromhex(p['hex'])),p['label']) for p in combat['pins']]
@@ -83,6 +86,7 @@ def profile():
  targeting_pins={%s},
  targeting_resources={%s},
  attack_pins={%s},
+ peer_pins={%s},
  cannon=%s,
  combat_pins={%s},
  expanded=%s,
@@ -93,7 +97,7 @@ def profile():
                 [1417]=true,[1418]=true,[1419]=true,[1420]=true,[1421]=true,[1422]=true,[1424]=true},
  ignored_stomps={[1409]=true,[1410]=true,[1423]=true},
 }
-"""%(resource_hash(crusher),','.join(rows),','.join(target_rows),','.join(target_resources),','.join(attack_rows),cannon,','.join(combat_rows),encoded,health_resources)
+"""%(resource_hash(crusher),','.join(rows),','.join(target_rows),','.join(target_resources),','.join(attack_rows),','.join(peer_rows),cannon,','.join(combat_rows),encoded,health_resources)
     (ROOT/'src/profile.lua').write_text(text,encoding='utf-8')
     (ROOT/'src/catalog.lua').write_text('-- Generated from config/attack_catalog.json; edit the JSON source.\nreturn '+lua(catalog)+'\n',encoding='utf-8')
 

@@ -23,6 +23,8 @@ for name in ('capture_module','marker_module','tracking_module','GetAsyncKeyStat
              'function self:weapon_inputs','function self:targeting_header','function self:animation'):
     assert name not in source,name
 assert "id='crusher_melee'" in source and "mod_id='peril_warning.crusher'" in source
+assert "label='粉碎者 · 危险近战'" in source
+assert project['version'].startswith('0.'),'continue with test version numbers'
 assert 'peril_warning.crusher.moves' not in source
 assert not any((ROOT/'src'/name).exists() for name in ('capture.lua','tracking.lua','marker.lua'))
 print('PASS packaged release contains only production modules, one settings category and the unified Crusher control')

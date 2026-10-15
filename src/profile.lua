@@ -94,6 +94,49 @@ return {
 }),label='ability active flag'},{rva=8161601,bytes=table.concat({
 "\128\124\059\017\000"
 }),label='ability paused flag'}},
+ peer_pins={{rva=5546706,bytes=table.concat({
+"\065\139\070\008"
+}),label='ability total instance count'},{rva=5546802,bytes=table.concat({
+"\065\255\070\012"
+}),label='ability local prefix increment'},{rva=5546810,bytes=table.concat({
+"\065\255\070\008"
+}),label='ability total increment'},{rva=7062339,bytes=table.concat({
+"\069\059\249"
+}),label='aim update enters replicated tail'},{rva=7062431,bytes=table.concat({
+"\139\012\006"
+}),label='replicated target network ID'},{rva=7062434,bytes=table.concat({
+"\059\076\059\004"
+}),label='processed target network ID'},{rva=7062452,bytes=table.concat({
+"\129\250\255\127\000\000"
+}),label='invalid target network sentinel'},{rva=7062482,bytes=table.concat({
+"\137\012\059"
+}),label='resolved replicated entity target'},{rva=8669986,bytes=table.concat({
+"\076\003\097\104"
+}),label='Behavior network records pointer'},{rva=8670267,bytes=table.concat({
+"\065\139\069\008"
+}),label='Behavior stage encoder source'},{rva=8670274,bytes=table.concat({
+"\065\137\004\036"
+}),label='Behavior network stage'},{rva=8670332,bytes=table.concat({
+"\065\137\068\036\004"
+}),label='Behavior network type'},{rva=8673575,bytes=table.concat({
+"\065\139\133\232\001\000\000"
+}),label='Behavior ready bits encoder source'},{rva=8673582,bytes=table.concat({
+"\065\137\068\036\120"
+}),label='Behavior network ready bits'},{rva=8674355,bytes=table.concat({
+"\076\141\004\128\073\193\224\005\077\003\067\104"
+}),label='Behavior receive record stride and pointer'},{rva=8674452,bytes=table.concat({
+"\065\137\004\036"
+}),label='Behavior received stage'},{rva=8674482,bytes=table.concat({
+"\065\137\068\036\004"
+}),label='Behavior received type'},{rva=8674915,bytes=table.concat({
+"\065\137\068\036\120"
+}),label='Behavior received ready bits'},{rva=1844852,bytes=table.concat({
+"\129\225\255\255\255\015"
+}),label='Factory clears preparation bits on entry'},{rva=1844881,bytes=table.concat({
+"\065\184\000\000\004\000\232\020\035\104\000"
+}),label='Factory preparation clear replicated'},{rva=1850030,bytes=table.concat({
+"\139\082\008\065\184\000\000\004\000\232\244\014\104\000"
+}),label='Factory preparation ready replicated'}},
  cannon={resource='2cf3488c4845f8bd',ability=1037,cue_time=1.0,last_warning_time=1.2,fire_time=1.5,end_time=2.5},
  combat_pins={{rva=18586509,bytes=table.concat({
 "\072\139\029\140\200\022\002"

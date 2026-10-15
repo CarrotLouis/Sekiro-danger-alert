@@ -39,6 +39,7 @@ assert(menu.max_options==32 and #category.order<=menu.max_options)
 local switches=0
 for _,option in ipairs(category.order)do if option.kind=='toggle'then switches=switches+1 end end
 assert(switches==18)
+assert(state.options[p..'move.crusher_melee'].label=='粉碎者 · 危险近战')
 for id in pairs(profile.attack_states)do assert(not state.options[p..'move.crusher_'..id])end
 assert(menu.set(p..'move.crusher_melee',false))
 local detector=dofile(root..'/src/detector.lua').new({},profile,function()end,function()error('disabled Crusher triggered')end,

@@ -155,7 +155,7 @@ assert(#items==0 and stats.scanned==2048 and stats.cursor==2048 and n.bytes<1048
 n:begin();items,actors,stats=n:attack_candidates(stats.cursor)
 assert(#items==1 and items[1].slot==2300 and stats.cursor==0 and actors[1].class_name=='crusher')
 assert(items[1].speed==1 and not items[1].paused and actors[1].owned)
-u(0x41005000+12,40)
+u(0x41005000+8,40);u(0x41005000+12,40)
 for i=0,39 do attack(i,i)end
 n:begin();items,actors,stats=n:attack_candidates(0)
 assert(#items==32 and #actors==32 and stats.cursor==32 and stats.remaining==8)
@@ -165,7 +165,7 @@ assert(#items==8 and stats.cursor==0)
 for _,actor in ipairs(actors)do assert(not seen[actor.id]);seen[actor.id]=true end
 local total=0;for _ in pairs(seen)do total=total+1 end;assert(total==40)
 -- Pause bit and unknown resource stay explicit; a reused owner cannot inherit the old attack.
-u(0x41005000+12,1);write(rows_at+17,'\1')
+u(0x41005000+8,1);u(0x41005000+12,1);write(rows_at+17,'\1')
 n:begin();items=n:attack_candidates(0);assert(items[1].paused)
 write(descriptors_at,pack(4321,8));n:begin();items=n:attack_candidates(0);assert(#items==0)
 u(0x41005000+12,8193);n:begin();assert(not pcall(n.attack_candidates,n,0));u(0x41005000+12,1)

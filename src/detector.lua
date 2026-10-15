@@ -1,11 +1,12 @@
--- Resource-specific attack windows plus a currently authoritative entity target.
--- No range predicate. AI selection alone and stale/replicated aim IDs cannot warn.
+-- Resource-specific attack windows plus a coherent local-player entity target.
+-- Owners use authoritative AI; peers use verified, processed network target IDs.
 local M={}
 function M.new(native,profile,log,trigger,enabled)
     enabled=enabled or function()return true end
-    local self={previous={},fired={},errors=0,cursor=0}
+    local self={previous={},fired={},peer_factory={},errors=0,cursor=0}
     function self:reset()
-        self.previous={};self.fired={};self.snapshot=nil;self.cursor=0;self.factory_cursor=0
+        self.previous={};self.fired={};self.peer_factory={};self.peer_sequence=0
+        self.snapshot=nil;self.cursor=0;self.factory_cursor=0;self.next_report=nil
     end
     function self:observe(items,targets,t,avatar)
         local decisions={}
@@ -18,22 +19,32 @@ function M.new(native,profile,log,trigger,enabled)
                 if not old or old.id~=a.id or old.token~=a.token or a.time<old.time-0.1 or t-old.seen>2 then
                     old={id=a.id,token=a.token,warned={}}
                 end
+                if old.time and t>old.seen and a.time>old.time+.00001
+                    and a.time-old.time<=(t-old.seen)*math.max(a.speed or 0,1)*4+.1 then
+                    old.progress_at=t
+                end
                 old.time=a.time;old.seen=t;self.previous[key]=old
                 local crusher=e.resource==profile.crusher_resource
                 local cannon=e.resource==profile.cannon.resource and a.id==profile.cannon.ability
                 local expanded=profile.expanded and profile.expanded.resources[e.resource]
                 local rule=expanded and expanded.abilities[a.id]
                 local excluded=expanded and expanded.excluded[a.id]
-                local factory=profile.expanded and source=='factory_stage' and e.resource==profile.expanded.factory.resource
+                local peer_factory=source=='factory_replica'
+                local factory=profile.expanded and (source=='factory_stage' or peer_factory)
+                    and e.resource==profile.expanded.factory.resource
                 local F=factory and profile.expanded.factory
                 local move=factory and F.move or rule and rule.move or crusher and 'crusher_'..a.id or cannon and 'cannon_preparation' or nil
                 local cues=rule and rule.cues or {{time=factory and F.cue_time or cannon and profile.cannon.cue_time or 0,
                     last=factory and F.last_warning_time or cannon and profile.cannon.last_warning_time or .35,
                     fire=factory and F.earliest_fire_time or cannon and profile.cannon.fire_time or nil}}
+                if peer_factory then cues={{time=0,last=.2}}end
                 local shot=1
                 for index,c in ipairs(cues)do if a.time>=c.time then shot=index end end
                 local window=cues[shot]
                 local ai=e.ai
+                local target=ai;if not e.owned then target=e.peer_target end
+                local peer=not e.owned and target and target.verified and target.source=='replicated_aim'
+                local behavior=ai;if peer_factory then behavior=e.peer_behavior end
                 local identity=a.entity..':'..e.unit
                 local reason
                 if crusher and (profile.ignored_stomps or {})[a.id] then reason='stomp'
@@ -46,19 +57,26 @@ function M.new(native,profile,log,trigger,enabled)
                 elseif a.time>window.last then reason='late_sample'
                 elseif window.fire and (window.fire-a.time)/a.speed<0.2 then reason='insufficient_lead'
                 elseif e.alive==false then reason='dead_or_replaced'
-                elseif not e.owned then reason='unverified_peer_target'
-                elseif not ai then reason='no_ai_target'
-                elseif not ai.has_target or not ai.tracks_entity or ai.target==0 then reason='no_entity_target'
-                elseif not avatar or ai.target~=avatar.id then reason='other_target'
-                elseif (expanded or factory) and ai.behavior~=(factory and F.behavior or expanded.behavior) then reason='other_behavior'
-                elseif factory and (ai.stage~=F.stage or not ai.preparation_ready) then reason='not_preparing'
+                elseif not e.owned and not peer then reason='unverified_peer_target'
+                elseif not e.owned and source=='factory_stage' then reason='unverified_peer_preparation'
+                elseif not target then reason='no_ai_target'
+                elseif not target.has_target or not target.tracks_entity or target.target==0 then reason='no_entity_target'
+                elseif not avatar or target.target~=avatar.id then reason='other_target'
+                elseif peer and (not avatar.network_id or avatar.network_id==0x7fff
+                    or target.network_target~=avatar.network_id)then reason='unverified_peer_target'
+                elseif peer and source=='ability' and (not old.progress_at or t-old.progress_at>.15) then reason='peer_clock_unconfirmed'
+                elseif peer_factory and (not peer or not behavior or not behavior.verified)then reason='unverified_peer_preparation'
+                elseif (e.owned and (expanded or factory) or peer_factory)
+                    and behavior.behavior~=(factory and F.behavior or expanded.behavior)then reason='other_behavior'
+                elseif factory and (behavior.stage~=F.stage or not behavior.preparation_ready)then reason='not_preparing'
+                elseif peer_factory and a.target_network~=avatar.network_id then reason='other_target'
                 elseif t-(self.fired[identity] or -math.huge)<=0.7 then reason='cooldown'
                 else reason='trigger' end
                 local decision={entity=a.entity,unit=e.unit,class_name=e.class_name,move=move,ability=a.id,
                     ability_time=a.time,ability_speed=a.speed,sample_time=t,reason=reason,owned=e.owned,
-                    target_entity=ai and ai.target,has_target=ai and ai.has_target,
-                    tracks_entity=ai and ai.tracks_entity,behavior=ai and ai.behavior,
-                    stage=ai and ai.stage,target_source=ai and 'behavior',avatar_entity=avatar and avatar.id,
+                    target_entity=target and target.target,has_target=target and target.has_target,
+                    tracks_entity=target and target.tracks_entity,behavior=behavior and behavior.behavior,
+                    stage=behavior and behavior.stage,target_source=target and (e.owned and 'behavior' or target.source),avatar_entity=avatar and avatar.id,
                     attack_source=source,shot_index=shot,attack_token=a.token}
                 decisions[#decisions+1]=decision
                 if reason=='trigger' then
@@ -71,6 +89,29 @@ function M.new(native,profile,log,trigger,enabled)
         for key,when in pairs(self.fired) do if t-when>2 then self.fired[key]=nil end end
         return decisions
     end
+    -- Peers receive the Factory preparation light/ready bit but do not own its
+    -- microsecond AI clock. Warn on a freshly observed clear -> ready transition.
+    -- Joining mid-preparation, missing scans, and later retargeting never invent a cue.
+    function self:peer_preparation(e,t)
+        local key=e.id..':'..e.unit
+        local state=e.peer_behavior
+        if e.alive==false or not state or not state.verified then self.peer_factory[key]=nil;return end
+        local F=profile.expanded.factory
+        local ready=state.behavior==F.behavior and state.stage==F.stage and state.preparation_ready
+        local previous=self.peer_factory[key]
+        if not previous or t-previous.seen>.35 then previous={ready=ready}end
+        if ready and not previous.ready then
+            self.peer_sequence=(self.peer_sequence or 0)+1
+            previous.edge={at=t,token=self.peer_sequence}
+        elseif not ready then previous.edge=nil end
+        previous.ready=ready;previous.seen=t;self.peer_factory[key]=previous
+        local edge=previous.edge;local target=e.peer_target
+        if edge and ready and t-edge.at<=.2 then
+            if not edge.target and target and target.verified then edge.target=target.network_target end
+            return {entity=e.id,id=0,source='factory_replica',slot='factory',time=t-edge.at,speed=1,
+                token=edge.token,target_network=edge.target}
+        end
+    end
     function self:step(t)
         if self.disabled or t<(self.retry_at or 0) then return end
         self.snapshot=nil
@@ -78,7 +119,7 @@ function M.new(native,profile,log,trigger,enabled)
             native:begin()
             local scene=native:scene()
             if not scene.mission or not scene.avatar then self:reset();self.context=nil;return end
-            local context=scene.key..':'..scene.avatar.id..':'..scene.avatar.unit
+            local context=scene.key..':'..scene.avatar.id..':'..scene.avatar.unit..':'..tostring(scene.avatar.network_id)
             if self.context~=context then self:reset();self.context=context end
             local active,selected,stats=native:attack_candidates(self.cursor)
             self.cursor=stats.cursor
@@ -95,7 +136,14 @@ function M.new(native,profile,log,trigger,enabled)
                     local current=native:resolve(health,e.id,not crusher and profile.health_resources or nil)
                     e.alive=current~=nil and current.pointer==e.pointer and current.identity==e.identity
                 end
-                e.ai=native:behavior_target(e,scene.avatar)
+                -- Cached peer AI is deliberately never used, even if it still
+                -- names this player. Read the current synchronized target instead.
+                if e.owned then e.ai=native:behavior_target(e,scene.avatar);e.peer_target=nil;e.peer_behavior=nil
+                else
+                    e.ai=nil;e.peer_target=native:replicated_target(e,scene.avatar)
+                    e.peer_behavior=profile.expanded and e.resource==profile.expanded.factory.resource
+                        and native:replicated_behavior(e)or nil
+                end
                 targets[e.id]=e
                 if profile.expanded and e.resource==profile.expanded.factory.resource and e.ai then
                     local ai=e.ai
@@ -103,15 +151,33 @@ function M.new(native,profile,log,trigger,enabled)
                         active[#active+1]={entity=e.id,id=0,slot='factory',source='factory_stage',
                             time=(ai.native_time-ai.preparation_started)/1000000,speed=1,token=ai.preparation_started}
                     end
+                elseif profile.expanded and e.resource==profile.expanded.factory.resource and not e.owned then
+                    local preparation=self:peer_preparation(e,t)
+                    if preparation then active[#active+1]=preparation end
                 end
             end
             -- Reject an avatar/world change before emitting any event from this batch.
             local latest=native:scene()
             assert(latest.mission and latest.avatar and latest.key==scene.key
-                and latest.avatar.id==scene.avatar.id and latest.avatar.unit==scene.avatar.unit,'warning scene changed')
+                and latest.avatar.id==scene.avatar.id and latest.avatar.unit==scene.avatar.unit
+                and latest.avatar.network_id==scene.avatar.network_id,'warning scene changed')
             local decisions=self:observe(active,targets,t,scene.avatar)
             self.snapshot={t=t,scene=scene,selected=selected,abilities=active,decisions=decisions,
                 tracking=stats,health_records=health and health.count or 0}
+            for key,state in pairs(self.peer_factory)do if t-state.seen>2 then self.peer_factory[key]=nil end end
+            -- Compact operational diagnostics, not per-attack captures or raw memory.
+            if t>=(self.next_report or 0)then
+                self.next_report=t+30
+                local peers=0;local reasons={}
+                for _,e in ipairs(selected)do if not e.owned then peers=peers+1 end end
+                for _,decision in ipairs(decisions)do
+                    if not decision.owned then reasons[decision.reason]=(reasons[decision.reason]or 0)+1 end
+                end
+                local detail={};for reason,count in pairs(reasons)do detail[#detail+1]=reason..'='..count end
+                table.sort(detail)
+                log(string.format('observation: abilities=%d update_prefix=%d selected_peers=%d peer_decisions=%s',
+                    stats.ability_records or 0,stats.local_ability_records or 0,peers,table.concat(detail,',')))
+            end
         end)
         if ok then self.errors=0
         else

@@ -1,0 +1,132 @@
+{
+  "build": "25480438",
+  "source": "Read-only native code for build 25480438; see docs/VALIDATION-0.7.0.md. No client captures yet.",
+  "pins": [
+    {
+      "rva": 5546706,
+      "hex": "418b4608",
+      "label": "ability total instance count",
+      "asm": "mov eax, dword ptr [r14 + 8]"
+    },
+    {
+      "rva": 5546802,
+      "hex": "41ff460c",
+      "label": "ability local prefix increment",
+      "asm": "inc dword ptr [r14 + 0xc]"
+    },
+    {
+      "rva": 5546810,
+      "hex": "41ff4608",
+      "label": "ability total increment",
+      "asm": "inc dword ptr [r14 + 8]"
+    },
+    {
+      "rva": 7062339,
+      "hex": "453bf9",
+      "label": "aim update enters replicated tail",
+      "asm": "cmp r15d, r9d"
+    },
+    {
+      "rva": 7062431,
+      "hex": "8b0c06",
+      "label": "replicated target network ID",
+      "asm": "mov ecx, dword ptr [rsi + rax]"
+    },
+    {
+      "rva": 7062434,
+      "hex": "3b4c3b04",
+      "label": "processed target network ID",
+      "asm": "cmp ecx, dword ptr [rbx + rdi + 4]"
+    },
+    {
+      "rva": 7062452,
+      "hex": "81faff7f0000",
+      "label": "invalid target network sentinel",
+      "asm": "cmp edx, 0x7fff"
+    },
+    {
+      "rva": 7062482,
+      "hex": "890c3b",
+      "label": "resolved replicated entity target",
+      "asm": "mov dword ptr [rbx + rdi], ecx"
+    },
+    {
+      "rva": 8669986,
+      "hex": "4c036168",
+      "label": "Behavior network records pointer",
+      "asm": "add r12, qword ptr [rcx + 0x68]"
+    },
+    {
+      "rva": 8670267,
+      "hex": "418b4508",
+      "label": "Behavior stage encoder source",
+      "asm": "mov eax, dword ptr [r13 + 8]"
+    },
+    {
+      "rva": 8670274,
+      "hex": "41890424",
+      "label": "Behavior network stage",
+      "asm": "mov dword ptr [r12], eax"
+    },
+    {
+      "rva": 8670332,
+      "hex": "4189442404",
+      "label": "Behavior network type",
+      "asm": "mov dword ptr [r12 + 4], eax"
+    },
+    {
+      "rva": 8673575,
+      "hex": "418b85e8010000",
+      "label": "Behavior ready bits encoder source",
+      "asm": "mov eax, dword ptr [r13 + 0x1e8]"
+    },
+    {
+      "rva": 8673582,
+      "hex": "4189442478",
+      "label": "Behavior network ready bits",
+      "asm": "mov dword ptr [r12 + 0x78], eax"
+    },
+    {
+      "rva": 8674355,
+      "hex": "4c8d048049c1e0054d034368",
+      "label": "Behavior receive record stride and pointer",
+      "asm": "lea r8, [rax + rax*4]; shl r8, 5; add r8, qword ptr [r11 + 0x68]"
+    },
+    {
+      "rva": 8674452,
+      "hex": "41890424",
+      "label": "Behavior received stage",
+      "asm": "mov dword ptr [r12], eax"
+    },
+    {
+      "rva": 8674482,
+      "hex": "4189442404",
+      "label": "Behavior received type",
+      "asm": "mov dword ptr [r12 + 4], eax"
+    },
+    {
+      "rva": 8674915,
+      "hex": "4189442478",
+      "label": "Behavior received ready bits",
+      "asm": "mov dword ptr [r12 + 0x78], eax"
+    },
+    {
+      "rva": 1844852,
+      "hex": "81e1ffffff0f",
+      "label": "Factory clears preparation bits on entry",
+      "asm": "and ecx, 0xfffffff"
+    },
+    {
+      "rva": 1844881,
+      "hex": "41b800000400e814236800",
+      "label": "Factory preparation clear replicated",
+      "asm": "mov r8d, 0x40000; call 0x8449b0"
+    },
+    {
+      "rva": 1850030,
+      "hex": "8b520841b800000400e8f40e6800",
+      "label": "Factory preparation ready replicated",
+      "asm": "mov edx, dword ptr [rdx + 8]; mov r8d, 0x40000; call 0x8449b0"
+    }
+  ]
+}
