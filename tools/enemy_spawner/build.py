@@ -74,7 +74,7 @@ def main():
     if args.validate_only:print('PASS Enemy Spawner source gates and offline checks');return
     archive=make_archive({resource_hash(project['resource']):lua_resource(entry)})
     assert read_archive(archive)=={(LUA_TYPE,resource_hash(project['resource'])):(lua_resource(entry),b'')}
-    description=('Independent single-player enemy test spawner for Sekiro danger alert; 14 types, '
+    description=('Independent host-authoritative enemy test spawner for Sekiro danger alert; 16 types, '
         'native package loading and one-shot menu action. Impaler requires difficulty 5–10 and eligible tentacles. '
         'Requires Bingus Shared Loader v18+ and ModOptionsMenu v1.2. '
         'Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')

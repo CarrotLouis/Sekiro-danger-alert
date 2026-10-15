@@ -13,9 +13,10 @@ for h,r in resources.items():
     assert h==f"{resource_hash(r['path']):016x}"
     assert r['health_component'] and isinstance(r['behavior'],int)
 moves=catalog['moves']
-assert len(moves)==16 and len({m['id'] for m in moves})==16
+assert len(moves)==18 and len({m['id'] for m in moves})==18
 for m in moves:
-    assert m['default'] is True and m['status']=='enabled_from_capture'
+    assert m['default'] is True and m['status']in {'enabled_from_capture','enabled_from_native_pending_capture'}
+    assert m['faction']in {2,8,4}
     assert m['resources'] and set(m['resources'])<=resources.keys()
 by_id={m['id']:m for m in moves}
 assert by_id['titan_caustic_surge']['id']!=by_id['titan_cataclysmic_slam']['id']
@@ -42,7 +43,18 @@ assert len(rules['resources']['5d142c3a73ebc634']['abilities']['1018']['cues'])=
 assert rules['factory']['resource']=='843d18d4b5512b63' and rules['factory']['stage_start_offset']==0x188
 assert rules['factory']['earliest_fire_time']==1 and rules['factory']['last_warning_time']<=.8
 assert len(rules['pins'])>=60
+assert {m['id']for m in moves if m['status']=='enabled_from_native_pending_capture'}=={'harvester_tesla_ripper','harvester_disintegration_beamer'}
+assert resources['965eae5a51acdd4a']['behavior']==280
+assert set(rules['resources']['965eae5a51acdd4a']['abilities'])=={'1956','1957','1961','1962'}
+harvester=json.loads((ROOT/'config/harvester.json').read_text(encoding='utf-8'))
+assert harvester['entity']=='965eae5a51acdd4a'and harvester['behavior']==280
+assert [(m['mount_index'],m['weapon_slot'])for m in harvester['mounts']]==[(0,0),(1,3),(2,1),(3,2)]
+assert harvester['mounts'][2]['component']=='ArcWeaponComponentData'
+assert harvester['moves']['harvester_tesla_ripper']['abilities']==[1961,1962]
+assert harvester['moves']['harvester_disintegration_beamer']['abilities']==[1956,1957]
+assert rules['resources'][harvester['entity']]['excluded'][str(1963)]=='tripod_cannon'
+assert any(p['rva']==harvester['slot_binding_rva']for p in rules['pins'])
 project=json.loads((ROOT/'project.json').read_text(encoding='utf-8'))
 assert project['guid']=='1dc82965-3c84-4eec-bb72-88e8121ac0dc'
 assert 'version=project.version'in(ROOT/'src/entry.lua').read_text(encoding='utf-8')
-print('PASS 16 enabled distinct moves, native identities, independent settings, diving/direct exclusions, burst windows and build-bound Factory preparation')
+print('PASS 18 enabled distinct moves, two native-reviewed Harvester paths pending capture, resource identities and existing exclusions')

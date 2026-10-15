@@ -11,7 +11,7 @@ function M.new(catalog,log)
         for _,enemy in ipairs(catalog.enemies)do choices[#choices+1]=enemy.label end
         local specs={
             {'enemy',{type='choice',label='选择敌人 / Enemy',default=1,choices=choices,
-                description='14 种测试敌人。进入对应阵营的单人任务，在开阔平地选择；穿刺虫会自行召唤触手。'}},
+                description='16 种测试敌人。由房主在对应阵营任务的开阔平地生成，支持多人；穿刺虫需 5–10 难度。'}},
             {'spawn',{type='choice',label='生成一只 / Spawn one',default=1,
                 choices={'待命 / Ready','生成一只 / Spawn one'},
                 description=function()
@@ -34,7 +34,7 @@ function M.new(catalog,log)
                 end
             end
         end))
-        self.ready=true;log('menu registered: 2 options, 14 enemies')
+        self.ready=true;log('menu registered: 2 options, '..#catalog.enemies..' enemies')
         return true
     end
     function self:consume()

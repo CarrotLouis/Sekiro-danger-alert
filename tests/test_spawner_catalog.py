@@ -8,9 +8,9 @@ MOD=ROOT/'tools/enemy_spawner'
 class SpawnerCatalog(unittest.TestCase):
     def test_identities_and_packages(self):
         c=json.loads((MOD/'config/enemies.json').read_text(encoding='utf-8'))
-        self.assertEqual(len(c['enemies']),14)
-        self.assertEqual(len({e['id']for e in c['enemies']}),14)
-        self.assertEqual(len({e['hash']for e in c['enemies']}),14)
+        self.assertEqual(len(c['enemies']),16)
+        self.assertEqual(len({e['id']for e in c['enemies']}),16)
+        self.assertEqual(len({e['hash']for e in c['enemies']}),16)
         for e in c['enemies']:
             self.assertEqual(f'{resource_hash(e["path"]):016x}',e['hash'])
             raw=bytes.fromhex(e['package_record']);self.assertEqual(len(raw),32)
@@ -20,7 +20,13 @@ class SpawnerCatalog(unittest.TestCase):
             self.assertEqual(e['required_units'][0]['entity'],e['hash'])
         self.assertEqual(sum(e['faction']==2 for e in c['enemies']),8)
         self.assertEqual(sum(e['faction']==8 for e in c['enemies']),6)
+        self.assertEqual(sum(e['faction']==4 for e in c['enemies']),2)
+        self.assertEqual([e['id']for e in c['enemies'][-2:]],['crusher','tripod'])
         rows={e['id']:e for e in c['enemies']}
+        self.assertEqual(rows['crusher']['hash'],'905809a4c28d8a45')
+        self.assertEqual(rows['tripod']['hash'],'965eae5a51acdd4a')
+        self.assertEqual(rows['tripod']['behavior'],280)
+        self.assertEqual(len(rows['tripod']['required_units']),5)
         self.assertEqual(rows['walker_scout_tier2']['hash'],'9076eeed17fcee35')
         self.assertEqual(rows['walker_scout_tier2']['behavior'],96)
         self.assertEqual(rows['lieutenant_assault_jumppack']['hash'],'e44ec9f9b3fe1d2a')

@@ -1,6 +1,6 @@
 """Build the Bingus addon and its private compiled image families, without touching the game."""
 from pathlib import Path
-import argparse,hashlib,json,struct,sys,wave,zipfile
+import argparse,hashlib,json,os,struct,subprocess,sys,wave,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'vendor'))
 from hd2_archive import resource_hash,lua_resource,make_resource_archive,read_archive,LUA_TYPE
@@ -11,7 +11,9 @@ CONFIG=json.loads((ROOT/'project.json').read_text())
 EFFECT=json.loads((ROOT/'assets/effect.json').read_text())
 ARGS=argparse.ArgumentParser()
 ARGS.add_argument('--output-dir',type=Path,default=ROOT/'outputs')
-OUT=ARGS.parse_args().output_dir.resolve();OUT.mkdir(parents=True,exist_ok=True)
+ARGS.add_argument('--diagnostics',action='store_true',help='Alternative package with bounded collection; same GUID, replace the normal package')
+OPTIONS=ARGS.parse_args()
+OUT=OPTIONS.output_dir.resolve();OUT.mkdir(parents=True,exist_ok=True)
 OWNER=CONFIG['resource']
 BUILD=ROOT/'build';BUILD.mkdir(exist_ok=True)
 
@@ -135,40 +137,63 @@ def build():
     chunks=['-- HD2-Addon: '+OWNER+'\n',"if rawget(_G,'SekiroDangerAlert') then return rawget(_G,'SekiroDangerAlert') end\n"]
     chunks.append('local project='+lua(CONFIG)+'\n')
     catalog=json.loads((ROOT/'config/attack_catalog.json').read_text(encoding='utf-8'))
-    release_catalog={'moves':[{k:move[k] for k in ('id','label','attack_name')}for move in catalog['moves']]}
+    release_catalog={'moves':[{k:move[k] for k in ('id','label','attack_name','faction')}for move in catalog['moves']]}
     chunks.append('local catalog='+lua(release_catalog)+'\n')
     for name,path in [('runtime','vendor/bingus_runtime.lua'),('memory_module','vendor/bingus_memory.lua'),
                       ('profile','src/profile.lua'),('assets','build/assets.lua'),('menu_module','src/menu.lua'),
                       ('audio_module','src/audio.lua'),('native_module','src/native.lua'),('overlay_module','src/overlay.lua'),
                       ('detector_module','src/detector.lua')]:
         chunks.append('local '+name+'='+module(ROOT/path)+'\n')
+    if OPTIONS.diagnostics:
+        chunks.append('local diagnostic_catalog='+lua(catalog)+'\n')
+        for name,path in [('research_native','tools/diagnostics/src/native.lua'),
+                          ('capture_module','tools/diagnostics/src/capture.lua'),
+                          ('tracking_module','tools/diagnostics/src/tracking.lua'),
+                          ('marker_module','tools/diagnostics/src/marker.lua'),
+                          ('instrument_module','tools/diagnostics/src/instrument.lua')]:
+            chunks.append('local '+name+'='+module(ROOT/path)+'\n')
+        chunks.append('local instrumentation=instrument_module.new(research_native,capture_module,tracking_module,marker_module,diagnostic_catalog,profile,project.version)\n')
+    else:chunks.append('local instrumentation=nil\n')
     chunks.append((ROOT/'src/entry.lua').read_text(encoding='utf-8'))
+    build_id=hashlib.sha256(''.join(chunks).encode('utf-8')).hexdigest()[:12]
+    chunks.insert(1,"local build_id='"+build_id+"'\n")
     entry=''.join(chunks).encode('utf-8');assert b'\0' not in entry and not entry.startswith(b'\xef\xbb\xbf')
-    (BUILD/'Sekiro danger alert.lua').write_bytes(entry)
+    source_dir=BUILD/'diagnostics'if OPTIONS.diagnostics else BUILD
+    source_dir.mkdir(exist_ok=True)
+    (source_dir/'Sekiro danger alert.lua').write_bytes(entry)
+    if OPTIONS.diagnostics:
+        dll=os.environ.get('HD2_LUA51_DLL')
+        assert dll and Path(dll).is_file(),'Set HD2_LUA51_DLL before building the diagnostic variant'
+        subprocess.run([sys.executable,str(ROOT/'vendor/game_lua.py'),str(ROOT/'tests/test_compile.lua'),
+                        str(ROOT),str(source_dir/'Sekiro danger alert.lua')],check=True,cwd=ROOT)
     resources[(LUA_TYPE,resource_hash(OWNER))]=(lua_resource(entry),b'')
     main,gpu=make_resource_archive(resources)
     assert read_archive(main,gpu)==resources
     archive='9ba626afa44a3aa3.patch_0'
     description=('Sekiro danger alert: targeted enemy attack warnings with Sekiro-style animation and sound. '
-                 '18 attack switches and appearance, volume, preview and reset controls on one settings page. '
+                 '20 attack switches grouped by faction and appearance, volume, preview and reset controls on one settings page. '
                  'Dragonroach diving breath and Barrager direct fire only. '
                  'Requires Bingus Shared Loader v18+ and Mod Options Menu v1.2. '
                  'Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
-    manifest={'Version':1,'Guid':CONFIG['guid'],'Name':'Sekiro danger alert '+CONFIG['version'],'Description':description,
+    suffix=' Diagnostics'if OPTIONS.diagnostics else''
+    if OPTIONS.diagnostics:description+=' Includes optional F8 collection on a separate diagnostic page; replaces the normal package.'
+    manifest={'Version':1,'Guid':CONFIG['guid'],'Name':'Sekiro danger alert '+CONFIG['version']+suffix,'Description':description,
               'Options':[{'Name':'Sekiro danger alert','Description':description,'Include':['Addon']}]}
     files={'manifest.json':json.dumps(manifest,indent=2).encode(),
            'Addon/'+archive:main,'Addon/'+archive+'.gpu_resources':gpu,'Addon/'+archive+'.stream':b''}
     for name in ['README-使用说明.txt','CREDITS.txt']:
         files[name]=(ROOT/name).read_bytes()
-    target=OUT/('Sekiro danger alert '+CONFIG['version']+'.zip')
+    if OPTIONS.diagnostics:files['README-采集说明.txt']=(ROOT/'tools/diagnostics/README-采集说明.txt').read_bytes()
+    target=OUT/('Sekiro danger alert '+CONFIG['version']+suffix+'.zip')
     with zipfile.ZipFile(target,'w',zipfile.ZIP_DEFLATED) as z:
         for name,data in sorted(files.items()):
             info=zipfile.ZipInfo(name,date_time=(2026,10,13,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED
             z.writestr(info,data)
-    record={'version':CONFIG['version'],'guid':CONFIG['guid'],'resource':OWNER,'resource_count':len(resources),
+    record={'version':CONFIG['version'],'build':build_id,'variant':'diagnostics'if OPTIONS.diagnostics else'standard',
+            'guid':CONFIG['guid'],'resource':OWNER,'resource_count':len(resources),
             'image_frames':len(frames),'lua_bytes':len(entry),'archive_bytes':len(main),'gpu_bytes':len(gpu),
             'package_sha256':hashlib.sha256(target.read_bytes()).hexdigest(),'images':records}
-    (BUILD/'build_record.json').write_text(json.dumps(record,indent=2),encoding='utf-8')
+    (source_dir/'build_record.json').write_text(json.dumps(record,indent=2),encoding='utf-8')
     print(json.dumps({k:v for k,v in record.items() if k!='images'},indent=2))
 
 if __name__=='__main__':build()

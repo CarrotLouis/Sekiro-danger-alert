@@ -34,11 +34,19 @@ for _,mod in ipairs(state.mods)do
     assert(mod.id~='peril_warning.crusher.moves','release must not create a second page')
     if mod.id=='peril_warning.crusher'then category=mod end
 end
-assert(category and category.source=='Sekiro danger alert' and #category.order==25)
+assert(category and category.source=='Sekiro danger alert' and #category.order==27)
 assert(menu.max_options==32 and #category.order<=menu.max_options)
 local switches=0
 for _,option in ipairs(category.order)do if option.kind=='toggle'then switches=switches+1 end end
-assert(switches==18)
+assert(switches==20)
+local expected={};for _,faction in ipairs({2,8,4})do
+    if faction==8 then expected[#expected+1]='cannon_preparation'end
+    if faction==4 then expected[#expected+1]='crusher_melee'end
+    for _,move in ipairs(catalog.moves)do if move.faction==faction then expected[#expected+1]=move.id end end
+end
+for index,id in ipairs(expected)do assert(category.order[index+6].id==p..'move.'..id,'faction order changed')end
+assert(expected[#expected-2]=='crusher_melee'and expected[#expected-1]=='harvester_tesla_ripper'
+    and expected[#expected]=='harvester_disintegration_beamer')
 assert(state.options[p..'move.crusher_melee'].label=='粉碎者 · 危险近战')
 for id in pairs(profile.attack_states)do assert(not state.options[p..'move.crusher_'..id])end
 assert(menu.set(p..'move.crusher_melee',false))
@@ -77,5 +85,5 @@ for _,key in ipairs({'preview','visual','reset'})do for _,cb in ipairs(state.cal
 local reset=adapter:consume();assert(reset.reset==2 and not reset.preview and not reset.visual)
 local count=0
 for id,default in pairs(adapter.defaults)do count=count+1;assert(menu.get(id)==default,'reset missed '..id)end
-assert(count==25 and menu.get('test.unrelated')==true and next(adapter:consume())==nil)
-print('PASS real MOM API v3: one 25-row page, 18 switches, all Crusher variants share a control, stable retained values, removed research actions and complete reset')
+assert(count==27 and menu.get('test.unrelated')==true and next(adapter:consume())==nil)
+print('PASS real MOM API v3: one 27-row page, 20 switches in faction order, stable retained values, independent Harvester controls and complete reset')

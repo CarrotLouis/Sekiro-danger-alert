@@ -53,10 +53,10 @@ function M.install(self,tools)
         end
         return out,last>=header.count and 0 or last
     end
-    function self:abilities(targets)
+    function self:abilities(targets,include_inactive)
         local manager=ptr(game+53634624);local h=read(manager+8,56)
-        local cap,count=u32(h,0),u32(h,4)
-        assert(cap<=8192 and count<=cap,'ability counts invalid')
+        local count,prefix=u32(h,0),u32(h,4)
+        assert(count<=8192 and prefix<=count,'ability counts invalid')
         if count==0 then return {} end
         local owners=read(assert(memory.pointer(h,40)),count*8)
         local rows=assert(memory.pointer(h,48));local out={}
@@ -65,19 +65,21 @@ function M.install(self,tools)
             if e then
                 assert(read(e.pointer,20)==e.identity,'ability owner changed')
                 local row=read(rows+i*224,224)
-                if row:byte(17)~=0 then
-                    local item={entity=e.id,id=u32(row,0),time=f32(row,8),speed=f32(row,12),slot=i}
+                if include_inactive or row:byte(17)~=0 then
+                    local item={entity=e.id,id=u32(row,0),time=f32(row,8),speed=f32(row,12),slot=i,
+                        active=row:byte(17)~=0,paused=row:byte(18)~=0}
                     out[#out+1]=item
                 end
             end
         end
         assert(read(manager+8,56)==h,'ability table changed')
-        return out
+        return out,{total=count,update_prefix=prefix}
     end
     function self:targeting_header()
         self:verify_targeting()
         local manager=ptr(game+0x3326d30);local h=read(manager+0x140,72)
-        local count=u32(h,0);assert(count<=4096,'targeting count invalid')
+        local prefix,count=u32(h,0),u32(h,4)
+        assert(count<=4096 and prefix<=count,'targeting count invalid')
         return {manager=manager,count=count,raw=h,descriptors=memory.pointer(h,0x28),
             records=memory.pointer(h,0x38),network=memory.pointer(h,0x40)}
     end
@@ -121,7 +123,8 @@ function M.install(self,tools)
             position_only=position_only,aim_point={x=f32(row,0x14),y=f32(row,0x18),z=f32(row,0x1c)},
             aim_target_is_local=target==avatar.id,
             entity_target_valid=not position_only and network_target~=0x7fff and target~=0,ai_available=false}
-        result.ai=self:behavior_target(e,avatar)
+        local ok,ai=pcall(self.behavior_target,self,e,avatar)
+        if ok then result.ai=ai else result.ai_unavailable=tostring(ai)end
         result.ai_available=result.ai~=nil
         assert(read(h.manager+0x140,72)==h.raw and nullable(h.descriptors+i*8)==e.pointer
             and read(e.pointer,20)==e.identity,'targeting identity changed')
@@ -157,16 +160,29 @@ function M.install(self,tools)
     end
     function self:combat_state(h,e,avatar,include_raw)
         local result={entity=e.id,unit=e.unit,resource=e.resource,class_name=e.class_name,
-            distance=e.distance,owned=e.owned,ai=self:behavior_target(e,avatar,true),
-            weapon_inputs=self:weapon_inputs(e,include_raw)}
+            distance=e.distance,owned=e.owned,network_id=e.network_id,ai_authoritative=e.owned==true,
+            observation_errors={}}
+        local function optional(key,fn)
+            local ok,value=pcall(fn)
+            if ok then result[key]=value else result.observation_errors[key]=tostring(value)end
+        end
+        optional('ai',function()return self:behavior_target(e,avatar,true)end)
+        optional('weapon_inputs',function()return self:weapon_inputs(e,include_raw)end)
+        if not e.owned then
+            optional('replicated_target',function()return self:replicated_target(e,avatar)end)
+            optional('replicated_behavior',function()return self:replicated_behavior(e)end)
+        end
         local index=map_index(h.manager+0x150,e.id,65536)
         if index and index<h.count and nullable(assert(h.descriptors)+index*8)==e.pointer then
             e.targeting_index=index
-            result.aim=self:targeting_state(h,e,avatar)
+            optional('aim',function()return self:targeting_state(h,e,avatar)end)
         end
         -- Root facing is diagnostic only: it may differ from an animated barrel.
-        local object=unit_object(e.unit);local pose=read(ptr(object+136),64)
-        result.root_forward={x=f32(pose,16),y=f32(pose,20),z=f32(pose,24)}
+        optional('root_forward',function()
+            local object=unit_object(e.unit);local pose=read(ptr(object+136),64)
+            return {x=f32(pose,16),y=f32(pose,20),z=f32(pose,24)}
+        end)
+        assert(self.reads<=2500 and self.bytes<=1048576,'diagnostic read budget exceeded')
         return result
     end
     local behavior_target=self.behavior_target

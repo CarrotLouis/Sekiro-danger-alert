@@ -49,7 +49,9 @@ for _,capture in ipairs(replay.captures)do
 end
 local catalog=dofile(root..'/src/catalog.lua')
 for _,move in ipairs(catalog.moves)do
-    if move.id~='factory_fusion_repeater'then assert(covered[move.id],'no captured ability replay triggers '..move.id)end
+    if move.status=='enabled_from_capture'and move.id~='factory_fusion_repeater'then
+        assert(covered[move.id],'no captured ability replay triggers '..move.id)
+    end
 end
 assert(artillery_rows>100 and hover_rows>100,'negative comparisons must be real captured rows')
 assert(samples>5000 and total>100)

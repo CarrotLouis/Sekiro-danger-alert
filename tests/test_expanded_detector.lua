@@ -49,8 +49,8 @@ e.ai.stage=2;assert(sample().reason=='not_preparing');e.ai.stage=3
 input.time=1.5;assert(sample().reason=='late_sample');input.time=.2;assert(sample().reason=='before_cue');input.time=.6
 off=F.move;assert(sample().reason=='move_disabled');off=nil
 for _,move in ipairs(catalog.moves)do assert(covered[move.id],'missing automatic path '..move.id)end
-local new_count=0;for _ in pairs(covered)do new_count=new_count+1 end;assert(new_count==16)
-print('PASS all 16 move paths, independent toggles, resource/behavior/local target gates, burst deduplication, diving/hover and direct/artillery exclusions')
+local new_count=0;for _ in pairs(covered)do new_count=new_count+1 end;assert(new_count==18)
+print('PASS all 18 expanded move paths including native-reviewed Harvester, independent toggles, target gates and mode exclusions')
 
 -- Factory integration uses health re-resolution and the canonical native clock.
 local actor={id=1,unit=100,resource=F.resource,owned=true,alive=true,pointer=123,identity='canonical'}

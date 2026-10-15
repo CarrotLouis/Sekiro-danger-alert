@@ -35,7 +35,7 @@ function M.new(native,path,log,clock,tracking,catalog,version)
     local function nearby(selected)
         local out={}
         for _,e in ipairs(selected) do
-            out[#out+1]={entity=e.id,unit=e.unit,resource=e.resource,distance=e.distance,owned=e.owned,health=e.health,class_name=e.class_name}
+            out[#out+1]={entity=e.id,unit=e.unit,network_id=e.network_id,resource=e.resource,distance=e.distance,owned=e.owned,health=e.health,class_name=e.class_name}
         end
         return out
     end
@@ -86,7 +86,7 @@ function M.new(native,path,log,clock,tracking,catalog,version)
                 position=function(_,unit)return native:position(unit)end}
         end
         tracker=tracking.new(source,self.mode~='crusher' and 2000 or 50,self.mode~='crusher' and 8 or 16)
-        emit('capture_start',{build='25480438',nominal_sample_hz=20,adaptive_sampling=true,
+        emit('capture_start',{build='25480438',nominal_sample_hz=10,adaptive_sampling=true,
             diagnostic_range_m=self.mode~='crusher' and 2000 or 50,warning_rule='local_entity_target_and_attack',mode=self.mode,
             requested_move=self.requested_move and self.requested_move.id,
             requested_attack=self.requested_move and self.requested_move.attack_name,
@@ -147,7 +147,7 @@ function M.new(native,path,log,clock,tracking,catalog,version)
             local selected,stats=tracker:step(h,scene,now)
             local owners={}
             for _,e in ipairs(selected) do owners[native.memory.address(e.pointer)]=e end
-            local active=native:abilities(owners)
+            local active,ability_stats=native:abilities(owners,true)
             local near=nearby(selected);local selected_ids={}
             for _,e in ipairs(selected) do
                 selected_ids[e.id]=true
@@ -168,7 +168,8 @@ function M.new(native,path,log,clock,tracking,catalog,version)
                     requested_move=self.requested_move.id,capture_context=self.capture_context,tracking=stats}
                 emit('research_sample',{sample_t=now-began,states=states,abilities=active,tracking=stats,
                     requested_move=self.requested_move.id,avatar_entity=scene.avatar.id,
-                    avatar_unit=scene.avatar.unit,local_position=scene.position})
+                    avatar_unit=scene.avatar.unit,avatar_network=scene.avatar.network_id,
+                    ability_table=ability_stats,local_position=scene.position})
             elseif self.mode=='targeting' then
                 local states={}
                 for _,e in ipairs(selected) do states[#states+1]=native:targeting_state(h,e,scene.avatar) end

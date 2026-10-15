@@ -157,6 +157,20 @@
       "hash": "e44ec9f9b3fe1d2a",
       "behavior": 57,
       "health_component": true
+    },
+    {
+      "class_name": "crusher",
+      "path": "content/fac_illuminate/cha_bodyhorror_helmetguy/cha_bodyhorror_helmetguy",
+      "hash": "905809a4c28d8a45",
+      "behavior": 233,
+      "health_component": true
+    },
+    {
+      "class_name": "tripod",
+      "path": "content/fac_illuminate/cha_tripod/cha_tripod",
+      "hash": "965eae5a51acdd4a",
+      "behavior": 280,
+      "health_component": true
     }
   ],
   "moves": [
@@ -169,7 +183,8 @@
       "default": true,
       "resources": [
         "1a7fcdff98c664b0"
-      ]
+      ],
+      "faction": 2
     },
     {
       "id": "spore_charger_heavy_crush",
@@ -180,7 +195,8 @@
       "default": true,
       "resources": [
         "6b202392f4ab605e"
-      ]
+      ],
+      "faction": 2
     },
     {
       "id": "behemoth_superheavy_crush",
@@ -193,7 +209,8 @@
         "3aff5fd7d5450b99",
         "a05bd1ec67b3ac4c"
       ],
-      "capture_note": "Captured tier2 entity a05bd1ec67b3ac4c uses the bull model; automatic identity is the entity, not the shared model."
+      "capture_note": "Captured tier2 entity a05bd1ec67b3ac4c uses the bull model; automatic identity is the entity, not the shared model.",
+      "faction": 2
     },
     {
       "id": "rupture_hardened_crush",
@@ -204,7 +221,8 @@
       "default": true,
       "resources": [
         "0ab7b92b131c228c"
-      ]
+      ],
+      "faction": 2
     },
     {
       "id": "impaler_momentous_slam",
@@ -215,7 +233,8 @@
       "default": true,
       "resources": [
         "dcf8e74212fbee3b"
-      ]
+      ],
+      "faction": 2
     },
     {
       "id": "tentacle_slam",
@@ -227,7 +246,8 @@
       "resources": [
         "dcf8e74212fbee3b",
         "672f7da17f3ba34a"
-      ]
+      ],
+      "faction": 2
     },
     {
       "id": "titan_cataclysmic_slam",
@@ -238,7 +258,8 @@
       "default": true,
       "resources": [
         "9e2e17f2ccccafdd"
-      ]
+      ],
+      "faction": 2
     },
     {
       "id": "titan_caustic_surge",
@@ -249,7 +270,8 @@
       "default": true,
       "resources": [
         "9e2e17f2ccccafdd"
-      ]
+      ],
+      "faction": 2
     },
     {
       "id": "dragon_alchemical_pyrosis",
@@ -261,7 +283,8 @@
       "resources": [
         "960b48a421a3faaa"
       ],
-      "capture_note": "Owner confirmed diving breath, ability 254. Hovering breath 252 is excluded; saved move ID stays stable."
+      "capture_note": "Owner confirmed diving breath, ability 254. Hovering breath 252 is excluded; saved move ID stays stable.",
+      "faction": 2
     },
     {
       "id": "spore_titan_cataclysmic_slam",
@@ -272,7 +295,8 @@
       "default": true,
       "resources": [
         "ef04cb84d097a497"
-      ]
+      ],
+      "faction": 2
     },
     {
       "id": "hulk_rotary_saw",
@@ -283,7 +307,8 @@
       "default": true,
       "resources": [
         "3e0537d606438fea"
-      ]
+      ],
+      "faction": 8
     },
     {
       "id": "factory_fusion_repeater",
@@ -297,7 +322,8 @@
         "30f2dee2333f227a",
         "843d18d4b5512b63",
         "8fb47dd28b398cf7"
-      ]
+      ],
+      "faction": 8
     },
     {
       "id": "reinforced_heavy_rockets",
@@ -309,7 +335,8 @@
       "resources": [
         "9076eeed17fcee35"
       ],
-      "capture_note": "Captured tier2 / behavior 96: rockets 1050; machinegun 1048 excluded."
+      "capture_note": "Captured tier2 / behavior 96: rockets 1050; machinegun 1048 excluded.",
+      "faction": 8
     },
     {
       "id": "annihilator_fusion_cannon",
@@ -321,7 +348,8 @@
       "resources": [
         "53d8919d7b8abd67",
         "8fb47dd28b398cf7"
-      ]
+      ],
+      "faction": 8
     },
     {
       "id": "barrager_direct_mlrs",
@@ -334,7 +362,8 @@
         "63df3d07b7424588",
         "5d142c3a73ebc634"
       ],
-      "capture_note": "Direct 1018 and owner-confirmed artillery comparison 1019 are distinct; do not infer mode from distance."
+      "capture_note": "Direct 1018 and owner-confirmed artillery comparison 1019 are distinct; do not infer mode from distance.",
+      "faction": 8
     },
     {
       "id": "jet_hulk_rotary_saw",
@@ -346,7 +375,32 @@
       "resources": [
         "e44ec9f9b3fe1d2a"
       ],
-      "capture_note": "Captured assault_jumppack / behavior 57: saw 821/823; mirrored 822/824 reviewed statically."
+      "capture_note": "Captured assault_jumppack / behavior 57: saw 821/823; mirrored 822/824 reviewed statically.",
+      "faction": 8
+    },
+    {
+      "id": "harvester_tesla_ripper",
+      "label": "猎杀器 · 电击",
+      "attack_name": "Tesla Ripper",
+      "default": true,
+      "status": "enabled_from_native_pending_capture",
+      "faction": 4,
+      "resources": [
+        "965eae5a51acdd4a"
+      ],
+      "capture_note": "Build-pinned Tripod weapon ability handlers; requires live host/client capture for actual trigger and dodge timing."
+    },
+    {
+      "id": "harvester_disintegration_beamer",
+      "label": "猎杀器 · 激光",
+      "attack_name": "Disintegration Beamer",
+      "default": true,
+      "status": "enabled_from_native_pending_capture",
+      "faction": 4,
+      "resources": [
+        "965eae5a51acdd4a"
+      ],
+      "capture_note": "Build-pinned Tripod weapon ability handlers; requires live host/client capture for actual trigger and dodge timing."
     }
   ],
   "filediver_commit": "6bf7c1ccc4be465a35b4bc9d41087781b47034e6"

@@ -1,0 +1,72 @@
+{
+  "build": "25480438",
+  "source": "Pinned FileDiver entity tables and native weapon-input handlers; live capture pending. See docs/VALIDATION-0.8.0.md.",
+  "entity": "965eae5a51acdd4a",
+  "behavior": 280,
+  "faction": 4,
+  "mounts": [
+    {
+      "entity": "c6a5bb8b319217ac",
+      "name_hash": "20c9e777",
+      "name": "beam",
+      "component": "BeamWeaponComponentData",
+      "weapon_kind": 12,
+      "mount_index": 0,
+      "weapon_slot": 0
+    },
+    {
+      "entity": "e8a244ffa3a48fe4",
+      "name_hash": "eb54ccde",
+      "component": "BeamWeaponComponentData",
+      "weapon_kind": 23,
+      "mount_index": 1,
+      "weapon_slot": 3
+    },
+    {
+      "entity": "8dbf99607bd8e550",
+      "name_hash": "00af1732",
+      "component": "ArcWeaponComponentData",
+      "weapon_kind": 1,
+      "mount_index": 2,
+      "weapon_slot": 1
+    },
+    {
+      "entity": "cb85e7f7ff8855f4",
+      "name_hash": "db230c92",
+      "name": "cannon",
+      "component": "ProjectileWeaponComponentData",
+      "weapon_kind": 54,
+      "mount_index": 3,
+      "weapon_slot": 2
+    }
+  ],
+  "moves": {
+    "harvester_tesla_ripper": {
+      "abilities": [
+        1961,
+        1962
+      ],
+      "weapon_slot": 1,
+      "native_fire_ticks": [
+        60,
+        65,
+        70
+      ],
+      "warnings_per_ability": 1
+    },
+    "harvester_disintegration_beamer": {
+      "abilities": [
+        1956,
+        1957
+      ],
+      "weapon_slot": 0,
+      "native_hold_tick": 60,
+      "warnings_per_ability": 1
+    }
+  },
+  "excluded": [
+    1963,
+    1966
+  ],
+  "slot_binding_rva": 3167101
+}

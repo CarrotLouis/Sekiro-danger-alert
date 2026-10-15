@@ -148,7 +148,14 @@ assert(n:prepare(enemy,s)==false and native_calls.requests==1 and native_calls.s
 put(part,bytes(4,4));n:begin();assert(n:prepare(enemy,s)==true and native_calls.requests==1,'holds are not requested twice')
 unit_ready=false;n:begin();assert(n:prepare(enemy,s)==false);unit_ready=true
 n:begin();local made=assert(n:spawn(enemy,s));assert(made.verified and native_calls.spawns==1)
-put(players+132,bytes(2,4));n:begin();assert(n:scene()==nil);n:begin();assert(n:spawn(enemy,s)==nil and native_calls.spawns==1)
+for count=2,4 do
+    put(players+132,bytes(count,4));n:begin();assert(n:scene().player_count==count)
+end
+n:begin();assert(n:spawn(enemy,s).verified and native_calls.spawns==2,'multiplayer host uses the proven creation path')
+put(0x20001000,string.rep('\0',8)..bytes(99,4)..string.rep('\0',12))
+n:begin();assert(n:scene()==nil);n:begin();assert(n:spawn(enemy,s)==nil and native_calls.spawns==2,'peer must never call authoritative creation')
+put(0x20001000,string.rep('\0',8)..bytes(99,4)..string.rep('\0',8)..bytes(1,4))
+for _,count in ipairs({0,5})do put(players+132,bytes(count,4));n:begin();assert(n:scene()==nil)end
 put(players+132,bytes(1,4))
 -- Regression: the same native picker that caused both crashes rejects tentacles
 -- at difficulties 1..4. Resources alone must never authorize this parent spawn.
@@ -211,4 +218,4 @@ function core:unit_ready()return true end
 guarded:begin();assert(guarded:prepare(impaler,s)==true)
 print('PASS Impaler regression: low difficulty has zero native calls; eligible roster, live weight, tags, identity, layout, child readiness and pre-spawn recheck')
 put(game+0x1000,'WRONG');n:begin();assert(not pcall(n.prepare,n,enemy,s)and native_calls.spawns==before_spawns+1)
-print('PASS production native gates: pins, solo authority, exact definitions, complete package parts, held refs, unit presence, bounded insertion')
+print('PASS production native gates: 1–4 player host authority, peer rejection, exact resources and bounded native insertion')

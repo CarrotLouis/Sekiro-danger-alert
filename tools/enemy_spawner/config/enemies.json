@@ -375,6 +375,59 @@
           "unit": "b940c889d77f8219"
         }
       ]
+    },
+    {
+      "id": "crusher",
+      "label": "粉碎者 / Crusher",
+      "path": "content/fac_illuminate/cha_bodyhorror_helmetguy/cha_bodyhorror_helmetguy",
+      "hash": "905809a4c28d8a45",
+      "behavior": 233,
+      "faction": 4,
+      "packages": [
+        "6a9745893ec68156"
+      ],
+      "package_record": "cfb4bb1b000000005681c63e8945976a0000000000000000f71eae3d86a46d57",
+      "required_units": [
+        {
+          "entity": "905809a4c28d8a45",
+          "unit": "905809a4c28d8a45"
+        }
+      ]
+    },
+    {
+      "id": "tripod",
+      "label": "猎杀器 / Harvester",
+      "path": "content/fac_illuminate/cha_tripod/cha_tripod",
+      "hash": "965eae5a51acdd4a",
+      "behavior": 280,
+      "faction": 4,
+      "packages": [
+        "af77305e19308f7b"
+      ],
+      "package_record": "cfb4bb1b000000007b8f30195e3077af0000000000000000b148b911b9b08e0a",
+      "required_units": [
+        {
+          "entity": "965eae5a51acdd4a",
+          "unit": "965eae5a51acdd4a",
+          "mount_record": "ac1792318bbba5c6e3caa2450000000077e7c92001000000e48fa4a3ff44a2e8e3caa24500000000decc54eb0100000050e5d87b6099bf8d2bce8e2c000000003217af0001000000f45588fff7e785cb2bce8e2c00000000920c23db01000000000000000000000000000000000000000000000001000000"
+        },
+        {
+          "entity": "c6a5bb8b319217ac",
+          "unit": "c6a5bb8b319217ac"
+        },
+        {
+          "entity": "e8a244ffa3a48fe4",
+          "unit": "c6a5bb8b319217ac"
+        },
+        {
+          "entity": "8dbf99607bd8e550",
+          "unit": "c6a5bb8b319217ac"
+        },
+        {
+          "entity": "cb85e7f7ff8855f4",
+          "unit": "c6a5bb8b319217ac"
+        }
+      ]
     }
   ]
 }

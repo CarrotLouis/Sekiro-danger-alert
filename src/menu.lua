@@ -32,17 +32,23 @@ function M.new(log,catalog,profile)
                 description='按 APPLY 后关闭菜单，三秒后在本机潜兵头顶显示动画并播放音效。'}},
         }
         for _,row in ipairs(specs)do if not register(row[1],row[2])then return false end end
-        local moves={
-            {id='crusher_melee',label='粉碎者 · 危险近战',
-                description='统一控制粉碎者已识别的所有危险近战变体；跺脚不预警。'},
-            {id='cannon_preparation',label='普通重炮塔 · 开火准备',
-                description='控制普通重炮塔锁定本人后的准备阶段预警。'},
-        }
-        for _,move in ipairs(catalog.moves)do moves[#moves+1]={id=move.id,label=move.label,
-            description=move.attack_name..'。锁定本人并进入招式预警窗口时生效，不限距离。'}end
+        local moves={}
+        for _,group in ipairs({{id=2,name='虫族'},{id=8,name='机器人'},{id=4,name='光能族'}})do
+            local first=#moves+1
+            if group.id==8 then moves[#moves+1]={id='cannon_preparation',label='普通重炮塔 · 开火准备',
+                description='控制普通重炮塔锁定本人后的准备阶段预警。'}end
+            if group.id==4 then moves[#moves+1]={id='crusher_melee',label='粉碎者 · 危险近战',
+                description='统一控制粉碎者已识别的所有危险近战变体；跺脚不预警。'}end
+            for _,move in ipairs(catalog.moves)do if move.faction==group.id then
+                moves[#moves+1]={id=move.id,label=move.label,
+                    description=move.attack_name..'。锁定本人并进入招式预警窗口时生效，不限距离。'}
+            end end
+            for index=first,#moves do moves[index].description=group.name..'。'..moves[index].description end
+            if moves[first]then moves[first].gap=true end
+        end
         for index,move in ipairs(moves)do
             if not register('move.'..move.id,{type='toggle',label=move.label,description=move.description,
-                default=true,gap=index==1})then return false end
+                default=true,gap=move.gap})then return false end
         end
         if not register('reset',{type='choice',label='恢复全部默认值 / Restore defaults',default=1,gap=true,
             choices={'待命 / Ready','恢复全部默认值 / Restore all'},
@@ -55,7 +61,7 @@ function M.new(log,catalog,profile)
             end)
         end
         self.ready=true
-        log('menu registered: 25 options on one page; '..#moves..' attack toggles')
+        log('menu registered: '..(#moves+7)..' options on one page; '..#moves..' attack toggles grouped by faction')
         return true
     end
     function self:volume()

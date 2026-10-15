@@ -1,6 +1,6 @@
 {
   "build": "25480438",
-  "source": "Owner attack captures 2026-10-14/15, named Barrager artillery comparison, and independently decoded current-build code.",
+  "source": "Owner attack captures 2026-10-14/15, named Barrager artillery comparison, and independently decoded current-build code. Harvester build-pinned Tripod beam and Tesla weapon handlers; live capture pending.",
   "resources": {
     "1a7fcdff98c664b0": {
       "behavior": 104,
@@ -342,6 +342,55 @@
       },
       "excluded": {
         "1019": "artillery"
+      }
+    },
+    "965eae5a51acdd4a": {
+      "behavior": 280,
+      "abilities": {
+        "1961": {
+          "move": "harvester_tesla_ripper",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35,
+              "fire": 1
+            }
+          ]
+        },
+        "1962": {
+          "move": "harvester_tesla_ripper",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35,
+              "fire": 1
+            }
+          ]
+        },
+        "1956": {
+          "move": "harvester_disintegration_beamer",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35,
+              "fire": 1
+            }
+          ]
+        },
+        "1957": {
+          "move": "harvester_disintegration_beamer",
+          "cues": [
+            {
+              "time": 0,
+              "last": 0.35,
+              "fire": 1
+            }
+          ]
+        }
+      },
+      "excluded": {
+        "1963": "tripod_cannon",
+        "1966": "spawn"
       }
     }
   },
@@ -754,6 +803,101 @@
       "rva": 16630188,
       "hex": "4d03f74e8d34f6e8d83575004533c941895e0845894e0c49893e8b45044189461045894e1444384d00740841c74614010000008b86142ff300458bc10f1f8400000000008bc8488d14498b0d70834a02398cd6202ff3007425ffc08986142ff3003d00080000750a",
       "label": "canonical entity descriptor array and invalid entity sentinel"
+    },
+    {
+      "rva": 18212368,
+      "hex": "ff8a1501",
+      "label": "ability 1956 dispatcher"
+    },
+    {
+      "rva": 18189055,
+      "hex": "418bd0e87906fbff",
+      "label": "ability 1956 handler dispatch"
+    },
+    {
+      "rva": 17863040,
+      "hex": "40534883ec30488bd985d27569bac26312fce8d95e0b00ba7510c35241b86355119b488bcbe806830900bae4c7a36f488bcbe8096d0900ba01000000488bcbe8ecd50b008b53084533c9458d4102e8fd695bff41b9c970558c41b8d190231d8b5308488b0ddfd42102e802176eff32c04883c4305bc383fa3c7522ba02000000e8abd50b0033d2488bcbe8a10a0b0041b9c970558c41b8e05a94e5ebc283fa46754bba04000000e884d50b004885db7411f6431401740b8b53084533c0e89ed967fff30f1015aed72b018b5308e81e675bff41b86355119b488bcbba49b6d1d6e84b82090032c04883c4305bc381fa04010000751aba01000000e8f1d50b008b5308e8297c5bff32c04883c4305bc381faaa0000000f8553fffffff30f1005cdda2b014533c98b510841b8a6070000488b0d8ad32102f30f11442420e87f1c6cffb0014883c4305bc3",
+      "label": "ability 1956 reviewed handler"
+    },
+    {
+      "rva": 18212372,
+      "hex": "108b1501",
+      "label": "ability 1957 dispatcher"
+    },
+    {
+      "rva": 18189072,
+      "hex": "418bd0e81808fbff",
+      "label": "ability 1957 handler dispatch"
+    },
+    {
+      "rva": 17863472,
+      "hex": "40534883ec30488bd985d27569bac26312fce8295d0b00ba7510c35241b86355119b488bcbe856810900bae4c7a36f488bcbe8596b0900ba01000000488bcbe83cd40b008b53084533c9458d4103e84d685bff41b9c970558c41b8d190231d8b5308488b0d2fd32102e852156eff32c04883c4305bc383fa3c7522ba02000000e8fbd30b0033d2488bcbe8f1080b0041b9c970558c41b8e05a94e5ebc283fa46754bba04000000e8d4d30b004885db7411f6431401740b8b53084533c0e8eed767fff30f1015fed52b018b5308e86e655bff41b86355119b488bcbba49b6d1d6e89b80090032c04883c4305bc381fa04010000751aba01000000e841d40b008b5308e8797a5bff32c04883c4305bc381faaa0000000f8553fffffff30f10051dd92b014533c98b510841b8a6070000488b0ddad12102f30f11442420e8cf1a6cffb0014883c4305bc3",
+      "label": "ability 1957 reviewed handler"
+    },
+    {
+      "rva": 18212388,
+      "hex": "548b1501",
+      "label": "ability 1961 dispatcher"
+    },
+    {
+      "rva": 18189140,
+      "hex": "418bd0e8b40efbff",
+      "label": "ability 1961 handler dispatch"
+    },
+    {
+      "rva": 17865232,
+      "hex": "40534883ec30488bd985d2755aba01000000e889cd0b00ba01000000488bcbe87c020b00bac53b257641b86355119b488bcbe8697a09008b530841b9c970558c488b0d71cc210241b837406f10e88e0e6effba93621166488bcbe801560b0032c04883c4305bc383fa3c75688b51084533c9488b0de7ca210241b893621166c644242800c744242000000000e87f207aff8b530841b9c970558c488b0d17cc210241b8fa6fae5de8340e6effbaffa4de1d41b86355119b488bcbe8e1790900488bcbba01000000e884000b0032c04883c4305bc383fa4174e983fa4674e483fa6475e9ba01000000e873cd0b00ba01000000488bcbe876020b008b530841b9c970558c488b0daecb210241b8e5b2324be8cb0d6effb0014883c4305bc3",
+      "label": "ability 1961 reviewed handler"
+    },
+    {
+      "rva": 18212392,
+      "hex": "658b1501",
+      "label": "ability 1962 dispatcher"
+    },
+    {
+      "rva": 18189157,
+      "hex": "418bd0e8f30ffbff",
+      "label": "ability 1962 handler dispatch"
+    },
+    {
+      "rva": 17865568,
+      "hex": "40534883ec30488bd985d2755aba01000000e839cc0b00ba01000000488bcbe82c010b00bac53b257641b86355119b488bcbe8197909008b530841b9c970558c488b0d21cb210241b837406f10e83e0d6effba93621166488bcbe8b1540b0032c04883c4305bc383fa3c75688b51084533c9488b0d97c9210241b893621166c644242800c744242000000000e82f1f7affba01000000488bcbe862ff0a00baffa4de1d41b86355119b488bcbe89f7809008b530841b9c970558c488b0da7ca210241b8fa6fae5de8c40c6eff32c04883c4305bc383fa41744483fa46743f83fa647544ba01000000e823cc0b00ba01000000488bcbe826010b008b530841b9c970558c488b0d5eca210241b8e5b2324be87b0c6effb0014883c4305bc3ba01000000e8d9fe0a0032c04883c4305bc3",
+      "label": "ability 1962 reviewed handler"
+    },
+    {
+      "rva": 18212396,
+      "hex": "768b1501",
+      "label": "ability 1963 dispatcher"
+    },
+    {
+      "rva": 18189174,
+      "hex": "418bd0e84211fbff",
+      "label": "ability 1963 handler dispatch"
+    },
+    {
+      "rva": 17865920,
+      "hex": "40534883ec30488bd985d27540bae3beed28e899530b008b530841b9c970558c488b0de1c9210241b823f2bb5ae8fe0b6effba8358357c41b86355119b488bcbe8ab77090032c04883c4305bc383fa1e7512ba506cfa21e8a461090032c04883c4305bc383fa32752dbae4c7a36fe88d6109008b530841b9c970558c488b0d85c9210241b811abc0e3e8a20b6eff32c04883c4305bc383fa377518ba1419d39b41b86355119be84577090032c04883c4305bc383fa3c747483fa5a74de83fa5f746a83fa7d74d481fa82000000745d81fa96000000755f8b51084533c9488b0dccc7210241b8e3beed28c644242800c744242000000000e8641d7affbaf4076784488bcbe8f76009008b530841b9c970558c488b0defc8210241b87afb0fabe80c0b6effb0014883c4305bc3ba02000000e86afd0a0032c04883c4305bc3",
+      "label": "ability 1963 reviewed handler"
+    },
+    {
+      "rva": 18212408,
+      "hex": "a98b1501",
+      "label": "ability 1966 dispatcher"
+    },
+    {
+      "rva": 18189225,
+      "hex": "418bd0e81f14fbff",
+      "label": "ability 1966 handler dispatch"
+    },
+    {
+      "rva": 17866704,
+      "hex": "40534883ec30488bd985d27555ba01000000e8c9c70b00488bcbe841010a0048ba014a78c4bd232617c6442420004533c941b8e591cfbc488bcbe851950a008b530841b9c970558c488b0da9c6210241b8726d8955e8c6086eff32c04883c4305bc383fa3c751aba01000000e82fc80b00488bcbe887020a0032c04883c4305bc383fa7875d4b0014883c4305bc3",
+      "label": "ability 1966 reviewed handler"
+    },
+    {
+      "rva": 3167101,
+      "hex": "33d241b877e7c920488bcfe8b3a01c00ba0100000041b83217af00488bcfe8a0a01c00ba0200000041b8920c23db488bcfe88da01c00ba0300000041b8decc54eb488bcfe87aa01c00",
+      "label": "Harvester logical weapon slots bound by mount name, not mount order"
     }
   ]
 }

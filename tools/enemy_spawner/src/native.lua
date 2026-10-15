@@ -95,7 +95,8 @@ function M.new(memory,profile,catalog,core,log,calls)
             return nil,'需要存活潜兵和地面任务 / Need a living avatar in a mission'
         end
         local players=ptr(game+53634152)
-        if u32(read(players+132,4),0)~=1 then return nil,'仅供单人任务 / Single-player missions only'end
+        local count=u32(read(players+132,4),0)
+        if count<1 or count>4 then return nil,'玩家列表尚未就绪 / Player roster not ready'end
         local mode=ptr(game+53634720)
         if u32(read(mode+8,4),0)~=1 then return nil,'游戏模式尚未就绪 / Mission not ready'end
         local descriptor=read(ptr(mode+56),24)
@@ -106,6 +107,7 @@ function M.new(memory,profile,catalog,core,log,calls)
         scene.world=ptr(game+profile.world_global)
         scene.key=scene.key..'/'..tostring(scene.world)..'/'..u32(descriptor,8)
         scene.avatar.position=scene.position
+        scene.player_count=count
         return scene
     end
     local function identities(enemy,scene)

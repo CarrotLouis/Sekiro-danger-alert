@@ -1,6 +1,6 @@
 local KEY='SekiroDangerAlert'
 if rawget(_G,KEY) then return rawget(_G,KEY) end
-local api={version=project.version,automatic_warning=true,status='starting'}
+local api={version=project.version,build=build_id,automatic_warning=true,status='starting'}
 rawset(_G,KEY,api)
 local loader=rawget(_G,'CowboyBingusModLoader') or {}
 local directory=loader.log_directory or ((os.getenv('LOCALAPPDATA') or '.')..'/CowboyBingus/Helldivers2/Logs')
@@ -12,8 +12,11 @@ local function status(s)
     if api.status==s then return end
     api.status=s;log('status: '..s)
 end
-log('Sekiro danger alert loaded '..api.version..'; Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
+log('Sekiro danger alert loaded '..api.version..' build '..tostring(build_id or'source')
+    ..' variant='..(instrumentation and'diagnostics'or'standard')
+    ..'; Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
 local menu=menu_module.new(log,catalog,profile)
+if instrumentation then instrumentation:attach_menu(menu,log)end
 local memory=memory_module.new(runtime)
 local audio,native,overlay,detector
 local last_warning_sample
@@ -31,13 +34,14 @@ local function initialize()
         if pin.module=='exe' then base=memory.module(nil)else base=memory.module('game.dll')end
         assert(base and memory.read(base+pin.rva,#pin.bytes)==pin.bytes,'runtime layout mismatch: '..pin.label)
     end
-    native=native_module.new(memory,profile)
+    native=native_module.new(memory,profile,instrumentation and instrumentation.native_extension or nil)
     overlay=overlay_module.new(native,assets,log,function()return menu:appearance()end)
     detector=detector_module.new(native,profile,log,function(event)
         if event.sample_time~=last_warning_sample then
             last_warning_sample=event.sample_time;overlay:play(now());play_audio()
         end
     end,function(move)return menu:enabled(move)end)
+    if instrumentation then instrumentation:initialize(native,detector,now,log,directory)end
     status('build matched; preparing visual')
 end
 local function visual_step(t)
@@ -76,8 +80,16 @@ local function step()
         detector:step(t);next_attack_sample=t+0.05
         if detector.disabled then api.automatic_warning=false;status('automatic warning unavailable; see log')end
     end
+    if instrumentation then
+        local ok,why=pcall(instrumentation.step,instrumentation,t,actions)
+        if not ok then
+            log('diagnostics stopped: '..tostring(why))
+            pcall(instrumentation.stop,instrumentation,'diagnostic failure');instrumentation=nil
+        end
+    end
 end
 local function stop(reason)
+    if instrumentation then pcall(instrumentation.stop,instrumentation,reason)end
     if overlay then pcall(overlay.close,overlay)end
     if audio then pcall(audio.release,audio)end
     status('stopped: '..tostring(reason))
