@@ -1,0 +1,192 @@
+-- Development-only observations. This module is never included in release ZIPs.
+-- Read-only layouts researched in HD2Runtime by SkyeShade (see CREDITS.txt).
+local bit=require('bit')
+local M={}
+function M.install(self,tools)
+    local read,ptr,nullable,numptr=tools.read,tools.ptr,tools.nullable,tools.numptr
+    local u32,f32,hex,entity=tools.u32,tools.f32,tools.hex,tools.entity
+    local map_index,unit_object=tools.map_index,tools.unit_object
+    local game,exe,memory,profile=tools.game,tools.exe,tools.memory,tools.profile
+    function self:animation(unit)
+        local object=unit_object(unit);local accessor=ptr(ptr(object)+0x1b0)
+        local rva=memory.distance(accessor,exe)
+        assert(rva>=4096 and rva<0x2000000,'animation accessor outside image')
+        assert(read(accessor,8)=='\072\139\129\120\001\000\000\195','animation accessor mismatch')
+        local machine=ptr(object+0x178);local resource=ptr(machine+0x28)
+        local h=read(resource,12);local layers=u32(h,4);local group_offset=u32(h,8)
+        assert(layers>0 and layers<=32 and group_offset<0x2000000,'animation header invalid')
+        local current=read(ptr(machine+0x50),layers*8)
+        local groups=resource+group_offset;local tablebytes=read(groups,4+layers*4)
+        assert(u32(tablebytes,0)==layers,'animation groups invalid')
+        local out={}
+        for i=0,layers-1 do
+            local state=memory.pointer(current,i*8)
+            if state then
+                local relative=memory.distance(state,resource)
+                assert(relative>=0 and relative<0x2000000,'animation state outside resource')
+                local off=u32(tablebytes,4+i*4);assert(off<0x2000000,'animation group offset invalid')
+                local group=groups+off;local states=u32(read(group+8,4),0)
+                assert(states<=2048,'too many animation states')
+                local indices=states>0 and read(group+12,states*4) or ''
+                local index=-1;local delta=memory.distance(state,group)
+                for j=0,states-1 do if u32(indices,j*4)==delta then index=j;break end end
+                assert(index>=0,'animation state not in its group')
+                out[#out+1]={layer=i,index=index,hash=hex(read(state,8))}
+            else out[#out+1]={layer=i,index=-1,hash='none'} end
+        end
+        assert(read(ptr(machine+0x50),layers*8)==current,'animation changed during read')
+        return out
+    end
+    function self:discover(header,start,limit,resources)
+        local out={};local last=math.min(header.count,start+limit)
+        if last<=start then return out,0 end
+        local rows=read(header.descriptors+start*8,(last-start)*8)
+        for i=0,last-start-1 do
+            local at=memory.pointer(rows,i*8)
+            if at then
+                local s=read(at,24)
+                local hash=hex(s:sub(1,8));local named=resources and resources[hash]
+                if named or not resources and hash==profile.crusher_resource then
+                    local e=entity(s,at);e.class_name=named and named.class_name;out[#out+1]=e
+                end
+            end
+        end
+        return out,last>=header.count and 0 or last
+    end
+    function self:abilities(targets)
+        local manager=ptr(game+53634624);local h=read(manager+8,56)
+        local cap,count=u32(h,0),u32(h,4)
+        assert(cap<=8192 and count<=cap,'ability counts invalid')
+        if count==0 then return {} end
+        local owners=read(assert(memory.pointer(h,40)),count*8)
+        local rows=assert(memory.pointer(h,48));local out={}
+        for i=0,count-1 do
+            local e=targets[numptr(owners,i*8)]
+            if e then
+                assert(read(e.pointer,20)==e.identity,'ability owner changed')
+                local row=read(rows+i*224,224)
+                if row:byte(17)~=0 then
+                    local item={entity=e.id,id=u32(row,0),time=f32(row,8),speed=f32(row,12),slot=i}
+                    out[#out+1]=item
+                end
+            end
+        end
+        assert(read(manager+8,56)==h,'ability table changed')
+        return out
+    end
+    function self:targeting_header()
+        self:verify_targeting()
+        local manager=ptr(game+0x3326d30);local h=read(manager+0x140,72)
+        local count=u32(h,0);assert(count<=4096,'targeting count invalid')
+        return {manager=manager,count=count,raw=h,descriptors=memory.pointer(h,0x28),
+            records=memory.pointer(h,0x38),network=memory.pointer(h,0x40)}
+    end
+    function self:targeting_discover(h,start,limit)
+        local out={};local last=math.min(h.count,start+limit)
+        if last<=start then return out,0 end
+        local rows=read(assert(h.descriptors)+start*8,(last-start)*8)
+        for i=0,last-start-1 do
+            local at=memory.pointer(rows,i*8)
+            if at then
+                local s=read(at,24);local name=profile.targeting_resources[hex(s:sub(1,8))]
+                if name and bit.band(u32(s,20),2)==0 then
+                    local e=entity(s,at);e.class_name=name;out[#out+1]=e
+                end
+            end
+        end
+        assert(read(h.manager+0x140,72)==h.raw,'targeting table changed')
+        return out,last>=h.count and 0 or last
+    end
+    function self:targeting_resolve(h,id)
+        local index=map_index(h.manager+0x150,id,65536)
+        if not index or index>=h.count then return nil end
+        local at=nullable(assert(h.descriptors)+index*8);if not at then return nil end
+        local s=read(at,24);local e=entity(s,at)
+        e.class_name=profile.targeting_resources[e.resource]
+        if e.id~=id or not e.class_name or bit.band(u32(s,20),2)~=0 then return nil end
+        e.targeting_index=index
+        return e
+    end
+    function self:targeting_state(h,e,avatar)
+        local i=e.targeting_index;assert(i and i<h.count,'targeting index invalid')
+        assert(nullable(h.descriptors+i*8)==e.pointer and read(e.pointer,20)==e.identity,'targeting owner changed')
+        local row=read(assert(h.records)+i*0xd0,0x20)
+        local net=read(assert(h.network)+i*0x18,0x18)
+        local target=u32(row,0);local network_target=u32(net,0);local resolved_network_target=u32(row,4)
+        local position_only=net:byte(0x15)~=0
+        local result={entity=e.id,unit=e.unit,class_name=e.class_name,distance=e.distance,owned=e.owned,
+            aim_target=target,network_target=network_target,network_flags=u32(net,0x10),
+            resolved_network_target=resolved_network_target,network_target_consistent=resolved_network_target==network_target,
+            target_point={x=f32(row,8),y=f32(row,12),z=f32(row,16)},
+            position_only=position_only,aim_point={x=f32(row,0x14),y=f32(row,0x18),z=f32(row,0x1c)},
+            aim_target_is_local=target==avatar.id,
+            entity_target_valid=not position_only and network_target~=0x7fff and target~=0,ai_available=false}
+        result.ai=self:behavior_target(e,avatar)
+        result.ai_available=result.ai~=nil
+        assert(read(h.manager+0x140,72)==h.raw and nullable(h.descriptors+i*8)==e.pointer
+            and read(e.pointer,20)==e.identity,'targeting identity changed')
+        return result
+    end
+    -- Read-only weapon input observations for diagnostics; never call a trigger.
+    function self:weapon_inputs(e,include_raw)
+        if not self.combat_proven then
+            assert(profile.combat_pins and #profile.combat_pins>0,'combat pins missing')
+            for _,pin in ipairs(profile.combat_pins) do
+                assert(read(game+pin.rva,#pin.bytes)==pin.bytes,'combat layout mismatch: '..pin.label)
+            end
+            self.combat_proven=true
+        end
+        local mgr=ptr(game+0x3326420);local header=read(mgr+0x30,24)
+        local index=map_index(mgr+0x30,e.id,65536)
+        if not index or index>=4096 then return nil end
+        local handles=ptr(mgr+0x48)
+        if nullable(handles+index*8)~=e.pointer then return nil end
+        assert(read(e.pointer,20)==e.identity,'weapon input owner changed')
+        local row=read(ptr(mgr+0x60)+index*0x1d0,0x1d0)
+        local inputs=read(ptr(mgr+0x58)+index*32,32)
+        local mask=u32(read(ptr(mgr+0x68)+index*4,4),0)
+        local result={replicated_input_bits=mask,local_input_bytes={},slot_head_words={}}
+        for i=0,4 do
+            result.local_input_bytes[i+1]=inputs:byte(i+1)
+            result.slot_head_words[i+1]={u32(row,i*0x50),u32(row,i*0x50+4)}
+        end
+        if include_raw then result.raw_hex=(row:gsub('.',function(c)return string.format('%02x',c:byte())end)) end
+        assert(read(mgr+0x30,24)==header and nullable(handles+index*8)==e.pointer
+            and read(e.pointer,20)==e.identity,'weapon input identity changed')
+        return result
+    end
+    function self:combat_state(h,e,avatar,include_raw)
+        local result={entity=e.id,unit=e.unit,resource=e.resource,class_name=e.class_name,
+            distance=e.distance,owned=e.owned,ai=self:behavior_target(e,avatar,true),
+            weapon_inputs=self:weapon_inputs(e,include_raw)}
+        local index=map_index(h.manager+0x150,e.id,65536)
+        if index and index<h.count and nullable(assert(h.descriptors)+index*8)==e.pointer then
+            e.targeting_index=index
+            result.aim=self:targeting_state(h,e,avatar)
+        end
+        -- Root facing is diagnostic only: it may differ from an animated barrel.
+        local object=unit_object(e.unit);local pose=read(ptr(object+136),64)
+        result.root_forward={x=f32(pose,16),y=f32(pose,20),z=f32(pose,24)}
+        return result
+    end
+    local behavior_target=self.behavior_target
+    function self:behavior_target(e,avatar,include_raw)
+        local result=behavior_target(self,e,avatar)
+        if include_raw and result then
+            local mgr=ptr(game+0x3326740);local bh=read(mgr+0x40,40)
+            local index=map_index(mgr+0x40,e.id,65536)
+            assert(index and index<4096,'diagnostic AI index changed')
+            local handles=assert(memory.pointer(bh,0x18));local records=assert(memory.pointer(bh,0x20))
+            assert(nullable(handles+index*8)==e.pointer,'diagnostic AI owner changed')
+            local raw=read(records+index*0x1f8,0x1f8)
+            assert(u32(raw,0)==result.behavior and u32(raw,8)==result.stage
+                and u32(raw,0x18)==result.target and u32(raw,0x60)==result.flags
+                and (raw:byte(0x79)~=0)==result.has_target,'diagnostic AI sample changed')
+            result.raw_hex=(raw:gsub('.',function(c)return string.format('%02x',c:byte())end))
+            assert(read(mgr+0x40,40)==bh and nullable(handles+index*8)==e.pointer
+                and read(e.pointer,20)==e.identity,'diagnostic AI identity changed')
+        end
+        return result
+    end
+end
+return M

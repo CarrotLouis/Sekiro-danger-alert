@@ -19,6 +19,11 @@ Python 3 + Pillow 用于构建；完整透明序列的提取另需 NumPy 和 FFm
 
 构建后运行 `python scripts/verify_package.py`，从实际 ZIP 检查清单、资源、Lua 与 BC1 纹理，并生成压缩前后关键帧对照。
 
+1.0.0 只封包生产模块与精简招式标签，不包含 `tools/diagnostics/`、敌人生成工具、研究热键或采集入口。
+使用说明为 `README-使用说明.txt`。真实 MOM 测试要求全部 25 项处于同一分类，18 个招式开关中的 Crusher 项覆盖全部已映射变体。
+采集 / 动画 / 武器读法移至 `tools/diagnostics/src/`；`test_native.lua` 显式注入研究扩展做历史回归，发行入口不注入。
+`test_release.py` 检查实际 ZIP 没有研究模块，`test_entry.lua` 验证发行入口的预览 / 自动预警 / 重置 / 释放路径。
+
 素材约定：完整 PNG 原片为 straight alpha；assets/frames 是游戏图标着色器使用的 R/G/B 颜色遮罩，
 外观看起来偏黄绿是正常的，不能拿它们代替透明素材包。
 
@@ -45,9 +50,9 @@ python scripts/build.py
 
 0.3.2 的索敌探针配置在 `config/targeting_probe.json`；构建将资源哈希及关键指令写入生成的 `src/profile.lua`。0.4.0 的自动预警也使用其中的行为目标读取与校验。攻击时序和额外指令校验在 `config/attack_probe.json`。采集分析可运行 `python scripts/analyze_capture.py <日志路径>`，报告写入 `outputs/`。
 
-资源和招式目录在 `config/attack_catalog.json`，构建生成 `src/catalog.lua`。0.6.0 的 `enabled_from_capture` 表示已从采集与当前版本代码映射，仍须实机确认新预警效果。规则、分段发射窗口及额外指令校验在 `config/expanded_attacks.json`，构建写入 `src/profile.lua`。原始日志 / 模块截取不入库，测试仅保留匿名最小状态回放。
+资源和招式目录在 `config/attack_catalog.json`，构建生成 `src/catalog.lua`，发行入口只嵌入公开 ID / 标签 / 说明。`enabled_from_capture` 表示已从采集与当前版本代码映射；用户已确认 0.6.0 效果，1.0.0 菜单整理仍须部署后核对。规则、分段发射窗口及额外指令校验在 `config/expanded_attacks.json`，构建写入 `src/profile.lua`。原始日志 / 模块截取不入库，测试仅保留匿名最小状态回放。
 
-移动工厂没有活动 Ability，自动路径扫描已核对的世界实体描述符，读取其 AI 准备阶段、目标就绪标志与原生微秒时钟；每批最多 8 个匹配后续扫，无永久观察名额，不读位置。整体保持每次 2500 次 / 1 MiB 的只读门禁。武器输入诊断校验在 `config/combat_probe.json`，仅手动采集使用。版本来自 `project.json`，入口和采集头均使用运行时版本。
+移动工厂没有活动 Ability，自动路径扫描已核对的世界实体描述符，读取其 AI 准备阶段、目标就绪标志与原生微秒时钟；每批最多 8 个匹配后续扫，无永久观察名额，不读位置。整体保持每次 2500 次 / 1 MiB 的只读门禁。历史武器输入诊断校验在 `config/combat_probe.json`，发行版没有对应采集功能。入口版本来自 `project.json`。
 
 独立生成工具：先运行上述主工程构建与测试，再运行
 `python tools/enemy_spawner/build.py --mom-source work/ModOptionsMenu`。

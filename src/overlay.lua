@@ -41,7 +41,6 @@ function M.new(native,assets,log,appearance)
             self:close();return
         end
         if self.anchor_status~='tracking' then
-            log('head tracking: unit='..anchor.unit..' node='..anchor.node)
             self.anchor_status='tracking'
         end
         local world=native:ui_world()

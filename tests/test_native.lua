@@ -1,4 +1,7 @@
 local root=arg[1];local ffi=require('ffi');local bytes={}
+local core=dofile(root..'/src/native.lua')
+local research=dofile(root..'/tools/diagnostics/src/native.lua')
+local function make_native(memory,profile)return core.new(memory,profile,research)end
 local function pointer(n)return ffi.cast('uint8_t *',n)end
 local function addr(n)return tonumber(ffi.cast('uintptr_t',n))end
 local function region(at,n)bytes[at]=string.rep('\0',n)end
@@ -37,7 +40,7 @@ u(0x40007040,2);u(0x40007044,64);u(0x40007048,192)
 u(0x40007088,2);u(0x4000708c,48);u(0x40007090,64)
 p(0x40008000,0x400070c0);write(0x400070c0,pack(123456,8))
 u(0x40007108,1);u(0x4000710c,32);p(0x40008008,0x40007120);write(0x40007120,pack(987654,8))
-local n=dofile(root..'/src/native.lua').new(mem,{})
+local n=make_native(mem,{})
 n:begin();local v=n:position(4194307);assert(v.x==1 and v.y==2 and v.z==3)
 local states=n:animation(4194307)
 assert(#states==2 and states[1].layer==0 and states[1].index==1 and states[1].hash=='000000000001e240')
@@ -56,7 +59,7 @@ region(0x41010000,8);p(0x41010000,0x41003000)
 region(0x41002000,8);u(0x41002000,100);u(0x41002004,0)
 region(0x41003000,24);write(0x41003000,pack(1234,8));u(0x41003008,100);u(0x4100300c,4194307);u(0x41003014,1)
 region(0x41004000,440);u(0x41004000+20,6000)
-n=dofile(root..'/src/native.lua').new(mem,{crusher_resource='00000000000004d2'})
+n=make_native(mem,{crusher_resource='00000000000004d2'})
 n:begin();local h=n:health_header();assert(h.count==1)
 local found,cursor=n:discover(h,0,128);assert(#found==1 and cursor==0 and found[1].id==100)
 local e=n:resolve(h,100);assert(e.health==6000 and e.owned)
@@ -106,7 +109,7 @@ p(0x44000058,0x44002000);region(0x44002000,8);p(0x44002000,0x41003000)
 p(0x44000060,0x44003000);region(0x44003000,0x1f8)
 u(0x44003000,321);u(0x44003008,5);u(0x4400300c,6);u(0x44003018,777)
 u(0x44003060,1);write(0x44003078,'\1')
-n=dofile(root..'/src/native.lua').new(mem,profile);n:begin()
+n=make_native(mem,profile);n:begin()
 h=n:targeting_header();found=n:targeting_discover(h,0,128);assert(#found==1 and found[1].class_name=='test_turret')
 e=n:targeting_resolve(h,100);e.distance=120
 local state=n:targeting_state(h,e,{id=777})
@@ -126,7 +129,7 @@ u(0x44001000,0xffffffff);state=n:targeting_state(h,e,{id=777});assert(not state.
 u(0x41003008,101);assert(not pcall(n.targeting_state,n,h,e,{id=777}));u(0x41003008,100)
 u(0x43000140,5000);assert(not pcall(n.targeting_header,n));u(0x43000140,1)
 local pin=profile.targeting_pins[1];write(game+pin.rva,string.rep('\0',#pin.bytes))
-n=dofile(root..'/src/native.lua').new(mem,profile);n:begin();assert(not pcall(n.targeting_header,n))
+n=make_native(mem,profile);n:begin();assert(not pcall(n.targeting_header,n))
 print('PASS targeting/AI ownership, local-target distinction, position-only mode, peer absence and build/layout rejection')
 
 -- Attack-first scanning never reserves the first sixteen enemies or requests positions.
@@ -134,7 +137,7 @@ write(game+pin.rva,pin.bytes)
 for _,ap in ipairs(profile.attack_pins) do region(game+ap.rva,#ap.bytes);write(game+ap.rva,ap.bytes)end
 for _,ap in ipairs(profile.expanded.pins) do region(game+ap.rva,#ap.bytes);write(game+ap.rva,ap.bytes)end
 profile.crusher_resource='00000000000004d2'
-n=dofile(root..'/src/native.lua').new(mem,profile)
+n=make_native(mem,profile)
 local rows_at,owners_at,descriptors_at=0x45000000,0x45100000,0x45200000
 region(rows_at,3000*224);region(owners_at,3000*8);region(descriptors_at,40*32)
 u(0x41005000+8,3000);u(0x41005000+12,3000)
@@ -167,12 +170,12 @@ n:begin();items=n:attack_candidates(0);assert(items[1].paused)
 write(descriptors_at,pack(4321,8));n:begin();items=n:attack_candidates(0);assert(#items==0)
 u(0x41005000+12,8193);n:begin();assert(not pcall(n.attack_candidates,n,0));u(0x41005000+12,1)
 local ap=profile.attack_pins[1];write(game+ap.rva,string.rep('\0',#ap.bytes))
-n=dofile(root..'/src/native.lua').new(mem,profile);n:begin();assert(not pcall(n.attack_candidates,n,0))
+n=make_native(mem,profile);n:begin();assert(not pcall(n.attack_candidates,n,0))
 print('PASS bounded attack-table sweep, 40 simultaneous actors, no permanent slots, pause/resource/count/pin rejection')
 
 -- Research health discovery uses a named whitelist; it also sees actors without Ability components.
 u(0x41004000+20,6000);u(0x44001000,100)
-n=dofile(root..'/src/native.lua').new(mem,profile);n:begin();h=n:health_header()
+n=make_native(mem,profile);n:begin();h=n:health_header()
 local names={['00000000000004d2']={class_name='named_test_actor'}}
 found=n:discover(h,0,128,names);assert(#found==1 and found[1].class_name=='named_test_actor')
 e=n:resolve(h,100,names);assert(e and e.class_name=='named_test_actor')
@@ -192,7 +195,7 @@ local aimh=n:targeting_header();local combat=n:combat_state(aimh,e,{id=777},true
 assert(combat.ai.has_target and #combat.ai.raw_hex==0x1f8*2 and combat.weapon_inputs and combat.root_forward)
 p(0x47002000,0x41004000);assert(n:weapon_inputs(e)==nil);p(0x47002000,0x41003000)
 local cp=profile.combat_pins[1];write(game+cp.rva,string.rep('\0',#cp.bytes))
-n=dofile(root..'/src/native.lua').new(mem,profile);n:begin();assert(not pcall(n.weapon_inputs,n,e))
+n=make_native(mem,profile);n:begin();assert(not pcall(n.weapon_inputs,n,e))
 print('PASS named health discovery, pinned weapon-input decoding, optional component ownership and raw diagnostic gating')
 
 -- Exercise resource-specific selection in the production Ability scanner, not
@@ -204,7 +207,7 @@ local function reviewed_hash(hash)
     write(descriptors_at,table.concat(bytes))
 end
 reviewed_hash('a05bd1ec67b3ac4c')
-n=dofile(root..'/src/native.lua').new(mem,profile);n:begin()
+n=make_native(mem,profile);n:begin()
 items,actors=n:attack_candidates(0)
 assert(#items==1 and items[1].id==219 and actors[1].class_name=='charger_tier2')
 reviewed_hash('000000000000ffff');n:begin();assert(#n:attack_candidates(0)==0,'a shared attack ID cannot authorize an unknown resource')
@@ -216,6 +219,7 @@ print('PASS production expanded Ability selection: exact resource/class pairing,
 -- native creation. All regions here are fake; no game process is opened.
 write(game+cp.rva,cp.bytes)
 local F=profile.expanded.factory
+make_native=function(memory,profile)return core.new(memory,profile)end
 region(game+F.world_global,8);p(game+F.world_global,0x48000000)
 local descriptors=0x48000000+F.descriptors_offset
 region(descriptors,F.slots*24);region(game+F.invalid_entity_global,4);u(game+F.invalid_entity_global,0xffffffff)
@@ -228,7 +232,7 @@ local function factory(index,id)
     write(at,resource_bytes(F.resource));u(at+8,id);u(at+12,4194307);u(at+20,1)
 end
 factory(0,100)
-n=dofile(root..'/src/native.lua').new(mem,profile);n:begin()
+n=make_native(mem,profile);n:begin()
 local selected,scan=n:factory_candidates(0)
 assert(#selected==1 and selected[1].pointer==pointer(descriptors)and scan.cursor==0 and scan.scanned==2048)
 -- The canonical pointer is shared by Behavior and Health, not a cloned row.
@@ -254,5 +258,12 @@ repeat
 until cursor==0
 local count=0;for _ in pairs(all)do count=count+1 end;assert(count==25,'batch limits cannot become permanent observation slots')
 local ep=profile.expanded.pins[1];write(game+ep.rva,string.rep('\0',#ep.bytes))
-n=dofile(root..'/src/native.lua').new(mem,profile);n:begin();assert(not pcall(n.factory_candidates,n,0))
+n=make_native(mem,profile);n:begin();assert(not pcall(n.factory_candidates,n,0))
 print('PASS Factory production reader: canonical descriptors, exact native microsecond clocks, readiness flag, lifecycle, fair 25-actor scan and pin rejection')
+
+n=core.new(mem,profile)
+for _,name in ipairs({'animation','discover','abilities','targeting_header','targeting_discover',
+    'targeting_resolve','targeting_state','weapon_inputs','combat_state'})do
+    assert(n[name]==nil,'release reader exposes a research function: '..name)
+end
+print('PASS release native reader has no research/animation/weapon-input collection methods')

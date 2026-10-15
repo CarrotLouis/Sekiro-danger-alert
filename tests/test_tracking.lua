@@ -1,4 +1,4 @@
-local root=arg[1];local tracking=dofile(root..'/src/tracking.lua')
+local root=arg[1];local tracking=dofile(root..'/tools/diagnostics/src/tracking.lua')
 -- This distance-prioritized tracker now belongs only to optional diagnostic capture.
 local count=16;local distances={};local calls=0;local alive={}
 for i=1,300 do distances[i]=30+i/100;alive[i]=true end

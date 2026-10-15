@@ -18,7 +18,8 @@ only derived resource identities/layout facts are included, no game tables or re
 https://github.com/xypwn/filediver/tree/6bf7c1ccc4be465a35b4bc9d41087781b47034e6/datalibrary
 
 0.6.0 attack windows were independently decoded from build 25480438 native code and compared with owner-supplied captures.
-Only build-relative rules/pins and anonymous minimal detector replay states are included; no original logs or dumps.
+Only build-relative rules/pins and anonymous minimal detector replay states are kept in the source repository; no original logs or dumps.
+The 1.0.0 main release excludes collection tools, replay fixtures and the separate Enemy Spawner.
 
 Enemy Spawner 0.1.0 reuses HD2Runtime research on the native spawn descriptor, package reference loader,
 package residency, component tables and mission authority. The native implementation is independently guarded;

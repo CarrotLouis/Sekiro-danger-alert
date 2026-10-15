@@ -4,13 +4,7 @@ return {
  game_sha256='2E2C3B7C2500646DADD5F2B4C6E0504DBB7E7896139F64CDDC0D1813C718F51E',
  avatar_resource='4d1c334d294dfa97',
  crusher_resource='905809a4c28d8a45',
- pins={{module='exe',rva=5587676,bytes=table.concat({
-"\072\139\065\040"
-}),label='animation resource'},{module='exe',rva=5587728,bytes=table.concat({
-"\072\139\070\080\076\139\012\003"
-}),label='animation active layers'},{module='exe',rva=5587753,bytes=table.concat({
-"\069\139\068\011\004\076\003\193"
-}),label='animation group offsets'},{module='exe',rva=2873456,bytes=table.concat({
+ pins={{module='exe',rva=2873456,bytes=table.concat({
 "\072\141\065\096\195"
 }),label='unit scene graph'},{module='exe',rva=6235350,bytes=table.concat({
 "\072\139\044\002"

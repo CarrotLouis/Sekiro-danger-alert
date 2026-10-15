@@ -39,10 +39,7 @@ def masks():
 
 def profile():
     crusher='content/fac_illuminate/cha_bodyhorror_helmetguy/cha_bodyhorror_helmetguy'
-    pins=[('exe',0x5542dc,'488b4128','animation resource'),
-          ('exe',0x554310,'488b46504c8b0c03','animation active layers'),
-          ('exe',0x554329,'458b440b044c03c1','animation group offsets'),
-          ('exe',2873456,'488d4160c3','unit scene graph'),
+    pins=[('exe',2873456,'488d4160c3','unit scene graph'),
           ('exe',6235350,'488b2c02','resource slot'),
           ('exe',1475261,'c70133832ad9','material object'),
           ('exe',0x1fe5ff,'448b4210','scene graph node count'),
@@ -133,11 +130,13 @@ def build():
     (BUILD/'assets.lua').write_text(assets,encoding='utf-8')
     chunks=['-- HD2-Addon: '+OWNER+'\n',"if rawget(_G,'SekiroDangerAlert') then return rawget(_G,'SekiroDangerAlert') end\n"]
     chunks.append('local project='+lua(CONFIG)+'\n')
+    catalog=json.loads((ROOT/'config/attack_catalog.json').read_text(encoding='utf-8'))
+    release_catalog={'moves':[{k:move[k] for k in ('id','label','attack_name')}for move in catalog['moves']]}
+    chunks.append('local catalog='+lua(release_catalog)+'\n')
     for name,path in [('runtime','vendor/bingus_runtime.lua'),('memory_module','vendor/bingus_memory.lua'),
-                      ('profile','src/profile.lua'),('catalog','src/catalog.lua'),('assets','build/assets.lua'),('menu_module','src/menu.lua'),
+                      ('profile','src/profile.lua'),('assets','build/assets.lua'),('menu_module','src/menu.lua'),
                       ('audio_module','src/audio.lua'),('native_module','src/native.lua'),('overlay_module','src/overlay.lua'),
-                      ('tracking_module','src/tracking.lua'),('capture_module','src/capture.lua'),
-                      ('marker_module','src/marker.lua'),('detector_module','src/detector.lua')]:
+                      ('detector_module','src/detector.lua')]:
         chunks.append('local '+name+'='+module(ROOT/path)+'\n')
     chunks.append((ROOT/'src/entry.lua').read_text(encoding='utf-8'))
     entry=''.join(chunks).encode('utf-8');assert b'\0' not in entry and not entry.startswith(b'\xef\xbb\xbf')
@@ -146,16 +145,17 @@ def build():
     main,gpu=make_resource_archive(resources)
     assert read_archive(main,gpu)==resources
     archive='9ba626afa44a3aa3.patch_0'
-    description=('Sekiro danger alert: 16 additional targeted enemy attacks, Crusher and heavy cannon warning; diving Dragonroach breath and direct Barrager fire only. '
-                 'Live avatar-head projection and independent sound volume. '
+    description=('Sekiro danger alert: targeted enemy attack warnings with Sekiro-style animation and sound. '
+                 '18 attack switches and appearance, volume, preview and reset controls on one settings page. '
+                 'Dragonroach diving breath and Barrager direct fire only. '
                  'Requires Bingus Shared Loader v18+ and Mod Options Menu v1.2. '
                  'Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
     manifest={'Version':1,'Guid':CONFIG['guid'],'Name':'Sekiro danger alert '+CONFIG['version'],'Description':description,
               'Options':[{'Name':'Sekiro danger alert','Description':description,'Include':['Addon']}]}
     files={'manifest.json':json.dumps(manifest,indent=2).encode(),
            'Addon/'+archive:main,'Addon/'+archive+'.gpu_resources':gpu,'Addon/'+archive+'.stream':b''}
-    for name in ['README-测试说明.txt','CREDITS.txt']:
-        if (ROOT/name).exists():files[name]=(ROOT/name).read_bytes()
+    for name in ['README-使用说明.txt','CREDITS.txt']:
+        files[name]=(ROOT/name).read_bytes()
     target=OUT/('Sekiro danger alert '+CONFIG['version']+'.zip')
     with zipfile.ZipFile(target,'w',zipfile.ZIP_DEFLATED) as z:
         for name,data in sorted(files.items()):

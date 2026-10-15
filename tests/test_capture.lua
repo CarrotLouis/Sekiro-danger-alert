@@ -1,4 +1,4 @@
-local root=arg[1];local tracking=dofile(root..'/src/tracking.lua');local t=0;local mission=true;local state=1;local cmod=dofile(root..'/src/capture.lua')
+local root=arg[1];local tracking=dofile(root..'/tools/diagnostics/src/tracking.lua');local t=0;local mission=true;local state=1;local cmod=dofile(root..'/tools/diagnostics/src/capture.lua')
 local mock={reads=0,bytes=0,memory={address=function(p)return p end},begin=function()end,
  scene=function()return {mission=mission,key='session-a',avatar={unit=7},position={x=0,y=0,z=0}}end,
  health_header=function()return {count=1}end,

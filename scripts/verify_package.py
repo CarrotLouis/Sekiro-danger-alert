@@ -25,7 +25,7 @@ def main():
     archive = 'Addon/9ba626afa44a3aa3.patch_0'
     with zipfile.ZipFile(package) as z:
         assert z.testzip() is None
-        assert set(z.namelist()) == {'manifest.json', 'README-测试说明.txt', 'CREDITS.txt',
+        assert set(z.namelist()) == {'manifest.json', 'README-使用说明.txt', 'CREDITS.txt',
                                     archive, archive+'.gpu_resources', archive+'.stream'}
         manifest = json.loads(z.read('manifest.json'))
         assert manifest['Guid'] == config['guid'] and str(uuid.UUID(manifest['Guid'])) == config['guid']
@@ -43,6 +43,10 @@ def main():
     assert not source.startswith(b'\xef\xbb\xbf') and b'\0' not in source
     assert ('["version"]="'+config['version']+'"').encode() in source
     assert b'version=project.version' in source
+    for research_name in (b'capture_module', b'tracking_module', b'marker_module', b'GetAsyncKeyState',
+                          b'research_capture', b'raw_hex', b'automatic_trigger', b'function self:weapon_inputs',
+                          b'function self:animation', b'function self:targeting_header'):
+        assert research_name not in source, research_name
     errors = []
     sheet = Image.new('RGB', (1024, 6*280))
     keys = [0, 6, 11, 19, 33, 41]
@@ -78,7 +82,8 @@ def main():
               'duration_seconds': effect['frames']*effect['fps_denominator']/effect['fps_numerator'],
               'package_sha256': hashlib.sha256(package.read_bytes()).hexdigest(),
               'package_bytes': package.stat().st_size, 'offline_archive_check': 'passed',
-              'bc1_checks': errors, 'live_game_validated': False}
+              'bc1_checks': errors, 'research_modules_included': False,
+              'live_game_validated': False}
     (ROOT/'outputs'/f"Sekiro danger alert {config['version']} Validation.json").write_text(
         json.dumps(report, indent=2)+'\n', encoding='utf-8')
     print(json.dumps({k:v for k,v in report.items() if k!='bc1_checks'}, indent=2))

@@ -42,6 +42,7 @@ assert len(rules['resources']['5d142c3a73ebc634']['abilities']['1018']['cues'])=
 assert rules['factory']['resource']=='843d18d4b5512b63' and rules['factory']['stage_start_offset']==0x188
 assert rules['factory']['earliest_fire_time']==1 and rules['factory']['last_warning_time']<=.8
 assert len(rules['pins'])>=60
-project=json.loads((ROOT/'project.json').read_text(encoding='utf-8'));assert project['version']=='0.6.0'
+project=json.loads((ROOT/'project.json').read_text(encoding='utf-8'))
+assert project['guid']=='1dc82965-3c84-4eec-bb72-88e8121ac0dc'
 assert 'version=project.version'in(ROOT/'src/entry.lua').read_text(encoding='utf-8')
 print('PASS 16 enabled distinct moves, native identities, independent settings, diving/direct exclusions, burst windows and build-bound Factory preparation')
