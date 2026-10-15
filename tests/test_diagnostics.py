@@ -20,7 +20,9 @@ with zipfile.ZipFile(ROOT/'outputs'/f"Sekiro danger alert {project['version']} D
     resources=read_archive(z.read('Addon/9ba626afa44a3aa3.patch_0'),z.read('Addon/9ba626afa44a3aa3.patch_0.gpu_resources'))
 source=resources[LUA_TYPE,resource_hash(project['resource'])][0][8:]
 assert source==(ROOT/'build/diagnostics/Sekiro danger alert.lua').read_bytes()
-for token in (b'GetAsyncKeyState',b'capture_module',b'replicated_target',b'replicated_behavior',b'peril_warning.diagnostics.'):
+for token in (b'GetAsyncKeyState',b'capture_module',b'replicated_target',b'replicated_behavior',b'peril_warning.diagnostics.',
+              b'function self:projectile_state',b'function self:flight_network_state',b'function self:behavior_network_state',
+              b'diagnostic_only_not_committed_shot',b'utc_started',b'research_schema'):
     assert token in source,token
 assert len(resources)==101
-print('PASS optional diagnostic envelope: stable GUID/entry, actual LuaJIT compile, collection-only F8 and unchanged assets')
+print('PASS optional diagnostic envelope: stable GUID/entry, actual LuaJIT compile, targeted raw research channels, collection-only F8 and unchanged assets')

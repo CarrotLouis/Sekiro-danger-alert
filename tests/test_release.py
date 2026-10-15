@@ -20,7 +20,9 @@ source=resources[LUA_TYPE,resource_hash(project['resource'])][0][8:].decode('utf
 assert source==(ROOT/'build/Sekiro danger alert.lua').read_text(encoding='utf-8')
 for name in ('capture_module','marker_module','tracking_module','GetAsyncKeyState','research_capture',
              'target_capture','automatic_trigger','raw_hex','capture_note',
-             'function self:weapon_inputs','function self:targeting_header','function self:animation'):
+             'function self:weapon_inputs','function self:targeting_header','function self:animation',
+             'function self:projectile_state','function self:flight_network_state','function self:behavior_network_state',
+             'diagnostic_only_not_committed_shot','research_schema'):
     assert name not in source,name
 assert "id='crusher_melee'" in source and "mod_id='peril_warning.crusher'" in source
 assert "label='粉碎者 · 危险近战'" in source

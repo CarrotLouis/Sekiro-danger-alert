@@ -57,6 +57,8 @@ function M.new(native,path,log,clock,tracking,catalog,version)
     function self:start(mode,move_id,capture_context)
         if self.active then self:stop('restarted') end
         self.mode=mode=='combat' and 'combat' or mode=='targeting' and 'targeting' or 'crusher'
+        self.sample_interval=self.mode=='combat' and
+            (move_id=='factory_fusion_repeater' or move_id=='dragon_alchemical_pyrosis')and .05 or .1
         self.requested_move=nil;self.resources=nil
         self.capture_context=capture_context=='comparison' and 'comparison' or 'requested'
         if self.mode=='combat' then
@@ -87,7 +89,9 @@ function M.new(native,path,log,clock,tracking,catalog,version)
                 position=function(_,unit)return native:position(unit)end}
         end
         tracker=tracking.new(source,self.mode~='crusher' and 2000 or 50,self.mode~='crusher' and 8 or 16)
-        emit('capture_start',{build='25480438',nominal_sample_hz=10,adaptive_sampling=true,
+        emit('capture_start',{build='25480438',nominal_sample_hz=1/self.sample_interval,adaptive_sampling=true,
+            utc_started=os.date('!%Y-%m-%dT%H:%M:%SZ'),clock_anchor=began,
+            research_schema=2,warning_logic='unchanged_from_0.8.2',
             diagnostic_range_m=self.mode~='crusher' and 2000 or 50,warning_rule='local_entity_target_and_attack',mode=self.mode,
             requested_move=self.requested_move and self.requested_move.id,
             requested_attack=self.requested_move and self.requested_move.attack_name,

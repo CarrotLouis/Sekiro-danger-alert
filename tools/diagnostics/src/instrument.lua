@@ -97,7 +97,7 @@ function M.new(extension,capture_module,tracking_module,marker_module,catalog,pr
         self.collector:record_detection(self.detector.snapshot)
         if t>=self.next_sample then
             self.collector:step()
-            self.next_sample=t+((self.collector.cost or 0)>.010 and .2 or .1)
+            self.next_sample=t+((self.collector.cost or 0)>.010 and .2 or(self.collector.sample_interval or .1))
         end
         if self.collector.active then
             self.marker=self.marker or marker_module.new()

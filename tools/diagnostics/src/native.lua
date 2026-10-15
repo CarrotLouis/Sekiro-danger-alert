@@ -153,6 +153,64 @@ function M.install(self,tools)
             and read(e.pointer,20)==e.identity,'weapon input identity changed')
         return result
     end
+    -- Research channels only. These bytes are not a new attack/target rule:
+    -- a projectile timer is not proof that a shot has been committed, and a
+    -- flying controller's last network record is not an identified player.
+    local function detail_row(e,global,map,handles,records,stride,count_offset)
+        self:verify_peer()
+        assert(profile.combat_pins and #profile.combat_pins>0,'combat pins missing')
+        if not self.details_proven then
+            for _,pin in ipairs(profile.combat_pins)do
+                assert(read(game+pin.rva,#pin.bytes)==pin.bytes,'research layout mismatch: '..pin.label)
+            end
+            self.details_proven=true
+        end
+        local function owner()
+            local s=read(e.pointer,24)
+            return s:sub(1,20)==e.identity and(bit.band(u32(s,20),1)~=0)==e.owned
+                and bit.band(u32(s,20),2)==0
+        end
+        assert(owner(),'research owner changed')
+        local mgr=ptr(game+global);local header=read(mgr+map,records-map+8)
+        local index=map_index(mgr+map,e.id,65536)
+        if not index or index>=4096 then return end
+        if count_offset then
+            local count=u32(read(mgr+count_offset,4),0)
+            assert(count<=4096,'research count invalid')
+            if index>=count then return end
+        end
+        local owners=ptr(mgr+handles)
+        if nullable(owners+index*8)~=e.pointer then return end
+        local at=ptr(mgr+records)+index*stride
+        local row=read(at,stride)
+        assert(read(mgr+map,#header)==header and nullable(owners+index*8)==e.pointer
+            and read(at,stride)==row and ptr(game+global)==mgr and owner(),'research record changed')
+        return row,index
+    end
+    local function rawhex(row)return (row:gsub('.',function(c)return string.format('%02x',c:byte())end))end
+    function self:projectile_state(e)
+        if e.resource~='843d18d4b5512b63'then return end
+        local row,index=detail_row(e,0x33266d8,0x50,0x68,0x78,0xa8)
+        if not row then return end
+        return {index=index,instance_stride=0xa8,fire_gate_timer=f32(row,8),shot_interval=f32(row,12),
+            state_bytes={row:byte(1,3)},effect_bytes={row:byte(0x11,0x13)},raw_hex=rawhex(row),
+            interpretation='diagnostic_only_not_committed_shot'}
+    end
+    function self:flight_network_state(e)
+        if e.resource~='960b48a421a3faaa'then return end
+        local row,index=detail_row(e,0x3326de0,0x20,0x38,0x48,0x1c,8)
+        if not row then return end
+        local words={};for offset=0,0x18,4 do words[#words+1]=u32(row,offset)end
+        return {index=index,record_stride=0x1c,words=words,raw_hex=rawhex(row),
+            interpretation='diagnostic_only_not_verified_target'}
+    end
+    function self:behavior_network_state(e)
+        if e.resource~='843d18d4b5512b63'and e.resource~='960b48a421a3faaa'then return end
+        local row,index=detail_row(e,0x3326740,0x40,0x58,0x68,0xa0)
+        if not row then return end
+        return {index=index,stage=u32(row,0),behavior=u32(row,4),raw_hex=rawhex(row),
+            interpretation=e.owned and 'last_encoded_network_state' or 'received_network_state'}
+    end
     function self:combat_state(h,e,avatar,include_raw)
         local result={entity=e.id,unit=e.unit,resource=e.resource,class_name=e.class_name,
             distance=e.distance,owned=e.owned,network_id=e.network_id,ai_authoritative=e.owned==true,
@@ -163,6 +221,14 @@ function M.install(self,tools)
         end
         optional('ai',function()return self:behavior_target(e,avatar,true)end)
         optional('weapon_inputs',function()return self:weapon_inputs(e,include_raw)end)
+        if e.resource=='843d18d4b5512b63'then
+            optional('projectile_state',function()return self:projectile_state(e)end)
+        elseif e.resource=='960b48a421a3faaa'then
+            optional('flight_network_state',function()return self:flight_network_state(e)end)
+        end
+        if e.resource=='843d18d4b5512b63'or e.resource=='960b48a421a3faaa'then
+            optional('behavior_network_state',function()return self:behavior_network_state(e)end)
+        end
         if not e.owned then
             optional('replicated_target',function()return self:replicated_target(e,avatar)end)
             optional('replicated_behavior',function()return self:replicated_behavior(e)end)

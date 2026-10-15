@@ -40,6 +40,57 @@
       "rva": 18586768,
       "hex": "488b4348",
       "label": "weapon wielder owner handles"
+    },
+    {
+      "rva": 6363966,
+      "hex": "4c8b3d934bd102",
+      "label": "projectile manager global"
+    },
+    {
+      "rva": 6363999,
+      "hex": "458b4f5833d2458b5760440fafd0418d79ff4585c974344d8b5f50418b5f5c",
+      "label": "projectile entity map layout"
+    },
+    {
+      "rva": 6383484,
+      "hex": "488b41684c8bf98bda488b34d8",
+      "label": "projectile canonical owner handles"
+    },
+    {
+      "rva": 6383505,
+      "hex": "498b6f784c8bf08b56084c69e3a80000004903ec",
+      "label": "projectile instance array and stride"
+    },
+    {
+      "rva": 6386732,
+      "hex": "410f2f7c2e080f82c50000004584ff0f84b7000000",
+      "label": "projectile timer and eligible shot gate"
+    },
+    {
+      "rva": 6386894,
+      "hex": "e8ddb3ffff",
+      "label": "projectile update invokes shot directly"
+    },
+    {
+      "rva": 5561919,
+      "hex": "488b1d9a8fdd02488bfa488bf18b4308",
+      "label": "flying controller manager and total count"
+    },
+    {
+      "rva": 5562030,
+      "hex": "33c98bd7486bc21c0f57c0448bc7480343480f110048894810894818ff430c8b4b0cff4308394b04488b43380f474b04894b04488d4b20488934d08b5608488b5c",
+      "label": "flying controller network stride and owner handles"
+    },
+    {
+      "rva": 8991323,
+      "hex": "8bc8498b4248486bd11cc60402014883c408c3",
+      "label": "flying controller network record array"
+    },
+    {
+      "rva": 7061134,
+      "hex": "837cf81000488945a00f8576040000",
+      "label": "nonzero aiming network flags suspend authoritative target refresh"
     }
-  ]
+  ],
+  "source": "Build 25480438 retained code; diagnostic-only Factory projectile and Dragon flying network records. No new alert rule or pre-fire commitment is inferred."
 }
