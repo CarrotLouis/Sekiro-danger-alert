@@ -69,3 +69,20 @@ assert(cap.resources['63df3d07b7424588'] and cap.resources['5d142c3a73ebc634'])
 assert(not cap.resources['1a7fcdff98c664b0'],'capture selection must not include unrelated enemies')
 assert(not pcall(cap.start,cap,'combat','not-a-move'))
 print('PASS resource-scoped combat capture, unknown action clocks, F8 sample age and direct/artillery labels')
+-- Regression: a global aiming-header failure used to end the entire capture
+-- within 0.8 seconds, before the user could mark any attack.
+mock.targeting_header=function()error('replicated target counts invalid: test fixture')end
+t=800;cap:start('combat','barrager_direct_mlrs','requested')
+for i=0,11 do t=800+i*.1;cap:step()end
+assert(cap.active and cap.successful_samples==12 and cap.errors==0 and cap.channel_warning)
+cap:mark();t=t+.1;cap:mark();cap:stop('user stopped')
+f=assert(io.open(cap.path,'rb'));s=f:read('*a');f:close()
+assert(s:find('"targeting_table":{"error":',1,true)and s:find('"weapon_inputs"',1,true))
+assert(s:find('"successful_samples":12.000000',1,true)and s:find('"marker_count":2.000000',1,true))
+assert(cap.stop_reason=='user stopped'and cap.marker_count==2)
+-- Mandatory channels still stop safely, reporting zero real samples.
+mock.health_header=function()error('health unreadable')end
+t=900;cap:start('combat','barrager_direct_mlrs','requested')
+for i=0,7 do t=900+i*.1;cap:step()end
+assert(not cap.active and cap.successful_samples==0 and cap.errors==8 and cap.stop_reason=='eight read failures')
+print('PASS collection resilience: optional aim failure keeps abilities/weapons/F8, exact useful sample/marker counts and mandatory failure stop reason')

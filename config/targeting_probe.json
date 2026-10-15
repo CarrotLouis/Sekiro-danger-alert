@@ -173,6 +173,16 @@
       "hex": "8b142e",
       "label": "behavior ID",
       "asm": "mov edx, dword ptr [rsi + rbp]"
+    },
+    {
+      "rva": 7062525,
+      "hex": "8b8b40010000",
+      "label": "aim total count bounds round-robin traversal"
+    },
+    {
+      "rva": 7061013,
+      "hex": "8b8344010000",
+      "label": "aim owned prefix bounds authoritative updates"
     }
   ]
 }

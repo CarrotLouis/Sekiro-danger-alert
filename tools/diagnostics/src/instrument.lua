@@ -36,7 +36,15 @@ function M.new(extension,capture_module,tracking_module,marker_module,catalog,pr
             description='优先记录敌人攻击本人；再做少量攻击队友的对照。F8 标记看见出招的时刻，延迟按键也保留。'}}
         specs[#specs+1]={'action',{type='choice',label='开始或停止采集 / Record',default=1,
             choices={'待命 / Ready','开始采集 / Start','停止采集 / Stop'},
-            description=function()return '选择开始后 APPLY，关闭菜单；看见所选招式按 F8。最多两分钟。状态：'..(self.failure or(self.collector and self.collector.active and '正在采集' or '未采集'))end}}
+            description=function()
+                local c=self.collector;local state='未采集'
+                if c then
+                    state=(c.active and '正在采集' or '已停止：'..tostring(c.stop_reason or '待命'))
+                        ..'；有效样本 '..tostring(c.successful_samples or 0)..'；F8 '..tostring(c.marker_count or 0)
+                    if c.channel_warning then state=state..'；部分通道不可用，仍保留其他状态'end
+                end
+                return '选择开始后 APPLY，关闭菜单；看见所选招式按 F8。最多两分钟。状态：'..(self.failure or state)
+            end}}
         self.defaults={}
         for _,spec in ipairs(specs)do
             spec[2].mod='Sekiro danger alert · 采集 / Diagnostics';spec[2].mod_id='peril_warning.diagnostics'

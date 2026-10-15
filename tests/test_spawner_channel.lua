@@ -21,6 +21,7 @@ pointer(exe+0x2118,exe+0x3000);pointer(exe+0x2120,exe+0x4000)
 local value_at=0x340fff;put(value_at,'SDAES1 H 0000000000000001\0'..string.rep('\0',512))
 local mem={module=function(n)return n and game or exe end,address=function(n)return tonumber(n)end,
     read=function(at,n)
+        at=tonumber(ffi.cast('uintptr_t',at))
         local out={};for i=0,n-1 do if not bytes[at+i]then return nil end;out[#out+1]=string.char(bytes[at+i])end;return table.concat(out)
     end,pointer=function(s,o)
         local n=0;for i=8,1,-1 do n=n*256+s:byte((o or 0)+i)end;if n>0 then return n end
@@ -70,7 +71,10 @@ get_callback:free();set_callback:free()
 -- Match Bingus memory's actual uint8_t* boundary, not only numeric test addresses.
 local function address(at)return tonumber(ffi.cast('uintptr_t',at))end
 local pointer_mem={module=function(n)return ffi.cast('uint8_t *',n and game or exe)end,address=address,
-    read=function(at,n)return mem.read(address(at),n)end,
+    read=function(at,n)
+        assert(type(at)=='cdata','Bingus ReadProcessMemory requires a pointer; numeric SDK/text addresses must be cast')
+        return mem.read(address(at),n)
+    end,
     pointer=function(s,o)local n=mem.pointer(s,o);if n then return ffi.cast('uint8_t *',n)end end}
 local pointer_calls={get=function(entry,lobby,lo,hi,key)return calls.get(address(entry),address(lobby),lo,hi,key)end,
     set=function(entry,lobby,key,v)return calls.set(address(entry),address(lobby),key,v)end}
@@ -79,4 +83,11 @@ local pointers=module.new(pointer_mem,profile,function()end,pointer_calls)
 local pointer_context=assert(pointers:snapshot(0))
 assert(pointer_context.values['0000000000000002']=='SDAES1 W')
 assert(pointers:publish('SDAES1 W',10,pointer_context),'the real pointer type must work through both calls')
+-- The actual vendored reader, not a fake that coerces numbers before FFI.
+-- Read this test process's own Lua buffer only: no game process or SDK call.
+local shared_runtime=dofile(root..'/vendor/bingus_runtime.lua')
+local real_memory=dofile(root..'/vendor/bingus_memory.lua').new(shared_runtime)
+local local_buffer=ffi.new('char[8]','SDAES1')
+assert(not pcall(real_memory.read,real_memory.address(local_buffer),6),'the uncast numeric path must reproduce the reported FFI failure')
+assert(real_memory.read(ffi.cast('const void *',real_memory.address(local_buffer)),6)=='SDAES1')
 print('PASS peer channel: exact ABI/64-bit IDs, joined-member/slot/pin checks, join delay, 5s post ceiling, failure limit, page-bounded text and independent own key')

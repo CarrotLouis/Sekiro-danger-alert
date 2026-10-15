@@ -67,7 +67,11 @@ return {
 "\131\124\046\012\255"
 }),label='pending behavior stage'},{rva=8664265,bytes=table.concat({
 "\139\020\046"
-}),label='behavior ID'}},
+}),label='behavior ID'},{rva=7062525,bytes=table.concat({
+"\139\139\064\001\000\000"
+}),label='aim total count bounds round-robin traversal'},{rva=7061013,bytes=table.concat({
+"\139\131\068\001\000\000"
+}),label='aim owned prefix bounds authoritative updates'}},
  targeting_resources={['843d18d4b5512b63']='big_walker_turret_cannon',['49674794a165eda8']='tank_turret_autocannons',['b8580cac32214fc0']='tank_turret_base',['8fb47dd28b398cf7']='tank_turret_heavycannon',['5d142c3a73ebc634']='tank_turret_rocketlauncher',['aeaef7a1851e6c9d']='turret_autocannons',['abdb2e2a0479d8ca']='turret_base',['cd28a27a79be53d5']='turret_command_bunker_hmg',['2cf3488c4845f8bd']='turret_heavycannon',['ff5cc825b9571052']='turret_mortar'},
  attack_pins={{rva=18208692,bytes=table.concat({
 "\009\078\021\001"
@@ -136,7 +140,11 @@ return {
 "\065\184\000\000\004\000\232\020\035\104\000"
 }),label='Factory preparation clear replicated'},{rva=1850030,bytes=table.concat({
 "\139\082\008\065\184\000\000\004\000\232\244\014\104\000"
-}),label='Factory preparation ready replicated'}},
+}),label='Factory preparation ready replicated'},{rva=7062525,bytes=table.concat({
+"\139\139\064\001\000\000"
+}),label='aim total count bounds round-robin traversal'},{rva=7061013,bytes=table.concat({
+"\139\131\068\001\000\000"
+}),label='aim owned prefix bounds authoritative updates'}},
  cannon={resource='2cf3488c4845f8bd',ability=1037,cue_time=1.0,last_warning_time=1.2,fire_time=1.5,end_time=2.5},
  combat_pins={{rva=18586509,bytes=table.concat({
 "\072\139\029\140\200\022\002"

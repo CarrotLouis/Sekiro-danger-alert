@@ -230,14 +230,25 @@ function M.new(memory,profile,extension)
         assert(descriptor:sub(1,20)==e.identity and (bit.band(u32(descriptor,20),1)~=0)==e.owned
             and bit.band(u32(descriptor,20),2)==0,'replicated owner changed')
     end
+    -- Shared with the diagnostic reader: +0x140 is TOTAL and +0x144 is
+    -- OWNED PREFIX (native round-robin vs authoritative-update bounds).
+    -- They are often equal on the host; clients expose the reversed-layout bug.
+    function self:aiming_header()
+        self:verify_targeting()
+        local manager=ptr(game+0x3326d30);local h=read(manager+0x140,72)
+        local count,prefix=u32(h,0),u32(h,4)
+        assert(count<=4096 and prefix<=count,
+            ('replicated target counts invalid: total=%d owned_prefix=%d'):format(count,prefix))
+        return {manager=manager,count=count,owned_prefix=prefix,raw=h,
+            descriptors=memory.pointer(h,0x28),records=memory.pointer(h,0x38),network=memory.pointer(h,0x40)}
+    end
     -- The remote update resolves the network target into aim[0] and caches the
     -- processed network ID in aim[4]. All three identities must agree; a cached
     -- entity ID alone is not evidence of a current lock.
     function self:replicated_target(e,avatar)
         self:verify_targeting();self:verify_peer();check_descriptor(e)
-        local mgr=ptr(game+0x3326d30);local h=read(mgr+0x140,72)
-        local local_count,count=u32(h,0),u32(h,4)
-        assert(count<=4096 and local_count<=count,'replicated target counts invalid')
+        local header=self:aiming_header()
+        local mgr,h,count=header.manager,header.raw,header.count
         local index=map_index(mgr+0x150,e.id,65536)
         if not index or index>=count then return nil end
         local handles=assert(memory.pointer(h,0x28))

@@ -1,5 +1,7 @@
 # 0.7.0 客机路径与验证边界
 
+历史记录：其中 Aiming 总数 / 本机前缀的解释和相应合成测试在 0.8.2 中已纠正。以 [0.8.2 验证记录](VALIDATION-0.8.2.md) 为准。
+
 版本继续使用 0.x.x，GUID `1dc82965-3c84-4eec-bb72-88e8121ac0dc`、入口 `mods/peril_warning/crusher_probe`、全部保留设置 ID 不变。粉碎者只改显示名称，仍使用 `peril_warning.crusher.move.crusher_melee`。
 
 ## 已知实测与此次修正

@@ -54,7 +54,7 @@ function M.new(native,controller,channel,catalog,log,status,nonce,clock)
         if not(type(net)=='number'and net>=1 and net<=32766)then status('本人网络 ID 尚未就绪 / Avatar network not ready');return false end
         self.pending={enemy=index,network=net,key=scene.key,unit=scene.avatar.unit,direction=direction,
             token=nonce(),start=now};self.next_request=now+5
-        status('等待房主生成工具 / Waiting for host spawner (both need 0.3.0+)')
+        status('等待房主生成工具 / Waiting for host spawner (both need 0.3.1+)')
         return true
     end
     local function host_value()
@@ -68,15 +68,24 @@ function M.new(native,controller,channel,catalog,log,status,nonce,clock)
         if scene and scene.host and scene.player_count==1 then self.host_key=nil;return end
         local context,why=channel:snapshot(now)
         if not context then
+            local message=tostring(why or 'lobby unavailable')
+            if self.channel_reason~=message then self.channel_reason=message;log('remote waiting: '..message)end
+            if self.pending then status('等待联机通道 / Waiting for lobby: '..message)end
             if self.pending and now-self.pending.start>=180 then client_stop('联机请求超时 / Remote request timed out')end
             return
         end
+        if self.channel_reason then self.channel_reason=nil;log('remote lobby available')end
         if not scene then
             self.host_key=nil;self.nonce=nil;self.acks={};self.seen={};self.seen_count=0
             if self.pending then client_stop('场景或潜兵已变化 / Scene or avatar changed')end
             channel:publish('SDAES1 W',now,context);return
         end
-        if scene.host~=context.is_host then return end
+        if scene.host~=context.is_host then
+            if not self.role_mismatch then self.role_mismatch=true;log('remote waiting: mission authority and lobby host differ')end
+            if self.pending then status('任务房主状态尚未同步 / Waiting for host authority')end
+            return
+        end
+        self.role_mismatch=nil
         if scene.host then
             local key=context.key..'/'..scene.key..'/'..scene.avatar.id..'/'..scene.avatar.unit
             if self.host_key~=key then
@@ -117,7 +126,10 @@ function M.new(native,controller,channel,catalog,log,status,nonce,clock)
             end
             if now-p.start>=180 then client_stop('联机请求超时 / Remote request timed out; inspect host status');return end
             local host=M.parse(context.values[context.host_peer])
-            if not(host and host.kind=='H')then return end
+            if not(host and host.kind=='H')then
+                status('等待房主启用新版生成工具 / Waiting for host spawner')
+                return
+            end
             if p.nonce and (p.host~=context.host_peer or p.lobby~=context.key)then
                 client_stop('房主或任务已变化 / Host or mission changed');return
             end

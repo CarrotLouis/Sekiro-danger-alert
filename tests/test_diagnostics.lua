@@ -65,4 +65,10 @@ assert(menu.set(p..'group',3));instrument:step(t,{})
 assert(last_start[2]=='factory_fusion_repeater','APPLY must freeze the selected target')
 instrument:step(t,{reset=2});assert(not collector.active and menu.get(p..'group')==3 and menu.get(p..'context')==1)
 instrument:stop('shutdown')
+collector.stop_reason='eight read failures';collector.successful_samples=0;collector.marker_count=0
+local description=state.options[p..'action'].sources.description()
+assert(description:find('eight read failures',1,true)and description:find('有效样本 0',1,true))
+collector.active=true;collector.successful_samples=12;collector.marker_count=2
+description=state.options[p..'action'].sources.description()
+assert(description:find('正在采集',1,true)and description:find('有效样本 12',1,true)and description:find('F8 2',1,true))
 print('PASS real MOM diagnostic page: bounded faction lists, Apply-only capture, F8 gating, restart/stop/reset and frozen selection')

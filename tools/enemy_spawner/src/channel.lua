@@ -35,7 +35,9 @@ function M.new(memory,profile,log,calls)
     local reads,bytes=0,0
     local function read(at,n)
         reads,bytes=reads+1,bytes+n;assert(reads<=1000 and bytes<=65536,'channel read budget')
-        local s=memory.read(at,n);assert(s and #s==n,'unreadable peer channel');return s
+        -- Bingus passes addresses straight into ReadProcessMemory's const void*.
+        -- SDK string results and page cursors are numbers; normalize them here.
+        local s=memory.read(ffi.cast('const void *',at),n);assert(s and #s==n,'unreadable peer channel');return s
     end
     local function ptr(at)return memory.pointer(read(at,8))end
     local function prove()

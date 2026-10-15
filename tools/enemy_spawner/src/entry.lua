@@ -1,4 +1,4 @@
-local GUIDE=[===[Sekiro danger alert - Enemy Spawner 0.3.0 — 测试说明
+local GUIDE=[===[Sekiro danger alert - Enemy Spawner 0.3.1 — 测试说明
 
 依赖：Bingus Shared Loader v18+、Mod Options Menu v1.2。
 独立测试工具，可与 Sekiro danger alert 同时启用。无需安装 HD2Runtime。
@@ -11,7 +11,8 @@ local GUIDE=[===[Sekiro danger alert - Enemy Spawner 0.3.0 — 测试说明
 6. 下次再次选择生成并 APPLY。切换敌人本身不生成；说明区可查看当前状态。
 
 客机用法
-房主和客机均需安装并启用本版 0.3.0。房主无需代操作菜单；启用本工具会处理同房间客机的白名单生成请求。
+0.3.1 修复上一版数字地址传入 reader 引起的通道关闭；请双方更新并完整重启。
+房主和客机均需安装并启用本版 0.3.1。房主无需代操作菜单；启用本工具会处理同房间客机的白名单生成请求。
 客机只提交请求，权威创建在房主执行。只装客机一端无法让未装工具的房主响应。
 请求者镜头水平朝向在 APPLY 时固定，位置按实际创建时房主读到的请求者当前位置取得。
 初始目标指向发起请求的潜兵。房主自己生成仍在房主前方并以房主为初始目标。
@@ -36,7 +37,7 @@ local GUIDE=[===[Sekiro danger alert - Enemy Spawner 0.3.0 — 测试说明
 “native spawn begin”没有对应“returned”可定位到原生调用阶段，不要持续重复尝试。
 
 离线已检查菜单、ABI / 布局 pin、请求 / ACK、精确一次、超时、死亡 / 换任务取消、请求者绑定、资源 / 召唤门禁与封包。
-旧版有单人创建证据；0.3.0 新增客机请求传递、跨端模型 / AI / 攻击同步、房主迁移仍需联机实测。
+旧版有单人创建证据；0.3.1 新增客机请求传递、跨端模型 / AI / 攻击同步、房主迁移仍需联机实测。
 仅提供本地 outputs/ 测试包，不自动发布 GitHub Release。
 
 Uses code / research from HD2Runtime by SkyeShade (MIT; bundled license)

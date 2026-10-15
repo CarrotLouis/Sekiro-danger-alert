@@ -74,6 +74,7 @@ function M.new(native,path,log,clock,tracking,catalog,version)
         file=assert(io.open(self.path,'wb'),'cannot create capture log')
         began=clock();deadline=began+120;next_heartbeat=0;context=nil
         bytes_written=0;self.active=true;self.last={};self.errors=0;self.samples=0;self.cost=0
+        self.successful_samples=0;self.marker_count=0;self.stop_reason=nil;self.channel_warning=nil
         self.ability_stamp=nil;self.observation=nil;self.detector_observation=nil;self.detector_t=nil;self.animation_cursor=0
         local source=native
         if self.mode=='targeting' then
@@ -98,11 +99,13 @@ function M.new(native,path,log,clock,tracking,catalog,version)
     end
     function self:stop(reason)
         if not self.active then return end
-        if file then file:write(json({event='capture_stop',t=clock()-began,reason=reason,samples=self.samples})..'\n');file:close() end
+        self.stop_reason=reason
+        if file then file:write(json({event='capture_stop',t=clock()-began,reason=reason,samples=self.samples,
+            successful_samples=self.successful_samples,read_errors=self.errors,marker_count=self.marker_count})..'\n');file:close() end
         file=nil;self.active=false;self.last={};self.observation=nil;self.detector_observation=nil;log('capture stopped: '..reason)
     end
     function self:mark()
-        if self.active then emit('user_attack_mark',{key='F8',last_observation=self.observation,
+        if self.active then self.marker_count=self.marker_count+1;emit('user_attack_mark',{key='F8',last_observation=self.observation,
             observation_age=self.observation and clock()-began-self.observation.sample_t or nil,
             last_detection=self.detector_observation,
             detection_age=self.detector_observation and clock()-began-self.detector_observation.sample_t or nil}) end
@@ -160,7 +163,16 @@ function M.new(native,path,log,clock,tracking,catalog,version)
                 if not selected_ids[id] then emit('observation_removed',{entity=id});self.last[id]=nil end
             end
             if self.mode=='combat' then
-                local states={};local aim_header=native:targeting_header()
+                -- A broken optional aiming channel must not discard usable
+                -- ability/weapon/network observations or disable the F8 marker.
+                local states={};local aim_ok,aim_header=pcall(native.targeting_header,native)
+                local aim_table
+                if aim_ok then
+                    aim_table={total=aim_header.count,owned_prefix=aim_header.owned_prefix}
+                    self.channel_warning=nil
+                else
+                    self.channel_warning=tostring(aim_header);aim_table={error=self.channel_warning};aim_header=nil
+                end
                 for _,e in ipairs(selected) do
                     states[#states+1]=native:combat_state(aim_header,e,scene.avatar,now>=next_heartbeat)
                 end
@@ -169,7 +181,7 @@ function M.new(native,path,log,clock,tracking,catalog,version)
                 emit('research_sample',{sample_t=now-began,states=states,abilities=active,tracking=stats,
                     requested_move=self.requested_move.id,avatar_entity=scene.avatar.id,
                     avatar_unit=scene.avatar.unit,avatar_network=scene.avatar.network_id,
-                    ability_table=ability_stats,local_position=scene.position})
+                    ability_table=ability_stats,targeting_table=aim_table,local_position=scene.position})
             elseif self.mode=='targeting' then
                 local states={}
                 for _,e in ipairs(selected) do states[#states+1]=native:targeting_state(h,e,scene.avatar) end
@@ -180,6 +192,7 @@ function M.new(native,path,log,clock,tracking,catalog,version)
                 self.observation={sample_t=now-began,source='capture_only',nearby=near,tracking=stats}
                 emit('abilities',{items=active,nearby=near,source='capture_only'})
             end
+            if self.active then self.successful_samples=self.successful_samples+1 end
             if self.mode~='targeting' then animations(selected) end
             if now>=next_heartbeat then
                 emit('heartbeat',{nearby=near,component_records=h.count,tracking=stats,reads=native.reads,

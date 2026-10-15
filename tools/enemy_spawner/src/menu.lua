@@ -11,7 +11,7 @@ function M.new(catalog,log)
         for _,enemy in ipairs(catalog.enemies)do choices[#choices+1]=enemy.label end
         local specs={
             {'enemy',{type='choice',label='选择敌人 / Enemy',default=1,choices=choices,
-                description='16 种测试敌人。房主可直接生成；客机可请求房主生成，双方均需启用 0.3.0+。请进入对应阵营任务；穿刺虫需 5–10 难度。'}},
+                description='16 种测试敌人。房主可直接生成；客机可请求房主生成，双方均需启用 0.3.1+。请进入对应阵营任务；穿刺虫需 5–10 难度。'}},
             {'spawn',{type='choice',label='生成一只 / Spawn one',default=1,
                 choices={'待命 / Ready','生成一只 / Spawn one'},
                 description=function()

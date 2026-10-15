@@ -38,7 +38,9 @@ local function actor()
 end
 local avatar={id=7,unit=70,network_id=77}
 region(game+0x3326d30,8);p(game+0x3326d30,0x41000000);region(0x41000000,0x188)
-u(0x41000140,0);u(0x41000144,1)
+-- Native +0x140 is TOTAL; +0x144 is the authoritative owned PREFIX.
+-- Hosts can have equal counts, which concealed the reversed layout in 0.8.1.
+u(0x41000140,1);u(0x41000144,0)
 p(0x41000150,0x41001000);u(0x41000158,1);u(0x4100015c,0xffffffff);u(0x41000160,1)
 region(0x41001000,8);u(0x41001000,100)
 p(0x41000168,0x41002000);region(0x41002000,8);p(0x41002000,actor_at)
@@ -54,8 +56,24 @@ avatar.network_id=78;assert(not target().verified,'reinforcement must invalidate
 avatar.network_id=nil;assert(not target().verified);avatar.network_id=77
 u(0x41003000,8);lock=target();assert(lock.verified and not lock.target_is_local);u(0x41003000,7)
 p(0x41002000,actor_at+8);assert(target()==nil,'a different canonical owner cannot inherit the target');p(0x41002000,actor_at)
-u(0x41000144,5000);assert(not pcall(target));u(0x41000144,1)
+u(0x41000140,5000);assert(not pcall(target));u(0x41000140,1)
+u(0x41000144,2);assert(not pcall(target),'owned prefix cannot exceed total');u(0x41000144,0)
 local old_actor=actor();u(actor_at+16,92);n:begin();assert(not pcall(n.replicated_target,n,old_actor,avatar));u(actor_at+16,91)
+-- A replicated actor after an owned prefix must remain addressable, rather
+-- than interpreting the prefix (1) as the whole table size (2).
+region(0x41005000,16);p(0x41005008,actor_at)
+region(0x41006000,0x1a0);u(0x410060d0,7);u(0x410060d4,77)
+region(0x41007000,48);u(0x41007018,77)
+u(0x41000140,2);u(0x41000144,1);u(0x41001004,1)
+p(0x41000168,0x41005000);p(0x41000178,0x41006000);p(0x41000180,0x41007000)
+assert(target().target_is_local,'replicated target beyond owned prefix must resolve')
+local tail=Native.new(mem,profile,dofile(root..'/tools/diagnostics/src/native.lua'));tail:begin()
+local header=tail:targeting_header();assert(header.count==2 and header.owned_prefix==1)
+local old_name=profile.targeting_resources[actor().resource];profile.targeting_resources[actor().resource]='fixture_hulk'
+assert(#tail:targeting_discover(header,0,4)==1 and tail:targeting_resolve(header,100).targeting_index==1)
+profile.targeting_resources[actor().resource]=old_name
+u(0x41000140,1);u(0x41000144,0);u(0x41001004,0)
+p(0x41000168,0x41002000);p(0x41000178,0x41003000);p(0x41000180,0x41004000)
 print('PASS peer target: processed network/entity/avatar identities, position mode, respawn, ownership and bounded table reads')
 
 -- Ability row 1 lies outside the native update prefix (0), yet must be scanned.
@@ -166,6 +184,9 @@ local diagnostic=observed:combat_state(h,actor(),avatar,false)
 assert(diagnostic.replicated_target.target_is_local and not diagnostic.ai_authoritative)
 assert(not diagnostic.ai and diagnostic.observation_errors.ai,
     'missing cached AI must preserve the usable synchronized target')
+observed:begin();local partial=observed:combat_state(nil,actor(),avatar,false)
+assert(partial.observation_errors.aim and partial.replicated_target.target_is_local,
+    'a missing optional global header cannot discard independent replicated state')
 put(0x42002000+224+16,'\0');observed:begin()
 local inactive,counts=observed:abilities({[actor_at]=actor()},true)
 assert(#inactive==1 and not inactive[1].active and counts.total==2 and counts.update_prefix==0)
@@ -185,3 +206,40 @@ local host={id=100,unit=1000,resource='3e0537d606438fea',owned=true,alive=true,
 d:reset()
 local decision=d:observe({{entity=100,id=821,slot=1,time=.05,speed=1}},{[100]=host},20,avatar)[1]
 assert(decision.reason=='no_ai_target','owned AI absence cannot fall through to a cached peer target')
+
+-- Reuse the actual corrected native target/ability/health readers for every
+-- supported resource/ability pair. These remain synthetic boundary tests;
+-- the failed client captures contain no real attack samples to replay.
+u(world_rows+8,0xffffffff);u(0x44004000+20,5000)
+for _,at in ipairs({0x44003000,0x41002000,0x43002000})do p(at,actor_at)end
+put(0x42002000+224+16,'\1')
+local covered={factory_fusion_repeater=true};local checked=0;local at=30
+local function check(resource,id,cue,move)
+    checked=checked+1
+    put(actor_at,hash(resource));u(actor_at+8,100);u(actor_at+12,1000);u(actor_at+16,91);u(actor_at+20,0)
+    u(0x42002000+224,id);clock[0],clock[1]=cue+.02,1
+    put(0x42002000+224+8,ffi.string(clock,8))
+    u(0x41003000,7);u(0x41003004,77);u(0x41004000,77)
+    local fired={};local candidate=Detector.new(n,profile,function()end,function(x)fired[#fired+1]=x end)
+    candidate:step(at)
+    assert(#fired==0 and not candidate.disabled,'first peer sample cannot invent progress')
+    clock[0]=cue+.07;put(0x42002000+224+8,ffi.string(clock,8));candidate:step(at+.05)
+    assert(#fired==1 and fired[1].move==move and not fired[1].owned,'native peer path failed '..move..'/'..id)
+    covered[move:match('^crusher_%d+$')and'crusher_melee'or move]=true
+    for i=2,15 do
+        clock[0]=cue+.02+i*.05;put(0x42002000+224+8,ffi.string(clock,8));candidate:step(at+i*.05)
+    end
+    assert(not candidate.disabled and #fired==1,'the common counter fix must survive many client polls')
+    candidate:reset();u(0x41003000,8);u(0x41003004,88);u(0x41004000,88)
+    clock[0]=cue+.02;put(0x42002000+224+8,ffi.string(clock,8));candidate:step(at+2)
+    clock[0]=cue+.07;put(0x42002000+224+8,ffi.string(clock,8));candidate:step(at+2.05)
+    assert(#fired==1,'another diver\'s attack must stay silent for '..move)
+    at=at+5
+end
+for resource,rules in pairs(profile.expanded.resources)do
+    for id,rule in pairs(rules.abilities)do check(resource,id,rule.cues[1].time,rule.move)end
+end
+for id in pairs(profile.attack_states)do check(profile.crusher_resource,id,0,'crusher_'..id)end
+check(profile.cannon.resource,profile.cannon.ability,profile.cannon.cue_time,'cannon_preparation')
+local count=0;for _ in pairs(covered)do count=count+1 end;assert(count==20)
+print('PASS corrected native client pipeline: '..checked..' resource/ability pairs cover all 20 switches, continuous polls and other-target rejection')

@@ -1,6 +1,6 @@
 {
   "build": "25480438",
-  "source": "Read-only native code for build 25480438; see docs/VALIDATION-0.7.0.md. No client captures yet.",
+  "source": "Build 25480438 static code and client failure logs. Aiming +0x140 is TOTAL; +0x144 is OWNED PREFIX. See docs/VALIDATION-0.8.2.md.",
   "pins": [
     {
       "rva": 5546706,
@@ -127,6 +127,20 @@
       "hex": "8b520841b800000400e8f40e6800",
       "label": "Factory preparation ready replicated",
       "asm": "mov edx, dword ptr [rdx + 8]; mov r8d, 0x40000; call 0x8449b0"
+    },
+    {
+      "rva": 7062525,
+      "hex": "8b8b40010000",
+      "label": "aim total count bounds round-robin traversal"
+    },
+    {
+      "rva": 7061013,
+      "hex": "8b8344010000",
+      "label": "aim owned prefix bounds authoritative updates"
     }
-  ]
+  ],
+  "aiming_counts": {
+    "total": 320,
+    "owned_prefix": 324
+  }
 }

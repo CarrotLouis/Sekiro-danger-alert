@@ -76,12 +76,7 @@ function M.install(self,tools)
         return out,{total=count,update_prefix=prefix}
     end
     function self:targeting_header()
-        self:verify_targeting()
-        local manager=ptr(game+0x3326d30);local h=read(manager+0x140,72)
-        local prefix,count=u32(h,0),u32(h,4)
-        assert(count<=4096 and prefix<=count,'targeting count invalid')
-        return {manager=manager,count=count,raw=h,descriptors=memory.pointer(h,0x28),
-            records=memory.pointer(h,0x38),network=memory.pointer(h,0x40)}
+        return self:aiming_header()
     end
     function self:targeting_discover(h,start,limit)
         local out={};local last=math.min(h.count,start+limit)
@@ -172,11 +167,13 @@ function M.install(self,tools)
             optional('replicated_target',function()return self:replicated_target(e,avatar)end)
             optional('replicated_behavior',function()return self:replicated_behavior(e)end)
         end
-        local index=map_index(h.manager+0x150,e.id,65536)
-        if index and index<h.count and nullable(assert(h.descriptors)+index*8)==e.pointer then
-            e.targeting_index=index
-            optional('aim',function()return self:targeting_state(h,e,avatar)end)
-        end
+        if h then optional('aim',function()
+            local index=map_index(h.manager+0x150,e.id,65536)
+            if index and index<h.count and nullable(assert(h.descriptors)+index*8)==e.pointer then
+                e.targeting_index=index
+                return self:targeting_state(h,e,avatar)
+            end
+        end)else result.observation_errors.aim='targeting header unavailable'end
         -- Root facing is diagnostic only: it may differ from an animated barrel.
         optional('root_forward',function()
             local object=unit_object(e.unit);local pose=read(ptr(object+136),64)
