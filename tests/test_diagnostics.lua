@@ -30,7 +30,7 @@ local marker={new=function()marker_allocated=marker_allocated+1;return function(
 end end}
 local extension={tag='research'}
 local instrument=dofile(root..'/tools/diagnostics/src/instrument.lua').new(extension,fake_capture,{},marker,catalog,profile,'0.8.0')
-local adapter=dofile(root..'/src/menu.lua').new(function()end,catalog,profile)
+local adapter=dofile(root..'/src/menu.lua').new(function()end,catalog,profile,dofile(root..'/src/localization.lua').new(dofile(root..'/build/locales.lua')))
 instrument:attach_menu(adapter,function()end);assert(adapter:register())
 assert(instrument.native_extension==extension and marker_allocated==0 and start_count==0)
 local count=0

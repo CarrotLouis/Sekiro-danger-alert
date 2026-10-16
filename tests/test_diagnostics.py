@@ -6,6 +6,14 @@ import sys
 import zipfile
 
 ROOT=Path(__file__).resolve().parents[1]
+project=json.loads((ROOT/'project.json').read_text(encoding='utf-8'))
+if int(project['version'].split('.')[0])>=1:
+    result=subprocess.run([sys.executable,str(ROOT/'scripts/build.py'),'--diagnostics'],
+        capture_output=True,cwd=ROOT)
+    assert result.returncode!=0 and b'unavailable for release versions'in result.stderr
+    assert not (ROOT/'outputs'/f"Sekiro danger alert {project['version']} Diagnostics.zip").exists()
+    print('PASS release version refuses the development package variant')
+    raise SystemExit(0)
 sys.path.insert(0,str(ROOT/'vendor'))
 from hd2_archive import read_archive,resource_hash,LUA_TYPE
 

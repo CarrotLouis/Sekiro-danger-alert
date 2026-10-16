@@ -1,7 +1,7 @@
 -- Resource-specific attack windows plus a coherent local-player entity target.
 -- Owners use authoritative AI; peers use verified, processed network target IDs.
 local M={}
-function M.new(native,profile,log,trigger,enabled,delay)
+function M.new(native,profile,log,trigger,enabled,delay,details)
     enabled=enabled or function()return true end
     delay=delay or function()return 0 end
     local self={previous={},fired={},peer_factory={},errors=0,cursor=0}
@@ -10,7 +10,7 @@ function M.new(native,profile,log,trigger,enabled,delay)
         self.snapshot=nil;self.cursor=0;self.factory_cursor=0;self.next_report=nil
     end
     function self:observe(items,targets,t,avatar)
-        local decisions={}
+        local decisions=details~=false and {} or nil
         for _,a in ipairs(items) do
             local e=targets[a.entity]
             if e then
@@ -102,14 +102,15 @@ function M.new(native,profile,log,trigger,enabled,delay)
                         elseif t<pending.due then reason='delayed' end
                     end
                 end
-                local decision={entity=a.entity,unit=e.unit,class_name=e.class_name,move=move,ability=a.id,
+                local decision
+                if decisions or reason=='trigger' then decision={entity=a.entity,unit=e.unit,class_name=e.class_name,move=move,ability=a.id,
                     ability_time=a.time,ability_speed=a.speed,sample_time=t,reason=reason,owned=e.owned,
                     target_entity=target and target.target,has_target=target and target.has_target,
                     tracks_entity=target and target.tracks_entity,behavior=behavior and behavior.behavior,
                     stage=behavior and behavior.stage,target_source=target and (e.owned and 'behavior' or target.source),avatar_entity=avatar and avatar.id,
                     attack_source=source,shot_index=shot,attack_token=a.token,
-                    warning_delay=pending and pending.seconds or 0,detected_at=pending and pending.at or t}
-                decisions[#decisions+1]=decision
+                    warning_delay=pending and pending.seconds or 0,detected_at=pending and pending.at or t}end
+                if decisions then decisions[#decisions+1]=decision end
                 if reason=='trigger' then
                     old.pending[shot]=nil;old.warned[shot]=true;self.fired[identity]=t;trigger(decision)
                 end
@@ -193,11 +194,11 @@ function M.new(native,profile,log,trigger,enabled,delay)
                 and latest.avatar.id==scene.avatar.id and latest.avatar.unit==scene.avatar.unit
                 and latest.avatar.network_id==scene.avatar.network_id,'warning scene changed')
             local decisions=self:observe(active,targets,t,scene.avatar)
-            self.snapshot={t=t,scene=scene,selected=selected,abilities=active,decisions=decisions,
-                tracking=stats,health_records=health and health.count or 0}
+            if details~=false then self.snapshot={t=t,scene=scene,selected=selected,abilities=active,decisions=decisions,
+                tracking=stats,health_records=health and health.count or 0}end
             for key,state in pairs(self.peer_factory)do if t-state.seen>2 then self.peer_factory[key]=nil end end
             -- Compact operational diagnostics, not per-attack captures or raw memory.
-            if t>=(self.next_report or 0)then
+            if details~=false and t>=(self.next_report or 0)then
                 self.next_report=t+30
                 local peers=0;local reasons={}
                 for _,e in ipairs(selected)do if not e.owned then peers=peers+1 end end

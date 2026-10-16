@@ -1,6 +1,7 @@
 """Check the actual release payload excludes all development collection code."""
 import json
 from pathlib import Path
+import re
 import sys
 import zipfile
 
@@ -11,7 +12,7 @@ from hd2_archive import read_archive,resource_hash,LUA_TYPE
 project=json.loads((ROOT/'project.json').read_text(encoding='utf-8'))
 package=ROOT/'outputs'/f"Sekiro danger alert {project['version']}.zip"
 with zipfile.ZipFile(package) as z:
-    assert len(z.namelist())==6
+    assert len(z.namelist())==9
     assert 'README-使用说明.txt' in z.namelist()
     assert not any('test' in n.lower() or 'spawner' in n.lower() for n in z.namelist())
     resources=read_archive(z.read('Addon/9ba626afa44a3aa3.patch_0'),
@@ -25,8 +26,10 @@ for name in ('capture_module','marker_module','tracking_module','GetAsyncKeyStat
              'diagnostic_only_not_committed_shot','research_schema'):
     assert name not in source,name
 assert "id='crusher_melee'" in source and "mod_id='peril_warning.crusher'" in source
-assert "label='粉碎者 · 危险近战'" in source
-assert project['version'].startswith('0.'),'continue with test version numbers'
+assert '粉碎者 · 危险近战' in source
+assert project['version']=='1.0.0'
+assert 'instrumentation'not in source and 'diagnostics'not in source.lower()
+assert not re.search(r'测试|采集|诊断|\b(?:tests?|testing|captures?|diagnostics?|F8|Spawner|instrumentation)\b',source,re.I)
 assert 'peril_warning.crusher.moves' not in source
 assert not any((ROOT/'src'/name).exists() for name in ('capture.lua','tracking.lua','marker.lua'))
 print('PASS packaged release contains only production modules, one settings category and the unified Crusher control')

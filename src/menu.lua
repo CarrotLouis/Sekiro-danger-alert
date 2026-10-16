@@ -1,6 +1,7 @@
 -- Release settings: one ModOptionsMenu category; actions run after Apply.
 local M={}
-function M.new(log,catalog,profile)
+function M.new(log,catalog,profile,text)
+    assert(text,'localized menu text missing')
     local self={ready=false,pending=nil,defaults={}}
     local prefix='peril_warning.crusher.'
     local menu
@@ -16,49 +17,47 @@ function M.new(log,catalog,profile)
             return true
         end
         local specs={
-            {'offset_x',{type='slider',label='左右位置 / Horizontal',min=-100,max=100,step=1,default=0,
-                description='0 保持原头顶锚点；负数向左，正数向右。范围约左右各一个身位。APPLY 后生效。'}},
-            {'offset_y',{type='slider',label='上下位置 / Vertical',min=-100,max=100,step=1,default=0,
-                description='0 保持原头顶锚点；负数向下，正数向上。范围约上下各两个头高。APPLY 后生效。'}},
-            {'size',{type='slider',label='大小 % / Size %',min=50,max=300,step=5,default=100,
-                description='100% 为默认字形大小；50% 至 300%。以头顶锚点为中心缩放，始终跟随潜兵。'}},
-            {'volume',{type='slider',label='音量 / Volume',min=0,max=100,step=1,default=60,gap=true,
-                description='只调整危提示音。0 为静音。按 APPLY 应用。 / Only this warning sound; 0 mutes it.'}},
-            {'preview',{type='choice',label='立即试听 / Sound preview',default=1,
-                choices={'待命 / Ready','播放一次 / Play once'},
-                description='选择播放一次，然后按 APPLY；按已应用的音量播放。可重复使用。'}},
-            {'visual',{type='choice',label='动画预览 / Animation preview',default=1,
-                choices={'待命 / Ready','三秒后播放 / Play in 3 seconds'},
-                description='按 APPLY 后关闭菜单，三秒后在本机潜兵头顶显示动画并播放音效。'}},
+            {'offset_x',{type='slider',label=text:source('horizontal'),min=-100,max=100,step=1,default=0,
+                description=text:source('h_desc')}},
+            {'offset_y',{type='slider',label=text:source('vertical'),min=-100,max=100,step=1,default=0,
+                description=text:source('v_desc')}},
+            {'size',{type='slider',label=text:source('size'),min=50,max=300,step=5,default=100,
+                description=text:source('size_desc')}},
+            {'volume',{type='slider',label=text:source('volume'),min=0,max=100,step=1,default=60,gap=true,
+                description=text:source('vol_desc')}},
+            {'preview',{type='choice',label=text:source('sound'),default=1,
+                choices={text:source('ready'),text:source('play')},description=text:source('sound_desc')}},
+            {'visual',{type='choice',label=text:source('animation'),default=1,
+                choices={text:source('ready'),text:source('later')},description=text:source('anim_desc')}},
         }
         for _,row in ipairs(specs)do if not register(row[1],row[2])then return false end end
         local moves={}
-        for _,group in ipairs({{id=2,name='虫族'},{id=8,name='机器人'},{id=4,name='光能族'}})do
+        for _,group in ipairs({{id=2,name='bugs'},{id=8,name='bots'},{id=4,name='illuminate'}})do
             local first=#moves+1
-            if group.id==8 then moves[#moves+1]={id='cannon_preparation',label='普通重炮塔 · 开火准备',
-                description='控制普通重炮塔锁定本人后的准备阶段预警。'}end
-            if group.id==4 then moves[#moves+1]={id='crusher_melee',label='粉碎者 · 危险近战',
-                description='统一控制粉碎者已识别的所有危险近战变体；跺脚不预警。'}end
+            if group.id==8 then moves[#moves+1]={id='cannon_preparation'}end
+            if group.id==4 then moves[#moves+1]={id='crusher_melee'}end
             for _,move in ipairs(catalog.moves)do if move.faction==group.id then
-                moves[#moves+1]={id=move.id,label=move.label,
-                    description=move.attack_name..'。锁定本人并进入招式预警窗口时生效，不限距离。'}
+                moves[#moves+1]={id=move.id}
             end end
-            for index=first,#moves do moves[index].description=group.name..'。'..moves[index].description end
+            for index=first,#moves do moves[index].faction=group.name end
             if moves[first]then moves[first].gap=true end
         end
         for index,move in ipairs(moves)do
-            if not register('move.'..move.id,{type='toggle',label=move.label,description=move.description,
+            local faction=move.faction
+            local desc=move.id=='crusher_melee'and'crusher_desc'or move.id=='dragon_alchemical_pyrosis'and'dragon_desc'
+                or move.id=='barrager_direct_mlrs'and'barrager_desc'or'attack_desc'
+            if not register('move.'..move.id,{type='toggle',label=text:source('move.'..move.id),
+                description=function()return text:text(faction)..' · '..text:text(desc)end,
                 default=true,gap=move.gap})then return false end
             if move.id=='harvester_tesla_ripper' or move.id=='harvester_disintegration_beamer' then
-                local label=move.id=='harvester_tesla_ripper' and '电击' or '激光'
-                if not register('delay.'..move.id,{type='slider',label='猎杀器 · '..label..'延迟 / Delay (s)',
+                local key=move.id=='harvester_tesla_ripper'and'tesla_delay'or'beam_delay'
+                if not register('delay.'..move.id,{type='slider',label=text:source(key),
                     min=0,max=2,step=.1,default=0,
-                    description='在原预警时机之后延迟 0–2 秒，步进 0.1 秒，0 保持原时机。图标和音效同时延后；攻击结束、取消、转向队友或潜兵死亡会取消待发提示。按 APPLY 生效。'})then return false end
+                    description=text:source('delay_desc')})then return false end
             end
         end
-        if not register('reset',{type='choice',label='恢复全部默认值 / Restore defaults',default=1,gap=true,
-            choices={'待命 / Ready','恢复全部默认值 / Restore all'},
-            description='APPLY 后恢复本模组全部默认值：所有招式开启、偏移和延迟 0、大小 100%、音量 60，并取消待执行预警和预览。'})then return false end
+        if not register('reset',{type='choice',label=text:source('reset'),default=1,gap=true,
+            choices={text:source('ready'),text:source('restore')},description=text:source('reset_desc')})then return false end
         -- Saved actions never replay on startup; set() does not run callbacks.
         for _,key in ipairs({'preview','visual','reset'})do
             menu.set(prefix..key,1)

@@ -103,6 +103,7 @@ function M.new(memory,profile,extension)
         local s=read(ptr(object+136)+48,12)
         return {x=f32(s,0),y=f32(s,4),z=f32(s,8)}
     end
+    local head_node
     function self:head_position(unit)
         local object=unit_object(unit);local accessor=ptr(ptr(object)+0xe8)
         assert(accessor==exe+2873456 and read(accessor,5)=='\072\141\065\096\195','head scene graph mismatch')
@@ -110,9 +111,17 @@ function M.new(memory,profile,extension)
         -- SceneGraph is object+0x60; world poses are at SceneGraph+0x28.
         local count=u32(read(object+0x70,4),0)
         assert(count>0 and count<=2048,'head node count invalid')
-        local names=read(ptr(object+0xa0),count*4)
+        local names_at=ptr(object+0xa0)
+        if head_node and head_node.unit==unit and head_node.count==count and head_node.names==names_at
+            and u32(read(names_at+head_node.index*4,4),0)==0x8c5570c9 then
+            local s=read(ptr(object+0x88)+head_node.index*64+48,12)
+            return {x=f32(s,0),y=f32(s,4),z=f32(s,8),node=head_node.index}
+        end
+        head_node=nil
+        local names=read(names_at,count*4)
         for index=0,count-1 do
             if u32(names,index*4)==0x8c5570c9 then -- StringId32("head")
+                head_node={unit=unit,count=count,names=names_at,index=index}
                 local s=read(ptr(object+0x88)+index*64+48,12)
                 return {x=f32(s,0),y=f32(s,4),z=f32(s,8),node=index}
             end
@@ -369,10 +378,11 @@ function M.new(memory,profile,extension)
         cursor=cursor or 0;if cursor>=F.slots then cursor=0 end
         assert(cursor>=0 and cursor%1==0,'factory descriptor cursor invalid')
         local out={};local stats={scanned=0,matched=0,match_limit=8};local next_row=F.slots
+        local first=self.factory_resource_bytes:byte(1)
         for index=cursor,F.slots-1 do
-            stats.scanned=stats.scanned+1
             local offset=index*F.stride
-            if rows:sub(offset+1,offset+8)==self.factory_resource_bytes and u32(rows,offset+8)~=invalid and bit.band(u32(rows,offset+20),2)==0 then
+            if rows:byte(offset+1)==first and rows:sub(offset+1,offset+8)==self.factory_resource_bytes
+                and u32(rows,offset+8)~=invalid and bit.band(u32(rows,offset+20),2)==0 then
                 local at=world+F.descriptors_offset+offset
                 local e=entity(rows:sub(offset+1,offset+24),at)
                 assert(read(at,24)==rows:sub(offset+1,offset+24),'factory descriptor changed')
@@ -381,6 +391,7 @@ function M.new(memory,profile,extension)
                 if #out>=stats.match_limit then next_row=index+1;break end
             end
         end
+        stats.scanned=next_row-cursor
         assert(ptr(game+F.world_global)==world,'factory descriptor world changed')
         stats.cursor=next_row>=F.slots and 0 or next_row;stats.remaining=F.slots-next_row
         return out,stats

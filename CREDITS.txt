@@ -1,34 +1,22 @@
-Uses code / research from HD2Runtime by SkyeShade
+Sekiro danger alert
+
+Uses code / research from HD2Runtime by SkyeShade (MIT).
 https://github.com/SkyeShade/HD2Runtime
+The full HD2Runtime runtime is not bundled or required.
+License: LICENSES/HD2Runtime-MIT.txt
 
-Bingus runtime and memory helpers by CowboyBingus, 0BSD.
+Bingus Shared Runtime and memory helpers by CowboyBingus (0BSD).
+https://github.com/CowboyBingus/BingusSharedRuntime
+Mod Options Menu and its BingusTranslations language registry by CowboyBingus (0BSD).
 https://github.com/CowboyBingus/ModOptionsMenu
+License: LICENSES/Bingus-0BSD.txt
 
-Original sound: user-provided Sekiro peril audio. No ownership over third-party media is claimed.
-0.3.0 visual: independently generated animated masks from HakusyuGyosyoExtraBold (極太行書).
-Font copyright: 株式会社丸岡白舟印舗 2002. The font file is not bundled or uploaded.
-Procedural effect inspired by the user's supplied fractal-noise / text-mask / glow reference;
-no AE plugin code or output is included.
-Attack research consulted FileDiver's hash dictionaries (no dictionary files bundled):
+Resource identities and layout information were derived using FileDiver's hash dictionaries,
+plaintext component tables and type library. No game tables, dictionaries, binaries or module dumps are bundled.
 https://github.com/xypwn/filediver/tree/6bf7c1ccc4be465a35b4bc9d41087781b47034e6
-HD2 HUD Plus was inspected only; no source or assets from that mod are redistributed.
 
-0.5.0 read-only combat research also consulted FileDiver plaintext component tables and typelib;
-only derived resource identities/layout facts are included, no game tables or reference source are bundled.
-https://github.com/xypwn/filediver/tree/6bf7c1ccc4be465a35b4bc9d41087781b47034e6/datalibrary
-
-0.6.0 attack windows were independently decoded from build 25480438 native code and compared with owner-supplied captures.
-Only build-relative rules/pins and anonymous minimal detector replay states are kept in the source repository; no original logs or dumps.
-The 1.0.0 main release excludes collection tools, replay fixtures and the separate Enemy Spawner.
-
-Enemy Spawner 0.1.0 reuses HD2Runtime research on the native spawn descriptor, package reference loader,
-package residency, component tables and mission authority. The native implementation is independently guarded;
-no HD2Runtime runtime is bundled. Code pins were re-decoded from the owner's retained build 25480438 module sections.
-EnemyPackageComponentData, UnitComponentData, MountComponentData and BehaviorComponentData mapping facts
-were derived from the matching FileDiver tables/typelib. No tables, dictionaries or original module dumps are bundled.
-
-Enemy Spawner 0.3.0 adapts the PlayFab member-data read/post ABI and lobby safety layout from
-HD2Runtime runtime/peer_channel.lua, runtime/windows_write.lua and domains/peer_messaging.lua (MIT).
-Uses its own sda_spawn property and independent bounded spawn-intent protocol, not Runtime's private keys.
-The exact native wrappers and player/avatar layouts were re-proved against retained build 25480438 code.
-The MIT license is included with the companion ZIP; no full HD2Runtime dependency or game binaries are bundled.
+Animation masks are independently generated from HakusyuGyosyoExtraBold (極太行書).
+Font copyright: 株式会社丸岡白舟印舗 2002. The font file is not bundled.
+The procedural effect follows the supplied text-mask and glow reference; no After Effects plugin code or output is included.
+Original sound: user-provided Sekiro media. No ownership of third-party media is claimed.
+No HD2 HUD Plus code or assets are redistributed.

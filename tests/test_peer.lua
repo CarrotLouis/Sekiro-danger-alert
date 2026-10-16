@@ -220,11 +220,12 @@ local function check(resource,id,cue,move)
     u(0x42002000+224,id);clock[0],clock[1]=cue+.02,1
     put(0x42002000+224+8,ffi.string(clock,8))
     u(0x41003000,7);u(0x41003004,77);u(0x41004000,77)
-    local fired={};local candidate=Detector.new(n,profile,function()end,function(x)fired[#fired+1]=x end)
+    local fired={};local candidate=Detector.new(n,profile,function()end,function(x)fired[#fired+1]=x end,nil,nil,false)
     candidate:step(at)
     assert(#fired==0 and not candidate.disabled,'first peer sample cannot invent progress')
     clock[0]=cue+.07;put(0x42002000+224+8,ffi.string(clock,8));candidate:step(at+.05)
     assert(#fired==1 and fired[1].move==move and not fired[1].owned,'native peer path failed '..move..'/'..id)
+    assert(candidate.snapshot==nil,'release path must not retain observation snapshots')
     covered[move:match('^crusher_%d+$')and'crusher_melee'or move]=true
     for i=2,15 do
         clock[0]=cue+.02+i*.05;put(0x42002000+224+8,ffi.string(clock,8));candidate:step(at+i*.05)

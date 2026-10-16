@@ -13,10 +13,9 @@ local function status(s)
     api.status=s;log('status: '..s)
 end
 log('Sekiro danger alert loaded '..api.version..' build '..tostring(build_id or'source')
-    ..' variant='..(instrumentation and'diagnostics'or'standard')
     ..'; Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
-local menu=menu_module.new(log,catalog,profile)
-if instrumentation then instrumentation:attach_menu(menu,log)end
+local text=localization_module.new(locales)
+local menu=menu_module.new(log,catalog,profile,text)
 local memory=memory_module.new(runtime)
 local audio,native,overlay,detector
 local last_warning_sample
@@ -34,14 +33,13 @@ local function initialize()
         if pin.module=='exe' then base=memory.module(nil)else base=memory.module('game.dll')end
         assert(base and memory.read(base+pin.rva,#pin.bytes)==pin.bytes,'runtime layout mismatch: '..pin.label)
     end
-    native=native_module.new(memory,profile,instrumentation and instrumentation.native_extension or nil)
+    native=native_module.new(memory,profile)
     overlay=overlay_module.new(native,assets,log,function()return menu:appearance()end)
     detector=detector_module.new(native,profile,log,function(event)
         if event.sample_time~=last_warning_sample then
             last_warning_sample=event.sample_time;overlay:play(now());play_audio()
         end
-    end,function(move)return menu:enabled(move)end,function(move)return menu:delay(move)end)
-    if instrumentation then instrumentation:initialize(native,detector,now,log,directory)end
+    end,function(move)return menu:enabled(move)end,function(move)return menu:delay(move)end,false)
     status('build matched; preparing visual')
 end
 local function visual_step(t)
@@ -80,16 +78,8 @@ local function step()
         detector:step(t);next_attack_sample=t+0.05
         if detector.disabled then api.automatic_warning=false;status('automatic warning unavailable; see log')end
     end
-    if instrumentation then
-        local ok,why=pcall(instrumentation.step,instrumentation,t,actions)
-        if not ok then
-            log('diagnostics stopped: '..tostring(why))
-            pcall(instrumentation.stop,instrumentation,'diagnostic failure');instrumentation=nil
-        end
-    end
 end
 local function stop(reason)
-    if instrumentation then pcall(instrumentation.stop,instrumentation,reason)end
     if overlay then pcall(overlay.close,overlay)end
     if audio then pcall(audio.release,audio)end
     status('stopped: '..tostring(reason))

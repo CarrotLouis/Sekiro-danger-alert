@@ -1,6 +1,6 @@
 local root=arg[1]
 local file=assert(io.open(root..'/src/entry.lua','rb'));local source=file:read('*a');file:close()
-local factory=assert(loadstring('return function(project,runtime,memory_module,menu_module,catalog,profile,assets,audio_module,native_module,overlay_module,detector_module,instrumentation)\n'..source..'\nend'))()
+local factory=assert(loadstring('return function(project,runtime,memory_module,menu_module,catalog,profile,assets,audio_module,native_module,overlay_module,detector_module,localization_module,locales)\n'..source..'\nend'))()
 _G.CowboyBingusModLoader={log_directory=root..'/build/test_logs'}
 local t=0;local actions={};local frame,trigger,allowed,delay
 local volume=37;local sounds,visuals,steps,resets,releases,closed=0,0,0,0,0,0
@@ -20,7 +20,8 @@ local received_extension
 local function load(instrument)
     return factory(params,runtime,{new=function()return memory end},{new=function()return menu end},{},{pins={}},
         {pcm='',rate=48000,channels=2},{new=function()return audio end},{new=function(_,_,ext)received_extension=ext;return native end},
-        {new=function()return overlay end},{new=function(_,_,_,callback,enabled,delayed)trigger=callback;allowed=enabled;delay=delayed;return detector end},instrument)
+        {new=function()return overlay end},{new=function(_,_,_,callback,enabled,delayed,details)assert(details==false);trigger=callback;allowed=enabled;delay=delayed;return detector end},
+        {new=function()return {}end},{})
 end
 local api=load();assert(load()==api,'duplicate load must reuse the cached release')
 actions={preview=2};frame.step();assert(sounds==1 and visuals==0 and steps==0)
@@ -38,18 +39,5 @@ assert(not api.automatic_warning and steps==before)
 frame.stop('test');assert(releases==1 and closed==1)
 assert(not source:find('capture',1,true) and not source:find('marker',1,true) and not source:find('automatic_trigger',1,true))
 _G.SekiroDangerAlert=nil
-local attached,initialized,ticked,stopped=0,0,0,0
-local instrument={native_extension={}}
-function instrument:attach_menu()attached=attached+1 end
-function instrument:initialize(actual,actual_detector,clock)
-    assert(actual==native and actual_detector==detector and clock()==20);initialized=initialized+1
-end
-function instrument:step()ticked=ticked+1;if ticked==2 then error('diagnostic I/O failure')end end
-function instrument:stop()stopped=stopped+1 end
-t=50;load(instrument);assert(attached==1 and initialized==0)
-t=70;frame.step();assert(initialized==1 and ticked==1 and received_extension==instrument.native_extension)
-assert(detector.disabled and not SekiroDangerAlert.automatic_warning,'collection lifecycle is independent of disabled attack polling')
-t=71;frame.step();assert(ticked==2 and stopped==1)
-t=72;frame.step();assert(ticked==2,'a failed optional collector stays stopped without stopping the main guard')
-frame.stop('test');_G.SekiroDangerAlert=nil
-print('PASS release entry: automatic warning, retained previews/volume, batch merging, reset cancellation, no capture path and cleanup')
+assert(not source:find('instrumentation',1,true)and not received_extension)
+print('PASS release entry: automatic warning, previews/volume, batch merging, reset cancellation and cleanup')

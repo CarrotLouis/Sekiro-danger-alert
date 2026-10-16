@@ -46,7 +46,7 @@ function M.new(pcm,rate,channels,log)
         if self.failed then return false end
         if not self:release() then return false end
         volume=math.max(0,math.min(100,tonumber(volume) or 0))
-        if volume==0 then log('audio preview muted (0%)');return true end
+        if volume==0 then return true end
         if last_volume~=volume then
             local gain=volume/100
             for i=0,count-1 do buffer[i]=original[i]*gain end
@@ -64,7 +64,7 @@ function M.new(pcm,rate,channels,log)
         if rc~=0 then self:release();return fail('prepare',rc) end
         self.prepared=true;rc=winmm.pw01_write(self.handle,header,size)
         if rc~=0 then self:release();return fail('write',rc) end
-        log('audio played at '..volume..'%');return true
+        return true
     end
     -- Retain buffers for the full lifetime of any driver-owned header, even on failure.
     self.buffers={buffer,header,original}

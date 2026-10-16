@@ -20,7 +20,9 @@ saved[p..'move.titan_caustic_surge']='false';saved[p..'move.crusher_1411']='fals
 saved[p..'delay.harvester_tesla_ripper']='0.7'
 for _,key in ipairs({'automatic','capture','target_capture','research_capture','preview','visual','reset'})do saved[p..key]='2'end
 local catalog=dofile(root..'/src/catalog.lua');local profile=dofile(root..'/src/profile.lua')
-local adapter=dofile(root..'/src/menu.lua').new(function()end,catalog,profile)
+local texts=dofile(root..'/build/locales.lua')
+local text=dofile(root..'/src/localization.lua').new(texts)
+local adapter=dofile(root..'/src/menu.lua').new(function()end,catalog,profile,text)
 assert(adapter:register() and adapter.ready)
 assert(adapter:volume()==42 and adapter:appearance().x==.25 and adapter:appearance().scale==1.5)
 assert(not adapter:enabled('titan_caustic_surge') and adapter:enabled('titan_cataclysmic_slam'))
@@ -51,7 +53,7 @@ for _,option in ipairs(category.order)do if option.kind=='toggle'then
 end end
 assert(expected[#expected-2]=='crusher_melee'and expected[#expected-1]=='harvester_tesla_ripper'
     and expected[#expected]=='harvester_disintegration_beamer')
-assert(state.options[p..'move.crusher_melee'].label=='粉碎者 · 危险近战')
+assert(state.options[p..'move.crusher_melee'].label=='Crusher · Dangerous melee')
 for id in pairs(profile.attack_states)do assert(not state.options[p..'move.crusher_'..id])end
 assert(menu.set(p..'move.crusher_melee',false))
 local detector=dofile(root..'/src/detector.lua').new({},profile,function()end,function()error('disabled Crusher triggered')end,
@@ -98,4 +100,22 @@ local reset=adapter:consume();assert(reset.reset==2 and not reset.preview and no
 local count=0
 for id,default in pairs(adapter.defaults)do count=count+1;assert(menu.get(id)==default,'reset missed '..id)end
 assert(count==29 and menu.get('test.unrelated')==true and next(adapter:consume())==nil)
+local translation=upvalue(menu.register_option,'translation')
+local codes={us='en',gb='en',bp='pt-BR',de='de',es='es',fr='fr',it='it',jp='ja',ko='ko',
+    ms='es-419',pl='pl',pt='pt',ru='ru',cn='zh-Hans',tc='zh-Hant'}
+for code,language in pairs(codes)do
+    local registry=Text.registry();registry.game_code=code;registry.game_language=language;registry.serial=registry.serial+1
+    translation.refresh()
+    assert(state.options[p..'move.crusher_melee'].label==texts[language]['move.crusher_melee'])
+    assert(state.options[p..'offset_x'].label==texts[language].horizontal)
+    assert(state.options[p..'preview'].choices[2]==Text.upper(texts[language].play))
+    for _,option in ipairs(category.order)do
+        assert(type(option.sources.label)=='function'and type(option.sources.description)=='function')
+        assert(option.label==option.sources.label()and option.description==option.sources.description())
+        assert(not option.label:find('/',1,true)and not option.description:find('/',1,true))
+        assert(Text.length(option.label)<=64 and Text.length(option.description)<=400)
+    end
+    assert(menu.get(p..'size')==100 and menu.get(p..'volume')==60 and #category.order==29)
+end
+print('PASS actual MOM refresh: all 15 native language codes, 14 complete locales, single-language fields and stable values')
 print('PASS real MOM API v3: one 29-row page, 20 switches, two 0-2s/.1s delay sliders, persisted values and complete reset')

@@ -25,7 +25,8 @@ def main():
     archive = 'Addon/9ba626afa44a3aa3.patch_0'
     with zipfile.ZipFile(package) as z:
         assert z.testzip() is None
-        assert set(z.namelist()) == {'manifest.json', 'README-使用说明.txt', 'CREDITS.txt',
+        assert set(z.namelist()) == {'manifest.json', 'README.txt', 'README-使用说明.txt', 'CREDITS.txt',
+                                    'LICENSES/Bingus-0BSD.txt','LICENSES/HD2Runtime-MIT.txt',
                                     archive, archive+'.gpu_resources', archive+'.stream'}
         manifest = json.loads(z.read('manifest.json'))
         assert manifest['Guid'] == config['guid'] and str(uuid.UUID(manifest['Guid'])) == config['guid']

@@ -27,7 +27,7 @@ for _,capture in ipairs(replay.captures)do
     local d=detector.new({},profile,function()end,function(event)
         covered[event.move]=true;fired[event.move]=(fired[event.move]or 0)+1
         per_id[event.ability]=(per_id[event.ability]or 0)+1;total=total+1
-    end)
+    end,nil,nil,false)
     local last_t,items,targets
     local function submit()
         if last_t then d:observe(items,targets,last_t,{id=7,unit=70})end

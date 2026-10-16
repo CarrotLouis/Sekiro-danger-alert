@@ -1,0 +1,65 @@
+Sekiro danger alert 1.0.0
+
+A Helldivers 2 Lua mod that displays a Sekiro-style danger icon above your Helldiver and plays a warning sound for recognized dangerous attacks aimed at you.
+
+Installation
+
+Import Sekiro danger alert 1.0.0.zip into your mod manager, replace the previous version, deploy and restart the game. Enable only one version. Allow about 20 seconds after startup.
+Requires Bingus Shared Loader v18+ and Mod Options Menu v1.2 (API 3). HD2Runtime is not required. Supports Steam build 25480438.
+
+Settings
+
+All 29 controls fit on one page. Labels, descriptions and custom choice text follow the game's Text Language: English, French, Italian, German, European and Latin American Spanish, Japanese, Korean, Polish, European and Brazilian Portuguese, Russian, Simplified Chinese and Traditional Chinese.
+Apply changes to save. Upgrades preserve the existing setting identifiers and saved values.
+
+The 20 attack switches are enabled by default, grouped by faction:
+
+- Terminids: four Charger stomps; Impaler stomp and tentacle slam; Bile Titan leg strike and acid spray; Dragonroach diving breath; Spore Burst Bile Titan leg strike.
+- Automatons: heavy cannon turret preparation; Hulk Scorcher saw; Factory Strider cannon; Reinforced Scout Strider rockets; Annihilator Tank cannon; Barrager Tank direct rockets; Jet Brigade Hulk Scorcher saw.
+- Illuminate: Crusher dangerous melee; Harvester electric shock; Harvester beam.
+
+Crusher melee variants share one switch. Crusher stomps, Dragonroach hovering breath and Barrager high-arc fire are excluded.
+Horizontal and vertical position use the default head anchor as 0, with about one body width left/right and two head heights up/down. The icon follows head and camera movement, including crouching and going prone. Attack recognition has no enemy-distance limit.
+Size: 50-300%, default 100%. Volume: 0-100, default 60; 0 mutes the sound.
+Harvester electric shock and beam each have a separate 0-2 second delay, in 0.1-second steps, default 0. Attack cancellation, retargeting, death or loss of valid attack state cancels a pending alert. A long delay may place the warning after damage.
+Sound preview: select Play once and Apply to hear the saved volume. Animation preview: Apply and close the menu; the icon and sound play after 3 seconds.
+Restore defaults enables all attacks, resets position and delays to 0, size to 100% and volume to 60, and cancels pending alerts and previews.
+
+Runtime files
+
+Default folder: %LOCALAPPDATA%\CowboyBingus\Helldivers2\Logs\
+Usually: C:\Users\<your username>\AppData\Local\CowboyBingus\Helldivers2\Logs\
+If the loader supplies a custom log directory, the files below use that directory instead.
+
+Written directly by this mod:
+
+- Sekiro danger alert.log: appended startup, readiness and error messages.
+
+Settings are stored by Mod Options Menu and shared with other mods:
+
+- ModOptionsMenu.values: saved settings; this mod uses the peril_warning.crusher. prefix.
+- ModOptionsMenu.values.bak: the previous settings backup.
+- ModOptionsMenu.values.tmp: a temporary save file, renamed to the main settings file on success.
+
+ModOptionsMenu.log and BingusSharedLoader.log are managed by the respective dependencies, not written directly by this mod.
+Animation and sound are embedded in the package. No PNG, WAV or separate mod configuration file is exported at runtime.
+Import and deployment copies are managed by your mod manager; their locations depend on that manager.
+
+Performance and limits
+
+Attack checks run at most 20 times per second. Head projection updates only during the approximately 0.83-second animation, with no permanently visible overlay. Text follows the settings screen refresh without another per-frame language reader. Attacks are not logged individually.
+The 50 compressed animation textures contain about 8.34 MiB of resource data. Sound uses about 0.92 MiB of embedded PCM and plays from memory. These are payload sizes, not total game memory use. Actual cost depends on the scene and hardware; no fixed frame-rate impact is promised.
+An alert is not a hit prediction or a guarantee that diving avoids damage. Enemies can cancel attacks or change targets after an alert.
+Factory Strider preparations can be cancelled after an alert. Dragonroach alerts may be inaccurate when playing as a co-op guest.
+An unsupported game layout stops automatic warnings; see Sekiro danger alert.log for details.
+
+Uninstall
+
+Disable the mod in your manager, deploy and restart the game. You may remove Sekiro danger alert.log manually.
+ModOptionsMenu.values and its backups are shared with other mods; do not delete the whole file to remove this mod's settings.
+
+Credits
+
+Uses code / research from HD2Runtime by SkyeShade, and Bingus helpers by CowboyBingus.
+See CREDITS.txt and the package's LICENSES folder for attribution and licenses. No HD2 HUD Plus code or assets are redistributed.
+The repository does not upload build outputs or publish GitHub Releases automatically.
