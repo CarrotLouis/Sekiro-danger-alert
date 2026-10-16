@@ -2,6 +2,8 @@
 
 This is a Bingus Lua addon. HD2Runtime is not required in the game. The repository includes the approved 50 animation masks and PCM sound, so a normal build needs neither the original video nor a font or After Effects project.
 
+For custom media or an independently named derivative, see [Replacing the animation and sound](docs/REPLACING-ASSETS.md) / [替换动画与音效](docs/REPLACING-ASSETS_cn.md). Those instructions explain the material masks and the identity changes required in your own fork.
+
 Use Python 3 with Pillow and NumPy. Set `HD2_LUA51_DLL` to the `bin/lua51.dll` from your installed Helldivers 2. The builder compiles the assembled entry with that exact LuaJIT before writing the ZIP; it does not start or modify the game.
 
 ```powershell

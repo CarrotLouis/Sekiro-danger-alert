@@ -1,5 +1,7 @@
 # Sekiro danger alert 1.0.0
 
+English / [简体中文](https://github.com/CarrotLouis/Sekiro-danger-alert/blob/main/README_cn.md)
+
 A Helldivers 2 Lua mod that displays a Sekiro-style danger icon above your Helldiver and plays a warning sound for recognized dangerous attacks aimed at you.
 
 ## Installation
@@ -57,6 +59,10 @@ An unsupported game layout stops automatic warnings; see Sekiro danger alert.log
 
 Disable the mod in your manager, deploy and restart the game. You may remove Sekiro danger alert.log manually.
 ModOptionsMenu.values and its backups are shared with other mods; do not delete the whole file to remove this mod's settings.
+
+## Customization
+
+To replace the animation or sound and create an independent addon, see the [resource replacement guide](docs/REPLACING-ASSETS.md). It covers the actual asset formats, conversion, addon identity, packaging and validation. General build instructions are in [BUILD.md](BUILD.md).
 
 ## Credits
 

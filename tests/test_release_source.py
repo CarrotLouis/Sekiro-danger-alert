@@ -40,7 +40,7 @@ for invalid in ['--[=[unfinished','"unfinished']:
     except ValueError:pass
     else:raise AssertionError('invalid Lua not refused')
 
-for name in ['README.md','README.txt','README-使用说明.txt','CREDITS.txt','CHANGELOG.md','docs/RELEASE-1.0.0.md']:
+for name in ['README.md','README_cn.md','README.txt','README-使用说明.txt','CREDITS.txt','CHANGELOG.md','docs/RELEASE-1.0.0.md']:
     text=(ROOT/name).read_text(encoding='utf-8')
     assert not re.search(r'测试|采集|诊断|\b(?:tests?|testing|captures?|diagnostics|F8|Spawner)\b',text,re.I),name
     if name.startswith('README'):
