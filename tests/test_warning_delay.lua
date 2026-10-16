@@ -14,7 +14,7 @@ end
 assert(sample(0).reason=='trigger'and #events==1,'zero keeps the original cue')
 for _,id in ipairs({1961,1962,1956,1957})do
     input.id=id
-    for _,value in ipairs({.1,.7,2})do
+    for _,value in ipairs({.01,.30,.31,.5})do
         seconds=value;events={};d:reset()
         assert(sample(0).reason=='delayed')
         for tick=1,math.floor(value*20)-1 do assert(sample(tick*.05).reason=='delayed')end
@@ -23,7 +23,7 @@ for _,id in ipairs({1961,1962,1956,1957})do
         assert(sample(value+.05).reason=='already_warned'and #events==1)
     end
 end
-seconds=1;input.id=1961
+seconds=.30;input.id=1961
 local function arm()events={};off=false;d:reset();assert(sample(0).reason=='delayed')end
 local function cancelled(change,restore,reason)
     arm();change();assert(sample(.05).reason==reason);restore()
@@ -40,9 +40,9 @@ arm();d:observe({},{},.05,avatar);assert(sample(.5,.5).reason=='already_warned')
 arm();d:reset();assert(sample(1,1).reason=='late_sample'and #events==0,'reset clears scheduled alerts')
 arm();sample(.2);input.id=1958;assert(sample(.3,.05).reason=='unmapped');sample(1,1);assert(#events==0)
 input.id=1961
-arm();seconds=2;for i=1,20 do sample(i*.05)end
-assert(#events==1 and events[1].warning_delay==1,'APPLY changes affect the next attack, not an armed one')
+arm();seconds=.5;for i=1,10 do sample(i*.05)end
+assert(#events==1 and events[1].warning_delay==.30,'APPLY changes affect the next attack, not an armed one')
 -- Other enemies cannot acquire a delay even if a bad adapter returns one.
 d:reset();events={};actor.resource=profile.crusher_resource;actor.ai.behavior=233;input.id=1411
 assert(sample(0).reason=='trigger'and #events==1)
-print('PASS Harvester delay: 0/.1/.7/2 seconds, independent ability instances, exact-once and cancellation on target/death/reset/clock/gaps')
+print('PASS Harvester delay: 0/.01/.30/.31/.5 seconds, independent ability instances, exact-once and cancellation on target/death/reset/clock/gaps')

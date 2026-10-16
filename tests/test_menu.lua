@@ -77,13 +77,17 @@ local appearance=adapter:appearance();assert(appearance.x==-1 and appearance.y==
 assert(menu.set(p..'size',50));assert(adapter:appearance().scale==.5)
 assert(menu.set(p..'volume',0));assert(adapter:volume()==0)
 assert(menu.set(p..'volume',100));assert(adapter:volume()==100)
-assert(adapter:delay('harvester_tesla_ripper')==.7 and adapter:delay('harvester_disintegration_beamer')==0)
+assert(adapter:delay('harvester_tesla_ripper')==.5,'old saved values must clamp to the new maximum')
+assert(adapter:delay('harvester_disintegration_beamer')==.30,'an unset delay uses the new default')
 assert(adapter:delay('crusher_1411')==0)
 for _,move in ipairs({'harvester_tesla_ripper','harvester_disintegration_beamer'})do
     local o=state.options[p..'delay.'..move]
-    assert(o.kind=='slider'and o.min==0 and o.max==2 and o.step==.1 and o.default==0)
-    assert(menu.set(p..'delay.'..move,2));assert(adapter:delay(move)==2)
-    assert(menu.set(p..'delay.'..move,.1));assert(adapter:delay(move)==.1)
+    assert(o.kind=='slider'and o.min==0 and o.max==.5 and o.step==.01 and o.default==.30 and o.decimals==2)
+    assert(menu.set(p..'delay.'..move,2));assert(adapter:delay(move)==.5)
+    assert(menu.set(p..'delay.'..move,-.1));assert(adapter:delay(move)==0)
+    assert(menu.set(p..'delay.'..move,.31));assert(adapter:delay(move)==.31)
+    assert(menu.set(p..'delay.'..move,.314));assert(adapter:delay(move)==.31)
+    assert(menu.set(p..'delay.'..move,.316));assert(adapter:delay(move)==.32)
 end
 for _,cb in ipairs(state.callbacks[p..'preview'])do cb(2)end
 assert(menu.set(p..'volume',27))
@@ -100,6 +104,7 @@ local reset=adapter:consume();assert(reset.reset==2 and not reset.preview and no
 local count=0
 for id,default in pairs(adapter.defaults)do count=count+1;assert(menu.get(id)==default,'reset missed '..id)end
 assert(count==29 and menu.get('test.unrelated')==true and next(adapter:consume())==nil)
+assert(adapter:delay('harvester_tesla_ripper')==.30 and adapter:delay('harvester_disintegration_beamer')==.30)
 local translation=upvalue(menu.register_option,'translation')
 local codes={us='en',gb='en',bp='pt-BR',de='de',es='es',fr='fr',it='it',jp='ja',ko='ko',
     ms='es-419',pl='pl',pt='pt',ru='ru',cn='zh-Hans',tc='zh-Hant'}
@@ -118,4 +123,4 @@ for code,language in pairs(codes)do
     assert(menu.get(p..'size')==100 and menu.get(p..'volume')==60 and #category.order==29)
 end
 print('PASS actual MOM refresh: all 15 native language codes, 14 complete locales, single-language fields and stable values')
-print('PASS real MOM API v3: one 29-row page, 20 switches, two 0-2s/.1s delay sliders, persisted values and complete reset')
+print('PASS real MOM API v3: one 29-row page, 20 switches, 0-0.5s/.01s delays defaulting to .30s, saved-value clamping and complete reset')

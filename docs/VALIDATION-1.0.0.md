@@ -7,8 +7,8 @@ This document describes offline evidence, not a live-game performance or renderi
 - Baseline: standard 0.8.2 at `9a157976fb29d3be312a053395ba86579b752e16`.
 - GUID: `1dc82965-3c84-4eec-bb72-88e8121ac0dc`.
 - Entry: `mods/peril_warning/crusher_probe`; global: `SekiroDangerAlert`.
-- All 29 option IDs, defaults, ranges and order remain stable. Twenty attack switches remain enabled by default.
-- Attack resource mappings, wind-up windows, target checks, exclusions, Harvester delays and batch limits remain unchanged. The approved R2 assets are unchanged.
+- All 29 option IDs and their order remain stable. The two Harvester delays now range from 0 to 0.5 seconds in 0.01-second steps, defaulting to 0.30 seconds. Old saved values are clamped and snapped by MOM; unset and restored values use the new default. Other ranges and defaults are unchanged. Twenty attack switches remain enabled by default.
+- Attack resource mappings, wind-up windows, target checks, exclusions and batch limits remain unchanged. Delay scheduling retains its existing cancellation rules and 20 Hz sampling cadence. The approved R2 assets are unchanged.
 - Factory Strider cancellation and guest Dragonroach target ambiguity remain known limitations. The later diagnostic investigation is not incorporated into attack behavior.
 - Supported Steam build remains `25480438`; no additional native calls or memory writes are introduced.
 
@@ -18,7 +18,7 @@ The native schema has 15 entries: `us`, `gb`, `bp`, `de`, `es`, `fr`, `it`, `jp`
 
 Each pack contains 48 translated strings. Labels, descriptions and custom choice strings are function-valued texts refreshed by the real Mod Options Menu v1.2 / API 3 implementation. The mod consumes its existing `BingusTranslations` plain-data registry and adds no language-memory reader or periodic language poll. The raw native code takes precedence over Steam language, including `bp`, `ms` and `tc`, for which the current upstream translation helper lacks aliases.
 
-The real MOM contract checks exercise every native language code, all translated texts, saved-value preservation, the 29-row category, preview actions and reset behavior. Size limits and complete key coverage are build gates. Actual in-game font coverage and layout for every language have not been visually verified.
+The real MOM contract checks exercise every native language code, all translated texts, saved-value preservation, the 29-row category, preview actions and reset behavior. Both delay sliders use two decimal places, preserve hundredth-second values, clamp an old 0.7-second value to 0.5 seconds and restore to 0.30 seconds. The detector also retains this precision when arming a delay. Size limits and complete key coverage are build gates. Actual in-game font coverage and layout for every language have not been visually verified.
 
 ## Production boundary
 
@@ -75,8 +75,8 @@ The installed LuaJIT accepts all 129 prototypes; the largest contains 1,642 byte
 The finished archive has 101 resources: one Lua entry, 50 textures and 50 materials. Every packaged BC1 frame is decoded and compared with the approved masks. The last frame is fully transparent; duration remains 50 frames at 59.94 Hz (approximately 0.83417 seconds).
 
 - Package: `Sekiro danger alert 1.0.0.zip`.
-- Size: 2,160,282 bytes.
-- Build ID: `3b1a928aa932`.
-- SHA-256: `193ead23778ded50db8e8d4f0c64472785d6d2ebc1956b5b6f2a85067819783e`.
+- Size: 2,160,707 bytes.
+- Build ID: `7ae478c22b67`.
+- SHA-256: `91ab1b283697f5a7c57230f389050c0df7d71fb5c9f78df89b86e1b10f03408c`.
 
 No new live-game validation or complete-frame profiling was performed for this release pass. The owner's earlier 0.8.2 gameplay confirmation does not prove every locale's appearance or the exact runtime overhead of 1.0.0. Outputs and raw logs remain ignored; the owner publishes the Release manually.

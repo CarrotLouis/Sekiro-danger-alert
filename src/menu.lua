@@ -52,7 +52,7 @@ function M.new(log,catalog,profile,text)
             if move.id=='harvester_tesla_ripper' or move.id=='harvester_disintegration_beamer' then
                 local key=move.id=='harvester_tesla_ripper'and'tesla_delay'or'beam_delay'
                 if not register('delay.'..move.id,{type='slider',label=text:source(key),
-                    min=0,max=2,step=.1,default=0,
+                    min=0,max=.5,step=.01,default=.30,
                     description=text:source('delay_desc')})then return false end
             end
         end
@@ -83,9 +83,9 @@ function M.new(log,catalog,profile,text)
     end
     function self:delay(move)
         if move~='harvester_tesla_ripper' and move~='harvester_disintegration_beamer' then return 0 end
-        local value=self.ready and tonumber(menu.get(prefix..'delay.'..move)) or 0
-        if not value or value~=value then return 0 end
-        return math.floor(math.max(0,math.min(2,value))*10+.5)/10
+        local value=self.ready and tonumber(menu.get(prefix..'delay.'..move)) or .30
+        if not value or value~=value then return .30 end
+        return math.floor(math.max(0,math.min(.5,value))*100+.5)/100
     end
     function self:appearance()
         local function value(key,default,lo,hi)

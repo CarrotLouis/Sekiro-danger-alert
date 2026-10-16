@@ -21,9 +21,9 @@ The 20 attack switches are enabled by default, grouped by faction:
 Crusher melee variants share one switch. Crusher stomps, Dragonroach hovering breath and Barrager high-arc fire are excluded.
 Horizontal and vertical position use the default head anchor as 0, with about one body width left/right and two head heights up/down. The icon follows head and camera movement, including crouching and going prone. Attack recognition has no enemy-distance limit.
 Size: 50-300%, default 100%. Volume: 0-100, default 60; 0 mutes the sound.
-Harvester electric shock and beam each have a separate 0-2 second delay, in 0.1-second steps, default 0. Attack cancellation, retargeting, death or loss of valid attack state cancels a pending alert. A long delay may place the warning after damage.
+Harvester electric shock and beam each have a separate 0-0.5 second delay, in 0.01-second steps, default 0.30 seconds. Existing saved values are kept within the new range; use Restore defaults to apply the new defaults. Attack cancellation, retargeting, death or loss of valid attack state cancels a pending alert. A long delay may place the warning after damage.
 Sound preview: select Play once and Apply to hear the saved volume. Animation preview: Apply and close the menu; the icon and sound play after 3 seconds.
-Restore defaults enables all attacks, resets position and delays to 0, size to 100% and volume to 60, and cancels pending alerts and previews.
+Restore defaults enables all attacks, resets position to 0, both Harvester delays to 0.30 seconds, size to 100% and volume to 60, and cancels pending alerts and previews.
 
 Runtime files
 

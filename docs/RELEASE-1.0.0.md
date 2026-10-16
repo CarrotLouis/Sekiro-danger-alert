@@ -4,6 +4,7 @@ Displays a Sekiro-style danger icon above your Helldiver and plays a warning sou
 
 - Complete settings translations for all game text languages, with separate regional Spanish, Portuguese and Chinese packs.
 - One settings page with 20 attack switches grouped by faction, position and size controls, volume, sound and animation previews, separate Harvester delays and restore defaults.
+- Harvester delays: 0-0.5 seconds in 0.01-second steps, with a 0.30-second default for each attack.
 - Preserves the established attack recognition, approved animation and sound, saved settings and addon identity from 0.8.2.
 - Reduces descriptor scanning work, reuses a verified head-node lookup and avoids per-alert disk logging.
 - Includes English and Chinese guides, runtime file locations, credits and dependency licenses.

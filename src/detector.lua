@@ -86,7 +86,7 @@ function M.new(native,profile,log,trigger,enabled,delay,details)
                     if not pending and (move=='harvester_tesla_ripper' or move=='harvester_disintegration_beamer')then
                         local seconds=tonumber(delay(move))or 0
                         if seconds~=seconds then seconds=0 end
-                        seconds=math.floor(math.max(0,math.min(2,seconds))*10+.5)/10
+                        seconds=math.floor(math.max(0,math.min(.5,seconds))*100+.5)/100
                         if seconds>0 then
                             pending={due=t+seconds,at=t,seconds=seconds,avatar=avatar.id,avatar_unit=avatar.unit,
                                 avatar_network=avatar.network_id,owned=e.owned}
