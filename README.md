@@ -14,14 +14,14 @@ Apply changes to save. Upgrades preserve the existing setting identifiers and sa
 
 The 20 attack switches are enabled by default, grouped by faction:
 
-- Terminids: four Charger stomps; Impaler stomp and tentacle slam; Bile Titan leg strike and acid spray; Dragonroach diving breath; Spore Burst Bile Titan leg strike.
-- Automatons: heavy cannon turret preparation; Hulk Scorcher saw; Factory Strider cannon; Reinforced Scout Strider rockets; Annihilator Tank cannon; Barrager Tank direct rockets; Jet Brigade Hulk Scorcher saw.
-- Illuminate: Crusher dangerous melee; Harvester electric shock; Harvester beam.
+- Terminids: Charger and Spore Charger (Heavy Crush); Charger Behemoth (Superheavy Crush); Rupture Charger (Hardened Crush); Impaler (Momentous Slam and Tentacle Slam); Bile Titan (Cataclysmic Slam and Caustic Surge); Dragonroach (Alchemical Pyrosis); Spore Burst Bile Titan (Cataclysmic Slam).
+- Automatons: Cannon Turret (Fusion Battle Cannon); Hulk Scorcher and Jet Brigade Hulk Scorcher (Heavy Rotary Saw); Factory Strider (Fusion Repeater Cannon); Reinforced Scout Strider (Heavy HE Rockets); Annihilator Tank (Fusion Battle Cannon); Barrager Tank (Heavy MLRS (HE)).
+- Illuminate: Crusher (Heavy Cudgel); Harvester (Tesla Ripper and Disintegration Beamer).
 
-Crusher melee variants share one switch. Crusher stomps, Dragonroach hovering breath and Barrager high-arc fire are excluded.
+Crusher Heavy Cudgel variants share one switch. Dragonroach Alchemical Pyrosis is limited to diving runs; Barrager Heavy MLRS (HE) is limited to direct fire. Crusher stomps, Dragonroach hovering fire and Barrager high-arc fire are excluded.
 Horizontal and vertical position use the default head anchor as 0, with about one body width left/right and two head heights up/down. The icon follows head and camera movement, including crouching and going prone. Attack recognition has no enemy-distance limit.
 Size: 50-300%, default 100%. Volume: 0-100, default 60; 0 mutes the sound.
-Harvester electric shock and beam each have a separate 0-0.5 second delay, in 0.01-second steps, default 0.30 seconds. Existing saved values are kept within the new range; use Restore defaults to apply the new defaults. Attack cancellation, retargeting, death or loss of valid attack state cancels a pending alert. A long delay may place the warning after damage.
+Harvester Tesla Ripper and Disintegration Beamer each have a separate 0-0.5 second delay, in 0.01-second steps, default 0.30 seconds. Existing saved values are kept within the new range; use Restore defaults to apply the new defaults. Attack cancellation, retargeting, death or loss of valid attack state cancels a pending alert. A long delay may place the warning after damage.
 Sound preview: select Play once and Apply to hear the saved volume. Animation preview: Apply and close the menu; the icon and sound play after 3 seconds.
 Restore defaults enables all attacks, resets position to 0, both Harvester delays to 0.30 seconds, size to 100% and volume to 60, and cancels pending alerts and previews.
 

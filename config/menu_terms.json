@@ -1,0 +1,459 @@
+{
+  "build": "25480438",
+  "enemy_source": "Installed game strings in archive 9ba626afa44a3aa3; 15 native text languages.",
+  "attack_source": "Owner-specified Helldivers Wiki names. Non-English attack titles are mod localizations, not official game translations. Chinese action labels follow the owner's terminology.",
+  "enemies": {
+    "Charger": {
+      "game_text_id": "4d7811ff",
+      "source": "game",
+      "names": {
+        "en": "Charger",
+        "fr": "Chargeur",
+        "it": "Ariete",
+        "de": "Stürmer",
+        "es": "Cargador",
+        "es-419": "Embestidor",
+        "ja": "チャージャー",
+        "ko": "차저",
+        "pl": "Szturmowiec",
+        "pt": "Desenfreado",
+        "pt-BR": "Atropelador",
+        "ru": "Громила",
+        "zh-Hans": "强袭虫",
+        "zh-Hant": "衝鋒蟲"
+      }
+    },
+    "Spore Charger": {
+      "game_text_id": "7394653b",
+      "source": "game",
+      "names": {
+        "en": "Spore Charger",
+        "fr": "Chargeur sporifère",
+        "it": "Carica-spore",
+        "de": "Sporenstürmer",
+        "es": "Embestidor de esporas",
+        "es-419": "Embestidor de esporas",
+        "ja": "スポア・チャージャー",
+        "ko": "스포어 차저",
+        "pl": "Szturmowiec zarodnikowy",
+        "pt": "Carregador de Esporo",
+        "pt-BR": "Atropelador esporulado",
+        "ru": "Споровый громила",
+        "zh-Hans": "孢子强袭虫",
+        "zh-Hant": "孢子衝鋒蟲"
+      }
+    },
+    "Charger Behemoth": {
+      "game_text_id": "402cd0a6",
+      "source": "game",
+      "names": {
+        "en": "Charger Behemoth",
+        "fr": "Chargeur titanesque",
+        "it": "Behemoth Ariete",
+        "de": "Stürmer-Koloss",
+        "es": "Mastodonte cargador",
+        "es-419": "Embestidor bégimo",
+        "ja": "チャージャー・ベヒーモス",
+        "ko": "차저 베히모스",
+        "pl": "Behemot szturmowiec",
+        "pt": "Carregador Colosso",
+        "pt-BR": "Beemote atropelador",
+        "ru": "Громила-чудище",
+        "zh-Hans": "巨兽级强袭虫",
+        "zh-Hant": "巨型衝鋒蟲"
+      }
+    },
+    "Rupture Charger": {
+      "game_text_id": "e8a56734",
+      "source": "game",
+      "names": {
+        "en": "Rupture Charger",
+        "fr": "Chargeur-fouisseur",
+        "it": "Carica-spaccatore",
+        "de": "Kluftstürmer",
+        "es": "Cargador de ruptura",
+        "es-419": "Embestidor subterráneo",
+        "ja": "ラプチャー・チャージャー",
+        "ko": "럽처 차저",
+        "pl": "Szturmowiec pęknięć",
+        "pt": "Carregador de Rompimento",
+        "pt-BR": "Atropelador Rompedor",
+        "ru": "Прорывной громила",
+        "zh-Hans": "爆裂强袭虫",
+        "zh-Hant": "裂破衝鋒蟲"
+      }
+    },
+    "Impaler": {
+      "game_text_id": "3e58b4e9",
+      "source": "game",
+      "names": {
+        "en": "Impaler",
+        "fr": "Empaleur",
+        "it": "Impalatore",
+        "de": "Pfähler",
+        "es": "Empalador",
+        "es-419": "Empalador",
+        "ja": "インペーラー",
+        "ko": "임페일러",
+        "pl": "Palownik",
+        "pt": "Empalador",
+        "pt-BR": "Empalador",
+        "ru": "Пронзатель",
+        "zh-Hans": "穿刺虫",
+        "zh-Hant": "穿刺蟲"
+      }
+    },
+    "Bile Titan": {
+      "game_text_id": "95dc53b6",
+      "source": "game",
+      "names": {
+        "en": "Bile Titan",
+        "fr": "Titan corrosif",
+        "it": "Titano rabbioso",
+        "de": "Säuretitan",
+        "es": "Titán de bilis",
+        "es-419": "Titán de bilis",
+        "ja": "バイル・タイタン",
+        "ko": "바일 타이탄",
+        "pl": "Tytan żółci",
+        "pt": "Titã Biliar",
+        "pt-BR": "Titã ácido",
+        "ru": "Желчный титан",
+        "zh-Hans": "吐酸泰坦",
+        "zh-Hant": "闊步蟲"
+      }
+    },
+    "Dragonroach": {
+      "game_text_id": "522f728a",
+      "source": "game",
+      "names": {
+        "en": "Dragonroach",
+        "fr": "Dracofard",
+        "it": "Scaradrago",
+        "de": "Drachenschabe",
+        "es": "Cucadragón",
+        "es-419": "Dracoracha",
+        "ja": "ドラゴンローチ",
+        "ko": "드래곤로치",
+        "pl": "Smokoluch",
+        "pt": "Baratadragão",
+        "pt-BR": "Dracobarata",
+        "ru": "Дракоракан",
+        "zh-Hans": "蟑龙",
+        "zh-Hant": "龍蟑"
+      }
+    },
+    "Hulk Scorcher": {
+      "game_text_id": "69d6774d",
+      "source": "game",
+      "names": {
+        "en": "Hulk Scorcher",
+        "fr": "Calcineur colossal",
+        "it": "Spellatore gigante",
+        "de": "Hulk-Schmorer",
+        "es": "Bruto abrasador",
+        "es-419": "Calcinador gigantón",
+        "ja": "ハルク・スコーチャー",
+        "ko": "헐크 스코처",
+        "pl": "Kolos spalacz",
+        "pt": "Hulk Abrasador",
+        "pt-BR": "Hulk escaldante",
+        "ru": "Глыба-поджигатель",
+        "zh-Hans": "巨型炙炎者",
+        "zh-Hant": "巨型灼焦者"
+      },
+      "orthography_note": "pt: game has plural Hulks with singular Abrasador; use singular Hulk."
+    },
+    "Factory Strider": {
+      "game_text_id": "44c36f68",
+      "source": "game",
+      "names": {
+        "en": "Factory Strider",
+        "fr": "Aranéide génitrice",
+        "it": "Zampelunghe operaio",
+        "de": "Fabrikschreiter",
+        "es": "Caminante de fábrica",
+        "es-419": "Fábrica andante",
+        "ja": "ファクトリー・ストライダー",
+        "ko": "팩토리 스트라이더",
+        "pl": "Biegacz fabryczny",
+        "pt": "Saltador de Fábrica",
+        "pt-BR": "Caminhante fabril",
+        "ru": "Шатун-завод",
+        "zh-Hans": "移动工厂",
+        "zh-Hant": "移動工廠"
+      }
+    },
+    "Reinforced Scout Strider": {
+      "game_text_id": "6f8fe1cf",
+      "source": "game",
+      "names": {
+        "en": "Reinforced Scout Strider",
+        "fr": "Aranéide éclaireur blindé",
+        "it": "Zampelunghe esploratore rinforzato",
+        "de": "Verstärkter Spähschreiter",
+        "es": "Caminante explorador reforzado",
+        "es-419": "Andante explorador reforzado",
+        "ja": "強化スカウト・ストライダー",
+        "ko": "강화 스카우트 스트라이더",
+        "pl": "Wzmocniony biegacz zwiadowczy",
+        "pt": "Saltador Batedor Fortalecido",
+        "pt-BR": "Caminhante explorador reforçado",
+        "ru": "Укрепленный шатун-разведчик",
+        "zh-Hans": "强化侦察纵步者",
+        "zh-Hant": "強化偵察闊步者"
+      }
+    },
+    "Annihilator Tank": {
+      "game_text_id": "cdef41c8",
+      "source": "game",
+      "names": {
+        "en": "Annihilator Tank",
+        "fr": "Tank annihilator",
+        "it": "Carro annientatore",
+        "de": "Vernichtungspanzer",
+        "es": "Tanque aniquilador",
+        "es-419": "Tanque aniquilador",
+        "ja": "アニヒレーター・タンク",
+        "ko": "어나이얼레이터 탱크",
+        "pl": "Czołg anihilator",
+        "pt": "Tanque Aniquilador",
+        "pt-BR": "Tanque aniquilador",
+        "ru": "Танк «Аннигилятор»",
+        "zh-Hans": "湮灭坦克",
+        "zh-Hant": "殲滅者坦克"
+      }
+    },
+    "Barrager Tank": {
+      "game_text_id": "e9bec04f",
+      "source": "game",
+      "names": {
+        "en": "Barrager Tank",
+        "fr": "Tank rempart",
+        "it": "Carro di sbarramento",
+        "de": "Sperrfeuerpanzer",
+        "es": "Tanque bombardero",
+        "es-419": "Tanque bombardero",
+        "ja": "バラージャー・タンク",
+        "ko": "바라저 탱크",
+        "pl": "Czołg Salwomiot",
+        "pt": "Tanque de Barragem",
+        "pt-BR": "Tanque de barragem",
+        "ru": "Танк «Заграждение»",
+        "zh-Hans": "铁幕坦克",
+        "zh-Hant": "火箭彈幕坦克"
+      },
+      "orthography_note": "ja: normalize the dash in バラ―ジャー to the katakana long-vowel mark."
+    },
+    "Crusher": {
+      "game_text_id": "e9cb68a5",
+      "source": "game",
+      "names": {
+        "en": "Crusher",
+        "fr": "Broyeur",
+        "it": "Trituratore",
+        "de": "Brecher",
+        "es": "Machacador",
+        "es-419": "Triturador",
+        "ja": "クラッシャー",
+        "ko": "크러셔",
+        "pl": "Miażdżyciel",
+        "pt": "Esmagador",
+        "pt-BR": "Esmagador",
+        "ru": "Крушитель",
+        "zh-Hans": "粉碎者",
+        "zh-Hant": "粉碎者"
+      }
+    },
+    "Harvester": {
+      "game_text_id": "53cd8b51",
+      "source": "game",
+      "names": {
+        "en": "Harvester",
+        "fr": "Moissonneur",
+        "it": "Mietitrice",
+        "de": "Ausbeuter",
+        "es": "Cosechadora",
+        "es-419": "Cosechador",
+        "ja": "ハーベスター",
+        "ko": "하베스터",
+        "pl": "Żniwiarka",
+        "pt": "Colhedor",
+        "pt-BR": "Ceifadora",
+        "ru": "Жнец",
+        "zh-Hans": "猎杀器",
+        "zh-Hant": "收割機"
+      }
+    },
+    "Cannon Turret": {
+      "game_text_id": "1c80c492",
+      "source": "game",
+      "names": {
+        "en": "Cannon Turret",
+        "fr": "Tourelle automaton",
+        "it": "Torretta cannone",
+        "de": "Kanonengeschütz",
+        "es": "Torreta de cañón",
+        "es-419": "Torreta de cañón",
+        "ja": "キャノン砲塔",
+        "ko": "캐넌 포탑",
+        "pl": "Wieżyczka z działkiem",
+        "pt": "Torre com Canhão",
+        "pt-BR": "Torre de canhão",
+        "ru": "Пушка-турель",
+        "zh-Hans": "加农炮台",
+        "zh-Hant": "大炮炮台"
+      }
+    },
+    "Spore Burst Bile Titan": {
+      "source": "composed",
+      "component_text_ids": [
+        "95dc53b6",
+        "4460f618",
+        "7e1efea5"
+      ],
+      "names": {
+        "en": "Spore Burst Bile Titan",
+        "fr": "Titan corrosif explorifère",
+        "de": "Sporenberster-Säuretitan",
+        "it": "Titano rabbioso Sporaguscio",
+        "es": "Titán de bilis bomba de esporas",
+        "es-419": "Titán de bilis de baño de esporas",
+        "pt": "Titã Biliar de Eclosão de Esporos",
+        "pt-BR": "Titã ácido esporífero",
+        "pl": "Tytan żółci rozsiewający",
+        "ru": "Желчный титан-споровик",
+        "ja": "スポア・バースト・バイル・タイタン",
+        "ko": "스포어 버스트 바일 타이탄",
+        "zh-Hans": "孢裂泰坦",
+        "zh-Hant": "孢裂闊步蟲"
+      },
+      "composition_note": "Uses the base Titan, strain title and the localized Spore Burst Warrior adjective where needed for natural inflection."
+    },
+    "Jet Brigade Hulk Scorcher": {
+      "source": "composed",
+      "component_text_ids": [
+        "69d6774d",
+        "68ea1404"
+      ],
+      "names": {
+        "en": "Jet Brigade Hulk Scorcher",
+        "fr": "Calcineur colossal (brigade aérienne)",
+        "de": "Jet-Brigade-Hulk-Schmorer",
+        "it": "Spellatore gigante del Battaglione Jet",
+        "es": "Bruto abrasador de la brigada de cazas",
+        "es-419": "Calcinador gigantón (brigada aérea)",
+        "pt": "Hulk Abrasador da Brigada a Jacto",
+        "pt-BR": "Hulk escaldante da Brigada a Jato",
+        "pl": "Kolos spalacz z brygady odrzutowej",
+        "ru": "Глыба-поджигатель реактивного батальона",
+        "ja": "ジェットブリゲイド・ハルク・スコーチャー",
+        "ko": "제트 여단 헐크 스코처",
+        "zh-Hans": "喷气旅巨型炙炎者",
+        "zh-Hant": "噴射隊巨型灼焦者"
+      }
+    }
+  },
+  "moves": {
+    "charger_heavy_crush": {
+      "enemy": "Charger",
+      "english_attack": "Heavy Crush",
+      "wiki": "https://helldivers.wiki.gg/wiki/Charger"
+    },
+    "spore_charger_heavy_crush": {
+      "enemy": "Spore Charger",
+      "english_attack": "Heavy Crush",
+      "wiki": "https://helldivers.wiki.gg/wiki/Spore_Charger"
+    },
+    "behemoth_superheavy_crush": {
+      "enemy": "Charger Behemoth",
+      "english_attack": "Superheavy Crush",
+      "wiki": "https://helldivers.wiki.gg/wiki/Charger_Behemoth"
+    },
+    "rupture_hardened_crush": {
+      "enemy": "Rupture Charger",
+      "english_attack": "Hardened Crush",
+      "wiki": "https://helldivers.wiki.gg/wiki/Rupture_Charger"
+    },
+    "impaler_momentous_slam": {
+      "enemy": "Impaler",
+      "english_attack": "Momentous Slam",
+      "wiki": "https://helldivers.wiki.gg/wiki/Impaler"
+    },
+    "tentacle_slam": {
+      "enemy": "Impaler",
+      "english_attack": "Tentacle Slam",
+      "wiki": "https://helldivers.wiki.gg/wiki/Impaler"
+    },
+    "titan_cataclysmic_slam": {
+      "enemy": "Bile Titan",
+      "english_attack": "Cataclysmic Slam",
+      "wiki": "https://helldivers.wiki.gg/wiki/Bile_Titan"
+    },
+    "titan_caustic_surge": {
+      "enemy": "Bile Titan",
+      "english_attack": "Caustic Surge",
+      "wiki": "https://helldivers.wiki.gg/wiki/Bile_Titan"
+    },
+    "dragon_alchemical_pyrosis": {
+      "enemy": "Dragonroach",
+      "english_attack": "Alchemical Pyrosis",
+      "wiki": "https://helldivers.wiki.gg/wiki/Dragonroach"
+    },
+    "spore_titan_cataclysmic_slam": {
+      "enemy": "Spore Burst Bile Titan",
+      "english_attack": "Cataclysmic Slam",
+      "wiki": "https://helldivers.wiki.gg/wiki/Spore_Burst_Bile_Titan"
+    },
+    "hulk_rotary_saw": {
+      "enemy": "Hulk Scorcher",
+      "english_attack": "Heavy Rotary Saw",
+      "wiki": "https://helldivers.wiki.gg/wiki/Hulk_Scorcher"
+    },
+    "factory_fusion_repeater": {
+      "enemy": "Factory Strider",
+      "english_attack": "Fusion Repeater Cannon",
+      "wiki": "https://helldivers.wiki.gg/wiki/Factory_Strider"
+    },
+    "reinforced_heavy_rockets": {
+      "enemy": "Reinforced Scout Strider",
+      "english_attack": "Heavy HE Rockets",
+      "wiki": "https://helldivers.wiki.gg/wiki/Reinforced_Scout_Strider"
+    },
+    "annihilator_fusion_cannon": {
+      "enemy": "Annihilator Tank",
+      "english_attack": "Fusion Battle Cannon",
+      "wiki": "https://helldivers.wiki.gg/wiki/Annihilator_Tank"
+    },
+    "barrager_direct_mlrs": {
+      "enemy": "Barrager Tank",
+      "english_attack": "Heavy MLRS (HE)",
+      "wiki": "https://helldivers.wiki.gg/wiki/Barrager_Tank"
+    },
+    "jet_hulk_rotary_saw": {
+      "enemy": "Jet Brigade Hulk Scorcher",
+      "english_attack": "Heavy Rotary Saw",
+      "wiki": "https://helldivers.wiki.gg/wiki/Jet_Brigade_Hulk_Scorcher"
+    },
+    "cannon_preparation": {
+      "enemy": "Cannon Turret",
+      "english_attack": "Fusion Battle Cannon",
+      "wiki": "https://helldivers.wiki.gg/wiki/Cannon_Turret"
+    },
+    "crusher_melee": {
+      "enemy": "Crusher",
+      "english_attack": "Heavy Cudgel",
+      "wiki": "https://helldivers.wiki.gg/wiki/Crusher"
+    },
+    "harvester_tesla_ripper": {
+      "enemy": "Harvester",
+      "english_attack": "Tesla Ripper",
+      "wiki": "https://helldivers.wiki.gg/wiki/Harvester"
+    },
+    "harvester_disintegration_beamer": {
+      "enemy": "Harvester",
+      "english_attack": "Disintegration Beamer",
+      "wiki": "https://helldivers.wiki.gg/wiki/Harvester"
+    }
+  }
+}

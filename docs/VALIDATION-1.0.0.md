@@ -20,6 +20,10 @@ Each pack contains 48 translated strings. Labels, descriptions and custom choice
 
 The real MOM contract checks exercise every native language code, all translated texts, saved-value preservation, the 29-row category, preview actions and reset behavior. Both delay sliders use two decimal places, preserve hundredth-second values, clamp an old 0.7-second value to 0.5 seconds and restore to 0.30 seconds. The detector also retains this precision when arming a delay. Size limits and complete key coverage are build gates. Actual in-game font coverage and layout for every language have not been visually verified.
 
+Enemy terminology was cross-checked against the installed build's string resources using the offline DSAR/DSAA layout described by FileDiver 6bf7c1c. Fifteen directly named enemy types use selected game text IDs; two composite variants use the game's base enemy and faction terms. Original tables and extraction helpers remain local. The selected term references and Wiki URLs are in `config/menu_terms.json`; a readable correspondence table is in [ATTACK-NAMES.md](ATTACK-NAMES.md).
+
+English attack names now retain the complete Wiki names, including Alchemical Pyrosis and Heavy Cudgel. Other attack titles are edited mod localizations because no matching names were found in the installed text tables; they are not represented as official translations or native-speaker-reviewed copy. Simplified Chinese action wording follows the owner's established descriptions, with Crusher changed to 锤击. Build gates check all 20 English attack names and every locale's enemy-name prefix. This terminology pass does not change detection, saved IDs, animation, sound, performance or the revised delay range.
+
 ## Production boundary
 
 The release entry has no instrumentation attachment, collection lifecycle or hotkey reader. Its detector does not allocate per-sample decision reports, retain observation snapshots or emit periodic observation statistics. Normal audio playback and muting do not write log entries. Startup, state transitions and failures remain logged.
@@ -75,8 +79,8 @@ The installed LuaJIT accepts all 129 prototypes; the largest contains 1,642 byte
 The finished archive has 101 resources: one Lua entry, 50 textures and 50 materials. Every packaged BC1 frame is decoded and compared with the approved masks. The last frame is fully transparent; duration remains 50 frames at 59.94 Hz (approximately 0.83417 seconds).
 
 - Package: `Sekiro danger alert 1.0.0.zip`.
-- Size: 2,160,707 bytes.
-- Build ID: `7ae478c22b67`.
-- SHA-256: `91ab1b283697f5a7c57230f389050c0df7d71fb5c9f78df89b86e1b10f03408c`.
+- Size: 2,162,041 bytes.
+- Build ID: `f7a8a0604549`.
+- SHA-256: `f374b2b1112015ac1f54227fa6cdf8039b1dbff5f6a01ba70297d2bba3a34571`.
 
 No new live-game validation or complete-frame profiling was performed for this release pass. The owner's earlier 0.8.2 gameplay confirmation does not prove every locale's appearance or the exact runtime overhead of 1.0.0. Outputs and raw logs remain ignored; the owner publishes the Release manually.

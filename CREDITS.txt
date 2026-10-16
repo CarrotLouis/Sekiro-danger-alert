@@ -15,6 +15,10 @@ Resource identities and layout information were derived using FileDiver's hash d
 plaintext component tables and type library. No game tables, dictionaries, binaries or module dumps are bundled.
 https://github.com/xypwn/filediver/tree/6bf7c1ccc4be465a35b4bc9d41087781b47034e6
 
+Localized enemy names follow the game's text resources. English attack names follow
+The Helldivers Wiki; other attack titles are mod localizations, not official translations.
+https://helldivers.wiki.gg/
+
 Animation masks are independently generated from HakusyuGyosyoExtraBold (極太行書).
 Font copyright: 株式会社丸岡白舟印舗 2002. The font file is not bundled.
 The procedural effect follows the supplied text-mask and glow reference; no After Effects plugin code or output is included.

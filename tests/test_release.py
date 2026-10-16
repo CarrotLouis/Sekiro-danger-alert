@@ -26,7 +26,7 @@ for name in ('capture_module','marker_module','tracking_module','GetAsyncKeyStat
              'diagnostic_only_not_committed_shot','research_schema'):
     assert name not in source,name
 assert "id='crusher_melee'" in source and "mod_id='peril_warning.crusher'" in source
-assert '粉碎者 · 危险近战' in source
+assert '粉碎者 · 锤击' in source
 assert project['version']=='1.0.0'
 assert 'instrumentation'not in source and 'diagnostics'not in source.lower()
 assert not re.search(r'测试|采集|诊断|\b(?:tests?|testing|captures?|diagnostics?|F8|Spawner|instrumentation)\b',source,re.I)

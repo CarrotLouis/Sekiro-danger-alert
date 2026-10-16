@@ -3,6 +3,7 @@
 Displays a Sekiro-style danger icon above your Helldiver and plays a warning sound for recognized dangerous attacks aimed at you. The icon follows your head and camera movement. Requires Bingus Shared Loader v18+ and Mod Options Menu v1.2 / API 3.
 
 - Complete settings translations for all game text languages, with separate regional Spanish, Portuguese and Chinese packs.
+- Enemy names follow the game's localized terms. English attack names follow the Helldivers Wiki; Crusher uses Heavy Cudgel and Dragonroach uses Alchemical Pyrosis. Chinese Crusher controls use 锤击.
 - One settings page with 20 attack switches grouped by faction, position and size controls, volume, sound and animation previews, separate Harvester delays and restore defaults.
 - Harvester delays: 0-0.5 seconds in 0.01-second steps, with a 0.30-second default for each attack.
 - Preserves the established attack recognition, approved animation and sound, saved settings and addon identity from 0.8.2.

@@ -178,7 +178,7 @@ def build():
     archive='9ba626afa44a3aa3.patch_0'
     description=('Sekiro danger alert: targeted enemy attack warnings with Sekiro-style animation and sound. '
                  '20 attack switches grouped by faction and appearance, volume, preview and reset controls on one settings page. '
-                 'Dragonroach diving breath and Barrager direct fire only. '
+                 'Alchemical Pyrosis during diving runs and Heavy MLRS (HE) in direct-fire mode only. '
                  'Requires Bingus Shared Loader v18+ and Mod Options Menu v1.2. '
                  'Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
     suffix=' Diagnostics'if OPTIONS.diagnostics else''

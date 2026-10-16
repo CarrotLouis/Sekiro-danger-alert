@@ -17,6 +17,8 @@ The ZIP is written to ignored `outputs/`; intermediate source and records go to 
 
 The actual Mod Options Menu v1.2 / API 3 contract is checked with all 29 controls on one category, all 15 native language codes, saved values, previews and defaults. Translation packs live in `locales/`. The builder requires the same complete key set for all 14 packs and enforces the menu's text limits.
 
+`config/menu_terms.json` records selected game enemy names, their text IDs and the canonical Wiki attack names. The builder checks every locale's enemy-name prefixes and the full English attack labels against it. Other attack titles are mod translations; their naming policy and correspondence table are in [ATTACK-NAMES.md](docs/ATTACK-NAMES.md).
+
 `src/profile.lua` and `src/catalog.lua` are generated. Edit `scripts/build.py` or the relevant `config/` inputs instead of those generated files. Keep the explicit attack exclusions, resource identities, build gates and bounded read budgets. `src/entry.lua` is the production entry; optional developer modules are never attached there.
 
 The GUID, `mods/peril_warning/crusher_probe` entry, `SekiroDangerAlert` global and `peril_warning.crusher.` saved identifiers must remain stable. The user-facing name is Sekiro danger alert.

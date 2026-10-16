@@ -1,5 +1,6 @@
 """Release text completeness, Lua comment lexer and end-user artifact boundary."""
 from pathlib import Path
+import json
 import re
 import sys
 import zipfile
@@ -10,6 +11,17 @@ from release_source import load_locales,without_comments
 
 locales=load_locales(ROOT)
 assert len(locales)==14 and len(locales['en'])==48
+terms=json.loads((ROOT/'config/menu_terms.json').read_text(encoding='utf-8'))
+assert len(terms['moves'])==20 and len(terms['enemies'])==17
+for move,item in terms['moves'].items():
+    assert locales['en']['move.'+move]==item['enemy']+' · '+item['english_attack']
+assert locales['en']['move.dragon_alchemical_pyrosis']=='Dragonroach · Alchemical Pyrosis'
+assert locales['en']['move.crusher_melee']=='Crusher · Heavy Cudgel'
+assert locales['zh-Hans']['move.crusher_melee']=='粉碎者 · 锤击'
+assert locales['fr']['move.harvester_tesla_ripper'].startswith('Moissonneur · ')
+assert locales['de']['move.harvester_tesla_ripper'].startswith('Ausbeuter · ')
+assert locales['pt']['move.harvester_tesla_ripper'].startswith('Colhedor · ')
+assert locales['pt-BR']['move.harvester_tesla_ripper'].startswith('Ceifadora · ')
 sample='''-- remove this line
 local--[[ comment ]]value="-- keep this string"
 local text=[==[ -- keep long string ]==]
@@ -43,4 +55,4 @@ with zipfile.ZipFile(ROOT/'outputs/Sekiro danger alert 1.0.0.zip')as archive:
         assert archive.read(name)==(ROOT/name).read_bytes(),name
     for source,target in [('Bingus-LICENSE.txt','LICENSES/Bingus-0BSD.txt'),('HD2Runtime-LICENSE.txt','LICENSES/HD2Runtime-MIT.txt')]:
         assert archive.read(target)==(ROOT/'vendor'/source).read_bytes()
-print('PASS complete localized text, quoted/long Lua strings, clean public guides, runtime file disclosure and exact licenses')
+print('PASS canonical attack names and game enemy terminology, complete localized text, quoted/long Lua strings, clean guides, runtime file disclosure and exact licenses')

@@ -69,4 +69,20 @@ def load_locales(root):
                 raise ValueError(f'{language}/{key}: development or bilingual text')
             if language not in ('zh-Hans', 'zh-Hant', 'ja') and re.search('[\u3400-\u9fff]', text):
                 raise ValueError(f'{language}/{key}: unexpected CJK text')
+    terms = json.loads((Path(root) / 'config/menu_terms.json').read_text(encoding='utf-8'))
+    if {'move.' + key for key in terms['moves']} != {key for key in reference if key.startswith('move.')}:
+        raise ValueError('menu terminology coverage differs from attack controls')
+    for move, item in terms['moves'].items():
+        enemy = terms['enemies'][item['enemy']]['names']
+        if set(enemy) != LANGUAGES:
+            raise ValueError(f'{move}: enemy-name language coverage differs')
+        for language, texts in result.items():
+            if not texts['move.' + move].startswith(enemy[language] + ' · '):
+                raise ValueError(f'{language}/{move}: enemy name differs from reviewed terminology')
+        if result['en']['move.' + move] != enemy['en'] + ' · ' + item['english_attack']:
+            raise ValueError(f'en/{move}: canonical attack name changed')
+    for language, texts in result.items():
+        harvester = terms['enemies']['Harvester']['names'][language] + ' · '
+        if any(not texts[key].startswith(harvester) for key in ('tesla_delay', 'beam_delay')):
+            raise ValueError(f'{language}: delay control enemy name differs')
     return result

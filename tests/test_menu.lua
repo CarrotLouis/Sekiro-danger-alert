@@ -53,7 +53,7 @@ for _,option in ipairs(category.order)do if option.kind=='toggle'then
 end end
 assert(expected[#expected-2]=='crusher_melee'and expected[#expected-1]=='harvester_tesla_ripper'
     and expected[#expected]=='harvester_disintegration_beamer')
-assert(state.options[p..'move.crusher_melee'].label=='Crusher · Dangerous melee')
+assert(state.options[p..'move.crusher_melee'].label=='Crusher · Heavy Cudgel')
 for id in pairs(profile.attack_states)do assert(not state.options[p..'move.crusher_'..id])end
 assert(menu.set(p..'move.crusher_melee',false))
 local detector=dofile(root..'/src/detector.lua').new({},profile,function()end,function()error('disabled Crusher triggered')end,
