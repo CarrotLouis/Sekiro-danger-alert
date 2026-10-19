@@ -2,7 +2,7 @@
 local M={}
 function M.new(native,log,status,complete)
     complete=complete or function()end
-    local self={pending=nil,epoch=nil,count=0,blocked=false,next_request=0}
+    local self={pending=nil,epoch=nil,count=0,spawned={},blocked=false,next_request=0}
     local function cancel(why)
         if self.pending then log('cancelled '..self.pending.enemy.id..': '..why)end
         local pending=self.pending
@@ -15,12 +15,15 @@ function M.new(native,log,status,complete)
         native:begin()
         local scene,why=native:scene(requester)
         if not scene then status(tostring(why));return false end
-        if scene.key~=self.epoch then self.epoch=scene.key;self.count=0;self.blocked=false end
+        if scene.key~=self.epoch then self.epoch=scene.key;self.count=0;self.spawned={};self.blocked=false end
         if self.blocked or self.count>=32 then
             status('本次任务生成已停止 / Spawning stopped for this mission');return false
         end
         if scene.faction~=enemy.faction then
             status('请进入对应阵营任务 / Enter a mission for this enemy faction');return false
+        end
+        if enemy.limit_per_mission and(self.spawned[enemy.id]or 0)>=enemy.limit_per_mission then
+            status('该单位已达到本任务生成上限 / Unit limit reached for this mission');return false
         end
         self.pending={enemy=enemy,scene=scene,requester=requester,start=now,poll=now,phase='loading'}
         self.next_request=now+3
@@ -50,6 +53,7 @@ function M.new(native,log,status,complete)
         local result,reason=native:spawn(p.enemy,scene)
         if not result then status(tostring(reason));complete(p.requester,false,tostring(reason));return end
         self.count=self.count+1
+        self.spawned[p.enemy.id]=(self.spawned[p.enemy.id]or 0)+1
         if not result.verified then
             self.blocked=true
             status('已创建但状态校验未通过；本任务停止继续生成 / Created, verification failed; further spawns stopped')

@@ -10,7 +10,7 @@ end
 function M.parse(value)
     if type(value)~='string'or #value>512 or value:find('[^\32-\126]')then return nil end
     local t={};for word in value:gmatch('%S+')do t[#t+1]=word end
-    if t[1]~='SDAES1'then return nil end
+    if t[1]~='SDAES2'then return nil end
     if t[2]=='H'and #t>=3 and #t<=12 and (#t-3)%3==0 and hex(t[3])then
         local acks={}
         for i=4,#t,3 do
@@ -19,7 +19,7 @@ function M.parse(value)
         end
         return {kind='H',nonce=t[3],acks=acks}
     elseif t[2]=='R'and #t==8 and hex(t[3])and hex(t[4])then
-        local enemy,network=number(t[5],1,16),number(t[6],1,32766)
+        local enemy,network=number(t[5],1,32),number(t[6],1,32766)
         local x,y=number(t[7],-1000,1000),number(t[8],-1000,1000)
         if not(enemy and network and x and y)then return nil end
         local length=math.sqrt(x*x+y*y);if length<990 or length>1010 then return nil end
@@ -54,11 +54,11 @@ function M.new(native,controller,channel,catalog,log,status,nonce,clock)
         if not(type(net)=='number'and net>=1 and net<=32766)then status('本人网络 ID 尚未就绪 / Avatar network not ready');return false end
         self.pending={enemy=index,network=net,key=scene.key,unit=scene.avatar.unit,direction=direction,
             token=nonce(),start=now};self.next_request=now+5
-        status('等待房主生成工具 / Waiting for host spawner (both need 0.3.1+)')
+        status('等待房主生成工具 / Waiting for host spawner (both need 0.4.0)')
         return true
     end
     local function host_value()
-        local list={'SDAES1 H '..self.nonce};local peers={}
+        local list={'SDAES2 H '..self.nonce};local peers={}
         for id in pairs(self.acks)do peers[#peers+1]=id end;table.sort(peers)
         for _,id in ipairs(peers)do local a=self.acks[id];list[#list+1]=id..' '..a.token..' '..a.code end
         return table.concat(list,' ')
@@ -78,7 +78,7 @@ function M.new(native,controller,channel,catalog,log,status,nonce,clock)
         if not scene then
             self.host_key=nil;self.nonce=nil;self.acks={};self.seen={};self.seen_count=0
             if self.pending then client_stop('场景或潜兵已变化 / Scene or avatar changed')end
-            channel:publish('SDAES1 W',now,context);return
+            channel:publish('SDAES2 W',now,context);return
         end
         if scene.host~=context.is_host then
             if not self.role_mismatch then self.role_mismatch=true;log('remote waiting: mission authority and lobby host differ')end
@@ -142,7 +142,7 @@ function M.new(native,controller,channel,catalog,log,status,nonce,clock)
             if p.posted and p.nonce~=host.nonce then client_stop('请求已过期，请重新 APPLY / Request expired; Apply again');return end
             p.nonce=host.nonce;p.host=context.host_peer;p.lobby=context.key
             local function q(n)return math.floor(n*1000+.5)end
-            local value=table.concat({'SDAES1','R',p.nonce,p.token,p.enemy,p.network,q(p.direction.x),q(p.direction.y)},' ')
+            local value=table.concat({'SDAES2','R',p.nonce,p.token,p.enemy,p.network,q(p.direction.x),q(p.direction.y)},' ')
             local posted=channel:publish(value,now,context)
             if posted and not p.posted then p.posted=true;status('已请求房主生成 / Spawn requested from host')end
         end

@@ -20,10 +20,11 @@ function host:scene(requester)
     local s=scene(true);if requester then s.avatar=scene(false).avatar end;return s
 end
 local spawned,local_requests,client_creates=0,0,0
+local last_spawned_enemy
 function host:prepare()return true end
-function host:spawn(_,s)
+function host:spawn(e,s)
     assert(s.avatar.id==202,'a client request must target the requester, not the host')
-    spawned=spawned+1;return {verified=true,entity=333,unit=444,behavior=280,target_local=true,position={x=0,y=20,z=0}}
+    spawned=spawned+1;last_spawned_enemy=e;return {verified=true,entity=333,unit=444,behavior=280,target_local=true,position={x=0,y=20,z=0}}
 end
 local function channel(mine)
     return {snapshot=function()
@@ -65,12 +66,13 @@ net=22
 assert(client_router:request(enemy,16));client_router:step(16);epoch='mission3';host_router:step(17);client_router:step(17)
 assert(not client_router.pending)
 -- Malformed or unbounded network data never reaches the controller.
-for _,v in ipairs({'','SDAES1 R '..nonce()..' '..nonce()..' 17 22 0 1000',
-    'SDAES1 R '..nonce()..' '..nonce()..' 1 32767 0 1000',
-    'SDAES1 R '..nonce()..' '..nonce()..' 1 22 900 900',string.rep('x',513),
-    'SDAES1 H '..nonce()..' '..CLIENT..' '..nonce()..' X'})do assert(not R.parse(v))end
+for _,v in ipairs({'','SDAES2 R '..nonce()..' '..nonce()..' 33 22 0 1000',
+    'SDAES2 R '..nonce()..' '..nonce()..' 1 32767 0 1000',
+    'SDAES2 R '..nonce()..' '..nonce()..' 1 22 900 900',string.rep('x',513),
+    'SDAES2 H '..nonce()..' '..CLIENT..' '..nonce()..' X',
+    'SDAES1 R '..nonce()..' '..nonce()..' 1 22 0 1000'})do assert(not R.parse(v))end
 local h=R.parse(bus[HOST]);assert(h)
-bus[CLIENT]='SDAES1 R '..h.nonce..' '..nonce()..' 16 22 0 1000'
+bus[CLIENT]='SDAES2 R '..h.nonce..' '..nonce()..' 16 22 0 1000'
 host_router:step(18);assert(local_requests==2,'uncatalogued index is rejected')
 assert(client_creates==0,'client must never enter native authoritative creation')
 local old_nonce=R.parse(bus[HOST]).nonce
@@ -87,4 +89,14 @@ local failing=R.new(host,{request=function()local_after_error=local_after_error+
     {snapshot=function()error('unreadable channel')end},catalog,function()end,function()end,nonce)
 failing:step(0);failing:step(.5);failing:step(1);assert(failing.disabled)
 assert(failing:request(enemy,2)and local_after_error==1,'channel failure cannot disable the original host-local action')
+for i=2,22 do catalog.enemies[i]={id='added_'..i,hash=enemy.hash,label='Added '..i,faction=4,behavior=280}end
+epoch='mission_added';net=22;alive=true;present=true;bus={}
+host_router:step(100)
+local before_added=spawned
+assert(client_router:request(catalog.enemies[22],100));client_router:step(100)
+assert(R.parse(bus[CLIENT]).enemy==22,'new indices must survive encoding')
+host_router:step(101);controller:step(101);controller:step(104)
+host_router:step(105);client_router:step(106)
+assert(spawned==before_added+1 and last_spawned_enemy==catalog.enemies[22])
+assert(client_router.pending==nil and client_creates==0,'new selections also stay host-authoritative')
 print('PASS remote spawner: current host/requester binding, one-shot requests, ACK, stale/reordered data, scene/death/avatar cancellation and malformed input')

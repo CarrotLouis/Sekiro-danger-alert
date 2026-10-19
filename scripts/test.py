@@ -21,7 +21,7 @@ def main():
         subprocess.run([sys.executable, str(test)], check=True, cwd=ROOT)
     for test in sorted((ROOT / 'tests').glob('test_*.lua')):
         command = [sys.executable, str(ROOT / 'vendor/game_lua.py'), str(test), str(ROOT)]
-        if test.name in {'test_menu.lua','test_spawner_menu.lua','test_diagnostics.lua'}:
+        if test.name in {'test_menu.lua','test_spawner_menu.lua','test_diagnostics.lua','test_next_collection.lua'}:
             command.append(str(args.mom_source.resolve()))
         print(test.name, flush=True)
         subprocess.run(command, check=True, cwd=ROOT)

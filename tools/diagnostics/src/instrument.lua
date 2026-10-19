@@ -5,17 +5,25 @@ function M.new(extension,capture_module,tracking_module,marker_module,catalog,pr
     local prefix='peril_warning.diagnostics.'
     local groups={{name='虫族',id=2,key='bugs'},{name='机器人',id=8,key='bots'},
         {name='光能族',id=4,key='illuminate'}}
+    for _,move in ipairs(catalog.moves)do if move.capture_group=='bugs_new'then
+        groups[#groups+1]={name='虫族新增',id=2,key='bugs_new'};break
+    end end
+    for _,move in ipairs(catalog.moves)do if move.faction==1 then groups[3].name='光能及友军';break end end
     -- Extend the collection catalog only; production IDs and saved options stay intact.
     local moves={};for _,move in ipairs(catalog.moves)do moves[#moves+1]=move end
-    moves[#moves+1]={id='crusher_melee',label='粉碎者 · 危险近战',attack_name='Crusher dangerous melee',
+    moves[#moves+1]={id='crusher_melee',label='粉碎者 · 锤击',attack_name='Heavy Cudgel',
         faction=4,resources={profile.crusher_resource}}
-    moves[#moves+1]={id='cannon_preparation',label='普通重炮塔 · 开火准备',attack_name='Heavy cannon preparation',
+    moves[#moves+1]={id='cannon_preparation',label='加农炮台 · 炮击准备',attack_name='Heavy cannon preparation',
         faction=8,resources={profile.cannon.resource}}
     local resources={};for _,r in ipairs(catalog.resources)do resources[#resources+1]=r end
     resources[#resources+1]={hash=profile.cannon.resource,class_name='turret_heavycannon'}
     self.catalog={moves=moves,resources=resources}
     for _,group in ipairs(groups)do
-        group.moves={};for _,move in ipairs(moves)do if move.faction==group.id then group.moves[#group.moves+1]=move end end
+        group.moves={};for _,move in ipairs(moves)do
+            if move.capture_group==group.key or not move.capture_group and move.faction==group.id and group.key~='bugs_new'then
+                group.moves[#group.moves+1]=move
+            end
+        end
         assert(#group.moves>=2 and #group.moves<=16,'diagnostic choice limit')
     end
     local menu,clock,log
@@ -23,8 +31,9 @@ function M.new(extension,capture_module,tracking_module,marker_module,catalog,pr
         if self.ready then return true end
         menu=rawget(_G,'ModOptionsMenu')
         if not(menu and menu.api==1 and (menu.version or 0)>=3)then return false end
-        local specs={{'group',{type='choice',label='采集阵营 / Faction',default=3,
-            choices={'虫族 / Terminids','机器人 / Automatons','光能族 / Illuminate'},
+        local names={};for _,group in ipairs(groups)do names[#names+1]=group.name end
+        local specs={{'group',{type='choice',label='采集分组 / Group',default=3,
+            choices=names,
             description='只采集所选阵营下对应招式。客机问题必须在客机电脑上记录本人被攻击。'}}}
         for _,group in ipairs(groups)do
             local names={};for _,move in ipairs(group.moves)do names[#names+1]=move.label end
@@ -60,7 +69,7 @@ function M.new(extension,capture_module,tracking_module,marker_module,catalog,pr
                 if move then self.pending={move=move.id,context=menu.get(prefix..'context')==2 and 'comparison'or'requested'}end
             elseif value==3 then self.pending={stop=true}end
         end))
-        self.ready=true;log('diagnostic menu registered: 6 options; F8 enabled only during capture')
+        self.ready=true;log('diagnostic menu registered: '..#specs..' options; F8 enabled only during capture')
         return true
     end
     function self:attach_menu(adapter,logger)

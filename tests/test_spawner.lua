@@ -71,6 +71,18 @@ assert(refused_controller.pending==nil and refusal_status=='Impaler requires dif
     'permanent summon refusal cancels immediately and reaches the menu status')
 print('PASS controller: resources, delay, exactly once, cooldown, death, world change, timeout, failed creation stop')
 
+local rare_epoch='rare1'
+local rare_native={begin=function()end,prepare=function()return true end,
+    scene=function()return {key=rare_epoch,faction=2,avatar={id=123}}end,
+    spawn=function()return {verified=true,entity=1,unit=2,behavior=109,target_local=true,position={x=20,y=0,z=0}}end}
+local rare={id='hive_fixture',hash=enemy.hash,label='Hive fixture',faction=2,limit_per_mission=1}
+local rare_controller=controller_module.new(rare_native,function()end,function()end)
+assert(rare_controller:request(rare,0));rare_controller:step(0);rare_controller:step(3)
+assert(not rare_controller:request(rare,6),'singleton limit applies after a successful creation')
+rare_epoch='rare2'
+assert(rare_controller:request(rare,7),'a new mission resets the per-enemy limit')
+rare_controller:stop('fixture complete')
+
 -- A synthetic memory image exercises the production gate; the test never opens a game process.
 local game,exe,world,mode,players,ai,instance=0x100000,0x200000,0x10000000,0x20000000,0x21000000,0x22000000,0x23000000
 local blocks={}
@@ -165,6 +177,20 @@ local impaler={id='impaler',hash=enemy.hash,label='Impaler',faction=2,behavior=1
     min_difficulty=5,summons={{entity=child_hash,group='aff5b26b',row=29}}}
 profile.summon_gate={difficulty=0x10,roster=0x20,descriptor=0x4000,rows=0x5000,count=45,
     stride=128,weights=48,tags=88,tag_bytes=32}
+local boss={};for k,v in pairs(enemy)do boss[k]=v end
+boss.id='hive_fixture';boss.min_difficulty=7;boss.single_instance=true
+local gate_calls=native_calls.requests+native_calls.spawns
+put(ai+0x10,bytes(6,4));n:begin()
+local allowed,reason=n:prepare(boss,s)
+assert(allowed==nil and reason:find('difficulty 7',1,true))
+put(ai+0x10,bytes(7,4));n:begin();assert(n:prepare(boss,s)==true)
+local original_handles=mem.read(world+profile.entity_handles,profile.entity_slots*24)
+put(world+profile.entity_handles,unhex(enemy.hash)..bytes(777,4)..bytes(1000,4)..bytes(91,4)..bytes(1,4)..original_handles:sub(25))
+n:begin();allowed,reason=n:prepare(boss,s)
+assert(allowed==nil and reason:find('already exists',1,true))
+assert(native_calls.requests+native_calls.spawns==gate_calls,'difficulty and existing-instance refusals make no native requests')
+put(world+profile.entity_handles,original_handles)
+print('PASS Hive Lord gates: difficulty 7-10, existing-instance rejection before native calls, per-mission limit and scene reset')
 pointer(ai+0x20,game+0x4000);put(game+0x4000,bytes(game+0x5000,8)..bytes(45,4))
 local row=ffi.new('uint8_t[128]')
 ffi.cast('uint32_t *',row)[0]=tonumber('aff5b26b',16);ffi.copy(row+8,unhex(child_hash),8)

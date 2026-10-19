@@ -428,6 +428,159 @@
           "unit": "c6a5bb8b319217ac"
         }
       ]
+    },
+    {
+      "id": "nursing_spewer",
+      "label": "抚育喷涌虫 / Nursing Spewer",
+      "path": "content/fac_bugs/cha_boomer_nurser/cha_boomer_nurser",
+      "hash": "cc7022fdd172089b",
+      "behavior": 116,
+      "faction": 2,
+      "packages": [
+        "214f30944d4c4cd7"
+      ],
+      "package_record": "cfb4bb1b00000000d74c4c4d94304f21000000000000000005154986b338d616",
+      "required_units": [
+        {
+          "entity": "cc7022fdd172089b",
+          "unit": "cc7022fdd172089b",
+          "mount_record": "2413884c4cfe9d5222e410fa00000000a336740301000000da622a47bd77797689e3c4b0000000001206109801000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000"
+        },
+        {
+          "entity": "529dfe4c4c881324",
+          "unit": "d30eba409246af45"
+        },
+        {
+          "entity": "767977bd472a62da",
+          "unit": "d697c8a5c45e1a0e"
+        }
+      ],
+      "live_verified": false
+    },
+    {
+      "id": "bile_spewer",
+      "label": "胆汁喷涌虫 / Bile Spewer",
+      "path": "content/fac_bugs/cha_boomer/cha_boomer",
+      "hash": "36aa99cce5e60146",
+      "behavior": 101,
+      "faction": 2,
+      "packages": [
+        "855b36a0321f7106"
+      ],
+      "package_record": "cfb4bb1b0000000006711f32a0365b85000000000000000005154986b338d616",
+      "required_units": [
+        {
+          "entity": "36aa99cce5e60146",
+          "unit": "36aa99cce5e60146",
+          "mount_record": "765e870280bc916f22e410fa00000000a336740301000000da622a47bd77797689e3c4b0000000001206109801000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000"
+        },
+        {
+          "entity": "6f91bc8002875e76",
+          "unit": "d30eba409246af45"
+        },
+        {
+          "entity": "767977bd472a62da",
+          "unit": "d697c8a5c45e1a0e"
+        }
+      ],
+      "live_verified": false
+    },
+    {
+      "id": "rupture_spewer",
+      "label": "爆裂喷涌虫 / Rupture Spewer",
+      "path": "content/fac_bugs/cha_boomer_burrower/cha_boomer_burrower",
+      "hash": "a381a11c07d3eb94",
+      "behavior": 102,
+      "faction": 2,
+      "packages": [
+        "b1d0ba514070aae0"
+      ],
+      "package_record": "cfb4bb1b00000000e0aa704051bad0b1000000000000000005154986b338d616",
+      "required_units": [
+        {
+          "entity": "a381a11c07d3eb94",
+          "unit": "a381a11c07d3eb94",
+          "mount_record": "765e870280bc916f22e410fa00000000a336740301000000da622a47bd77797689e3c4b0000000001206109801000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000"
+        },
+        {
+          "entity": "6f91bc8002875e76",
+          "unit": "d30eba409246af45"
+        },
+        {
+          "entity": "767977bd472a62da",
+          "unit": "d697c8a5c45e1a0e"
+        }
+      ],
+      "live_verified": false
+    },
+    {
+      "id": "hive_lord",
+      "label": "霸王虫 / Hive Lord",
+      "path": "content/fac_bugs/cha_hive_lord/cha_hive_lord",
+      "hash": "d465d9c7f77a07cb",
+      "behavior": 109,
+      "faction": 2,
+      "packages": [
+        "0f9c1ccc845ab6f6"
+      ],
+      "package_record": "cfb4bb1b00000000f6b65a84cc1c9c0f0000000000000000ae6999b0361e91e9",
+      "required_units": [
+        {
+          "entity": "d465d9c7f77a07cb",
+          "unit": "d465d9c7f77a07cb",
+          "mount_record": "4c34791197a0539ec970558c00000000163d283601000000497346a7f1777f3cc970558c0000000015972db201000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001000000"
+        },
+        {
+          "entity": "9e53a0971179344c",
+          "unit": "d697c8a5c45e1a0e"
+        },
+        {
+          "entity": "3c7f77f1a7467349",
+          "unit": "d697c8a5c45e1a0e"
+        }
+      ],
+      "live_verified": false,
+      "min_difficulty": 7,
+      "single_instance": true,
+      "limit_per_mission": 1
+    },
+    {
+      "id": "brood_commander",
+      "label": "虫族指挥官 / Brood Commander",
+      "path": "content/fac_bugs/cha_warrior_big/cha_warrior_big",
+      "hash": "d522fd4748d443a5",
+      "behavior": 138,
+      "faction": 2,
+      "packages": [
+        "647308cc007f32ae"
+      ],
+      "package_record": "cfb4bb1b00000000ae327f00cc08736400000000000000007bf2a78e8f67608e",
+      "required_units": [
+        {
+          "entity": "d522fd4748d443a5",
+          "unit": "d522fd4748d443a5"
+        }
+      ],
+      "live_verified": false
+    },
+    {
+      "id": "alpha_commander",
+      "label": "阿尔法指挥官 / Alpha Commander",
+      "path": "content/fac_bugs/cha_warrior_big/cha_warrior_big_tier2",
+      "hash": "f79cd8bb654397df",
+      "behavior": 139,
+      "faction": 2,
+      "packages": [
+        "cb1a080e107f3132"
+      ],
+      "package_record": "cfb4bb1b0000000032317f100e081acb00000000000000007bf2a78e8f67608e",
+      "required_units": [
+        {
+          "entity": "f79cd8bb654397df",
+          "unit": "f79cd8bb654397df"
+        }
+      ],
+      "live_verified": false
     }
   ]
 }

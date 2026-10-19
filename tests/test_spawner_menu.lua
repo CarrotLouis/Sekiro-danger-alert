@@ -14,11 +14,12 @@ end
 local state=upvalue(menu.register_option,'state')
 -- Only the curated labels matter for this host contract; native facts are checked separately.
 local catalog={enemies={}}
-for i=1,16 do catalog.enemies[i]={id='enemy_'..i,label='Enemy '..i}end
+for i=1,22 do catalog.enemies[i]={id='enemy_'..i,label='Enemy '..i}end
 local adapter=dofile(root..'/tools/enemy_spawner/src/menu.lua').new(catalog,function()end)
 assert(adapter:register()and adapter.ready)
 local p='peril_warning.enemy_spawner.'
 assert(#state.options[p..'enemy'].choices==16)
+assert(#state.options[p..'extra'].choices==6)
 assert(menu.get(p..'spawn')==1 and adapter:consume()==nil)
 assert(menu.set(p..'enemy',16))
 assert(adapter:consume()==nil,'enemy selection must not spawn')
@@ -32,11 +33,16 @@ assert(menu.set(p..'enemy',2))
 for _,callback in ipairs(state.callbacks[p..'spawn'])do callback(2)end
 assert(menu.set(p..'enemy',9))
 assert(adapter:consume().id=='enemy_2')
+assert(menu.set(p..'list',2));assert(menu.set(p..'extra',6))
+assert(adapter:consume()==nil,'changing the second list must not spawn')
+for _,callback in ipairs(state.callbacks[p..'spawn'])do callback(2)end
+assert(adapter:consume().id=='enemy_22','the added list maps back to the stable full catalog')
+assert(menu.set(p..'list',1))
 local n=0
 for _,mod in ipairs(state.mods)do
     if mod.id=='peril_warning.enemy_spawner'then
-        assert(mod.source=='Sekiro danger alert - Enemy Spawner'and #mod.order==2);n=n+1
+        assert(mod.source=='Sekiro danger alert - Enemy Spawner'and #mod.order==4);n=n+1
     end
 end
 assert(n==1)
-print('PASS real ModOptionsMenu: 16 selections, 2 rows, Apply-only one-shot action, saved-action suppression')
+print('PASS real ModOptionsMenu: 22 selections across two bounded lists, original indices stable, Apply-only action and saved-action suppression')

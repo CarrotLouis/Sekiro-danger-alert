@@ -1,6 +1,6 @@
 """Build the Bingus addon and its private compiled image families, without touching the game."""
 from pathlib import Path
-import argparse,hashlib,json,os,struct,subprocess,sys,wave,zipfile
+import argparse,hashlib,json,os,re,struct,subprocess,sys,wave,zipfile
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'vendor'))
 from hd2_archive import resource_hash,lua_resource,make_resource_archive,read_archive,LUA_TYPE
@@ -13,8 +13,17 @@ EFFECT=json.loads((ROOT/'assets/effect.json').read_text())
 ARGS=argparse.ArgumentParser()
 ARGS.add_argument('--output-dir',type=Path,default=ROOT/'outputs')
 ARGS.add_argument('--diagnostics',action='store_true',help='Alternative package with bounded collection; same GUID, replace the normal package')
+ARGS.add_argument('--next-attacks',action='store_true',help='Development-only collection catalog for the next attack expansion')
 OPTIONS=ARGS.parse_args()
-if OPTIONS.diagnostics and int(CONFIG['version'].split('.')[0])>=1:
+NEXT=None
+if OPTIONS.next_attacks:
+    if not OPTIONS.diagnostics:ARGS.error('--next-attacks requires --diagnostics; it never changes the ordinary release')
+    NEXT=json.loads((ROOT/'config/expansion_v2.json').read_text(encoding='utf-8'))
+    if not re.fullmatch(r'\d+\.\d+\.\d+-dev\.\d+',NEXT.get('version','')):
+        ARGS.error('The next-attack catalog must name an explicit development version')
+    if NEXT.get('steam_build')!='25480438':ARGS.error('The next-attack catalog is not for the reviewed game build')
+    CONFIG={**CONFIG,'version':NEXT['version']}
+if OPTIONS.diagnostics and int(CONFIG['version'].split('.')[0])>=1 and not OPTIONS.next_attacks:
     ARGS.error('The development variant is unavailable for release versions')
 OUT=OPTIONS.output_dir.resolve();OUT.mkdir(parents=True,exist_ok=True)
 OWNER=CONFIG['resource']
@@ -151,6 +160,12 @@ def build():
                       ('detector_module','src/detector.lua')]:
         chunks.append('local '+name+'='+module(ROOT/path)+'\n')
     if OPTIONS.diagnostics:
+        if NEXT:
+            existing={r['hash']for r in catalog['resources']}
+            catalog['resources']+= [r for r in NEXT['resources']if r['hash']not in existing]
+            catalog['moves']+=NEXT['capture_moves']
+            folder=BUILD/'diagnostics';folder.mkdir(exist_ok=True)
+            (folder/'catalog.lua').write_text('return '+lua(catalog)+'\n',encoding='utf-8')
         chunks.append('local diagnostic_catalog='+lua(catalog)+'\n')
         for name,path in [('research_native','tools/diagnostics/src/native.lua'),
                           ('capture_module','tools/diagnostics/src/capture.lua'),
@@ -183,6 +198,7 @@ def build():
                  'Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
     suffix=' Diagnostics'if OPTIONS.diagnostics else''
     if OPTIONS.diagnostics:description+=' Includes optional F8 collection on a separate diagnostic page; replaces the normal package.'
+    if NEXT:description+=' Next-attack collection catalog only; new warning rules are not enabled without live mapping.'
     manifest={'Version':1,'Guid':CONFIG['guid'],'Name':'Sekiro danger alert '+CONFIG['version']+suffix,'Description':description,
               'Options':[{'Name':'Sekiro danger alert','Description':description,'Include':['Addon']}]}
     files={'manifest.json':json.dumps(manifest,indent=2).encode(),
@@ -192,6 +208,11 @@ def build():
     for source,target in [('Bingus-LICENSE.txt','LICENSES/Bingus-0BSD.txt'),('HD2Runtime-LICENSE.txt','LICENSES/HD2Runtime-MIT.txt')]:
         files[target]=(ROOT/'vendor'/source).read_bytes()
     if OPTIONS.diagnostics:files['README-采集说明.txt']=(ROOT/'tools/diagnostics/README-采集说明.txt').read_bytes()
+    if NEXT:
+        guide=(ROOT/'tools/diagnostics/README-新增招式采集.txt').read_bytes()
+        files['README-使用说明.txt']=guide
+        files['README-采集说明.txt']=guide
+        files['README.txt']=(ROOT/'tools/diagnostics/README-next-attacks.txt').read_bytes()
     target=OUT/('Sekiro danger alert '+CONFIG['version']+suffix+'.zip')
     with zipfile.ZipFile(target,'w',zipfile.ZIP_DEFLATED) as z:
         for name,data in sorted(files.items()):

@@ -1,5 +1,12 @@
 # Development-only collection sources
 
+For the 2026-10-19 expansion, use `python scripts/build.py --diagnostics --next-attacks`.
+This explicitly creates `1.1.0-dev.1 Diagnostics` with 13 new collection scopes;
+the root project version and ordinary ZIP remain 1.0.0. New scopes are marked
+`pending_capture`, not enabled as warning rules. See [新增招式采集说明](README-新增招式采集.txt)
+and [the source evidence / pending integration record](../../docs/EXPANSION-1.1-PREPARATION.md).
+The unchanged `--diagnostics` command still refuses stable release versions.
+
 These modules are retained for offline regression and optional collection. The ordinary 0.8.2 ZIP does **not** contain them. `python scripts/build.py --diagnostics` produces an alternative ZIP with the **same addon GUID and entry**, a separate six-row capture page and F8 only while recording. Enable either variant, never both. See [采集说明](README-采集说明.txt).
 
 - `src/capture.lua`: bounded JSONL capture and delayed F8 annotation logic from the research builds.

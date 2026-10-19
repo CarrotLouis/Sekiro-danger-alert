@@ -271,6 +271,27 @@ function M.new(memory,profile,catalog,core,log,calls)
     end
     function self:prepare(enemy,scene)
         self:prove();identities(enemy,scene)
+        if enemy.min_difficulty and not enemy.summons then
+            local G=assert(profile.summon_gate,'missing reviewed difficulty layout')
+            local difficulty=u32(read(ptr(game+profile.ai_global)+G.difficulty,4),0)
+            if difficulty<enemy.min_difficulty or difficulty>10 then
+                return nil,('该单位需 %d–10 难度，当前 %d / Required difficulty %d–10; current %d'):format(
+                    enemy.min_difficulty,difficulty,enemy.min_difficulty,difficulty)
+            end
+        end
+        if enemy.single_instance then
+            local invalid=u32(read(game+profile.invalid_entity,4),0)
+            local world=ptr(game+profile.world_global)
+            local rows=read(world+profile.entity_handles,profile.entity_slots*24)
+            local wanted=unhex(enemy.hash)
+            for index=0,profile.entity_slots-1 do
+                local at=index*24
+                if rows:sub(at+1,at+8)==wanted and u32(rows,at+8)~=invalid and bit.band(u32(rows,at+20),2)==0 then
+                    return nil,'任务内已存在该单位 / An instance already exists in this mission'
+                end
+            end
+            assert(ptr(game+profile.world_global)==world,'singleton world changed')
+        end
         local allowed,why=summons_ready(enemy)
         if not allowed then return nil,why end
         local wanted={}

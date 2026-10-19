@@ -8,9 +8,9 @@ MOD=ROOT/'tools/enemy_spawner'
 class SpawnerCatalog(unittest.TestCase):
     def test_identities_and_packages(self):
         c=json.loads((MOD/'config/enemies.json').read_text(encoding='utf-8'))
-        self.assertEqual(len(c['enemies']),16)
-        self.assertEqual(len({e['id']for e in c['enemies']}),16)
-        self.assertEqual(len({e['hash']for e in c['enemies']}),16)
+        self.assertEqual(len(c['enemies']),22)
+        self.assertEqual(len({e['id']for e in c['enemies']}),22)
+        self.assertEqual(len({e['hash']for e in c['enemies']}),22)
         for e in c['enemies']:
             self.assertEqual(f'{resource_hash(e["path"]):016x}',e['hash'])
             raw=bytes.fromhex(e['package_record']);self.assertEqual(len(raw),32)
@@ -18,10 +18,12 @@ class SpawnerCatalog(unittest.TestCase):
             self.assertGreater(len(e['required_units']),0)
             self.assertLessEqual(len(e['required_units']),32)
             self.assertEqual(e['required_units'][0]['entity'],e['hash'])
-        self.assertEqual(sum(e['faction']==2 for e in c['enemies']),8)
+        self.assertEqual(sum(e['faction']==2 for e in c['enemies']),14)
         self.assertEqual(sum(e['faction']==8 for e in c['enemies']),6)
         self.assertEqual(sum(e['faction']==4 for e in c['enemies']),2)
-        self.assertEqual([e['id']for e in c['enemies'][-2:]],['crusher','tripod'])
+        self.assertEqual([e['id']for e in c['enemies'][14:16]],['crusher','tripod'])
+        self.assertEqual([e['id']for e in c['enemies'][16:]],
+            ['nursing_spewer','bile_spewer','rupture_spewer','hive_lord','brood_commander','alpha_commander'])
         rows={e['id']:e for e in c['enemies']}
         self.assertEqual(rows['crusher']['hash'],'905809a4c28d8a45')
         self.assertEqual(rows['tripod']['hash'],'965eae5a51acdd4a')
@@ -33,6 +35,9 @@ class SpawnerCatalog(unittest.TestCase):
         self.assertEqual(rows['lieutenant_assault_jumppack']['behavior'],57)
         self.assertIn('b940c889d77f8219',{d['entity']for d in rows['lieutenant_assault_jumppack']['required_units']})
         self.assertEqual(rows['impaler']['min_difficulty'],5)
+        self.assertEqual(rows['hive_lord']['min_difficulty'],7)
+        self.assertTrue(rows['hive_lord']['single_instance'])
+        self.assertEqual(rows['hive_lord']['limit_per_mission'],1)
         self.assertEqual(rows['impaler']['summons'],[{'entity':'672f7da17f3ba34a','group':'aff5b26b','row':29}])
         self.assertIn({'entity':'672f7da17f3ba34a','unit':'672f7da17f3ba34a'},rows['impaler']['required_units'])
         self.assertIn('50c4a70c3174bc79',rows['impaler']['packages'])
