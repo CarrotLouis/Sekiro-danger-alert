@@ -30,8 +30,13 @@ for move in request['capture_moves']:
     assert move['status']=='pending_capture'
 assert len(controls['charger_charge']['resources'])==5
 assert len(controls['commander_charge']['resources'])==2
-assert request['charge_rule']['default']==5 and request['charge_rule']['maximum']==10
+assert request['charge_rule']['default']==5 and request['charge_rule']['maximum']==15
+assert request['charge_rule']['minimum']==0 and request['charge_rule']['step']==1
+assert request['charge_rule']['distance_options']==[
+    {'id':'charger_charge_range','control':'charger_charge','default':5},
+    {'id':'commander_charge_range','control':'commander_charge','default':5}]
 assert request['menu_plan']['attack_controls']==26
+assert request['menu_plan']['attack_rows_with_range_and_reset']==29
 assert max(request['menu_plan']['attack_rows_with_range_and_reset'],request['menu_plan']['appearance_rows'])<=32
 original=json.loads((ROOT/'project.json').read_text())
 catalog=json.loads((ROOT/'config/attack_catalog.json').read_text(encoding='utf-8'))

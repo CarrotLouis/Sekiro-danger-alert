@@ -696,7 +696,7 @@
   ],
   "charge_rule": {
     "minimum": 0,
-    "maximum": 10,
+    "maximum": 15,
     "step": 1,
     "default": 5,
     "unit": "m",
@@ -705,11 +705,15 @@
     "reentry_same_charge": "no_repeat",
     "threshold_zero": "disable_range_warning",
     "legacy_attack_windows": "unchanged",
-    "timing_and_charge_ids": "require_live_mapping"
+    "timing_and_charge_ids": "require_live_mapping",
+    "distance_options": [
+      {"id": "charger_charge_range", "control": "charger_charge", "default": 5},
+      {"id": "commander_charge_range", "control": "commander_charge", "default": 5}
+    ]
   },
   "menu_plan": {
     "attack_controls": 26,
-    "attack_rows_with_range_and_reset": 28,
+    "attack_rows_with_range_and_reset": 29,
     "appearance_rows": 8,
     "maximum_rows_per_category": 32,
     "categories": [

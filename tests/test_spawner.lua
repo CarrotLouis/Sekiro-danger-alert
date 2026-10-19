@@ -292,3 +292,51 @@ put(0x20001000,string.rep('\0',8)..bytes(99,4)..string.rep('\0',12))
 remote_native:begin();assert(remote_native:peer_scene().host==false,'clients may inspect/queue requests')
 remote_native:begin();assert(not remote_native:spawn(enemy,remote_scene)and remote_spawns==1,'clients never directly create')
 print('PASS production remote creation: current peer/network/lifecycle/health binding, host-chosen requester position/target and peer create rejection')
+
+-- World-package defenses have no EnemyPackage. A second, explicitly curated
+-- path must prove all three static weapon definitions and remain solo-only.
+put(0x20001000,string.rep('\0',8)..bytes(99,4)..string.rep('\0',8)..bytes(1,4))
+put(players+132,bytes(1,4))
+local building={};for k,v in pairs(enemy)do building[k]=v end
+building.id='gazer_fixture';building.package_record=nil;building.package_source='world_package'
+building.single_player_only=true;building.component_guards={}
+local ep_table=mem.pointer(mem.read(world+profile.component_slot_base,8))
+local saved_ep=mem.read(ep_table,16+#raw_package)
+put(ep_table,string.rep('\0',16)..raw_package)
+for i,name in ipairs({'TurretComponentData','SensorEyeComponentData','BeamWeaponComponentData'})do
+    local raw='BUILDING '..name
+    table_record(name,i+2,raw)
+    building.component_guards[i]={table=name,hex=raw:gsub('.',function(ch)return string.format('%02x',ch:byte())end)}
+end
+local building_native=module.new(mem,profile,catalog,core,function()end,invoke)
+building_native:begin();local solo=assert(building_native:scene())
+assert(building_native:prepare(building,solo)==true,'curated world package is accepted without an enemy package')
+local before_building_calls=native_calls.requests+native_calls.spawns
+for count=2,4 do
+    put(players+132,bytes(count,4));building_native:begin()
+    local scene=assert(building_native:scene());local allowed,reason=building_native:prepare(building,scene)
+    assert(not allowed and reason:find('solo mission',1,true))
+    building_native:begin();assert(not building_native:spawn(building,solo))
+end
+put(players+132,bytes(1,4))
+building_native:begin()
+assert(not building_native:prepare(building,{host=true,player_count=1,requester={}}),'requester cannot bypass solo gate')
+for _,guard in ipairs(building.component_guards)do
+    local good=guard.hex;guard.hex=string.rep('00',#good/2)
+    building_native:begin();local ok,why=pcall(building_native.prepare,building_native,building,solo)
+    assert(not ok and tostring(why):find('building definition changed',1,true),'each changed definition must refuse')
+    guard.hex=good
+end
+local original_core_scene=core.scene;local solo_reads=0
+function core:scene()
+    solo_reads=solo_reads+1
+    if solo_reads==2 then put(players+132,bytes(2,4))end
+    return original_core_scene(self)
+end
+building_native:begin()
+assert(not building_native:spawn(building,solo),'a player joining after preparation cancels before creation')
+core.scene=original_core_scene;put(players+132,bytes(1,4))
+put(ep_table,saved_ep);building_native:begin()
+assert(not pcall(building_native.prepare,building_native,building,solo),'unexpected EnemyPackage is refused')
+assert(native_calls.requests+native_calls.spawns==before_building_calls,'building refusal never reaches native calls')
+print('PASS Gazer core gates: curated world package, three exact definitions, solo-only recheck and zero native calls on refusal')

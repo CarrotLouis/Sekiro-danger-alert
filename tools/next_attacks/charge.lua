@@ -17,7 +17,7 @@ function M.new(trigger)
         if type(s)~='table'or type(s.key)~='string'or #s.key==0 or #s.key>160 or not finite(s.time)then return 'invalid_input'end
         if not s.charging or s.alive==false then self:finish(s.key);return 'not_charging'end
         if not cycle_id(s.cycle)or not finite(s.distance)or s.distance<0 or not finite(s.range)
-            or s.range<0 or s.range>10 or s.range%1~=0 then return 'invalid_input'end
+            or s.range<0 or s.range>15 or s.range%1~=0 then return 'invalid_input'end
         local inside=s.range>0 and s.distance<=s.range
         local old=self.states[s.key]
         if not old or old.cycle~=s.cycle then

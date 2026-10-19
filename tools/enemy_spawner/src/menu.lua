@@ -14,7 +14,7 @@ function M.new(catalog,log)
         end
         local specs={
             {'enemy',{type='choice',label='选择敌人 / Enemy',default=1,choices=choices,
-                description='原有 16 项的顺序保持不变。新增单位在“新增敌人”中选择，并将“使用列表”切为新增。联机双方均需 0.4.0；穿刺虫需 5–10 难度，霸王虫需 7–10 难度。'}},
+                description='原有 16 项的顺序保持不变。新增单位在“新增敌人”中选择，并将“使用列表”切为新增。联机双方均需 0.4.1；穿刺虫需 5–10 难度，霸王虫需 7–10 难度。'}},
             {'spawn',{type='choice',label='生成一只 / Spawn one',default=1,
                 choices={'待命 / Ready','生成一只 / Spawn one'},
                 description=function()
@@ -27,7 +27,7 @@ function M.new(catalog,log)
                 choices={'原有单位 / Original','新增单位 / Added'},
                 description='决定生成时读取哪份敌人列表。切换列表或敌人本身不会生成。'}})
             table.insert(specs,3,{'extra',{type='choice',label='新增敌人 / Added enemy',default=1,choices=extra,
-                description='三类喷涌虫、霸王虫，以及用于冲锋观测的两类指挥官。激光炮台、激光塔、电塔属于建筑，不在此列表。'}})
+                description='三类喷涌虫、霸王虫、两类指挥官，以及 Gazer 小炮台和激光塔核心。两种炮台核心仅支持单人光能任务，尚需验证；生成其武器实体，不生成任务场地或塔基。'}})
         end
         for _,row in ipairs(specs)do
             row[2].mod='Sekiro danger alert - Enemy Spawner'

@@ -1,6 +1,6 @@
 """Check curated spawn facts and ABI pins without the game or original tables."""
 from pathlib import Path
-import json,struct,sys,unittest,uuid
+import json,re,struct,sys,unittest,uuid
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'vendor'))
 from hd2_archive import resource_hash
@@ -8,23 +8,43 @@ MOD=ROOT/'tools/enemy_spawner'
 class SpawnerCatalog(unittest.TestCase):
     def test_identities_and_packages(self):
         c=json.loads((MOD/'config/enemies.json').read_text(encoding='utf-8'))
-        self.assertEqual(len(c['enemies']),22)
-        self.assertEqual(len({e['id']for e in c['enemies']}),22)
-        self.assertEqual(len({e['hash']for e in c['enemies']}),22)
+        self.assertEqual(len(c['enemies']),24)
+        self.assertEqual(len({e['id']for e in c['enemies']}),24)
+        self.assertEqual(len({e['hash']for e in c['enemies']}),24)
         for e in c['enemies']:
             self.assertEqual(f'{resource_hash(e["path"]):016x}',e['hash'])
-            raw=bytes.fromhex(e['package_record']);self.assertEqual(len(raw),32)
-            self.assertEqual(e['packages'],[f'{struct.unpack_from("<Q",raw,o)[0]:016x}'for o in (8,16)if struct.unpack_from('<Q',raw,o)[0]])
+            if e.get('package_source')=='world_package':
+                self.assertIn(e['id'],{'gazer','gazer_spire'})
+                self.assertTrue(e['single_player_only'])
+                self.assertFalse(e['live_verified'])
+                self.assertNotIn('package_record',e)
+                evidence=e['package_evidence']
+                self.assertEqual(e['packages'],[evidence['resource']])
+                self.assertEqual(evidence['archive'],'9ba626afa44a3aa3')
+                self.assertEqual(evidence['contains'],{'type':f'{resource_hash("unit"):016x}','name':e['hash']})
+                self.assertEqual(evidence['bytes'],16+16*evidence['resource_count'])
+                self.assertTrue(re.fullmatch('[0-9a-f]{64}',evidence['sha256']))
+                self.assertTrue(re.fullmatch('[0-9a-f]{64}',evidence['bundle_database_sha256']))
+                self.assertEqual({g['table']for g in e['component_guards']},
+                    {'TurretComponentData','SensorEyeComponentData','BeamWeaponComponentData'})
+                for g in e['component_guards']:
+                    self.assertEqual(len(bytes.fromhex(g['hex'])),c['tables'][g['table']]['stride'])
+            else:
+                raw=bytes.fromhex(e['package_record']);self.assertEqual(len(raw),32)
+                self.assertEqual(e['packages'],[f'{struct.unpack_from("<Q",raw,o)[0]:016x}'for o in (8,16)if struct.unpack_from('<Q',raw,o)[0]])
             self.assertGreater(len(e['required_units']),0)
             self.assertLessEqual(len(e['required_units']),32)
             self.assertEqual(e['required_units'][0]['entity'],e['hash'])
         self.assertEqual(sum(e['faction']==2 for e in c['enemies']),14)
         self.assertEqual(sum(e['faction']==8 for e in c['enemies']),6)
-        self.assertEqual(sum(e['faction']==4 for e in c['enemies']),2)
+        self.assertEqual(sum(e['faction']==4 for e in c['enemies']),4)
         self.assertEqual([e['id']for e in c['enemies'][14:16]],['crusher','tripod'])
-        self.assertEqual([e['id']for e in c['enemies'][16:]],
+        self.assertEqual([e['id']for e in c['enemies'][16:22]],
             ['nursing_spewer','bile_spewer','rupture_spewer','hive_lord','brood_commander','alpha_commander'])
+        self.assertEqual([e['id']for e in c['enemies'][22:]],['gazer','gazer_spire'])
         rows={e['id']:e for e in c['enemies']}
+        self.assertEqual(rows['gazer']['packages'],['6ed3d770b520924d'])
+        self.assertEqual(rows['gazer_spire']['packages'],['d48566d2a4e10857'])
         self.assertEqual(rows['crusher']['hash'],'905809a4c28d8a45')
         self.assertEqual(rows['tripod']['hash'],'965eae5a51acdd4a')
         self.assertEqual(rows['tripod']['behavior'],280)

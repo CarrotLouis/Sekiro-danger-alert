@@ -1,0 +1,769 @@
+{
+  "schema": 1,
+  "game_build": "25480438",
+  "date": "2026-10-19",
+  "production_enabled": false,
+  "source": "User-supplied local captures; static native handlers from retained build-matched code.",
+  "captures": [
+    {
+      "file": "Sekiro danger alert-Combat-bile_corrosive_regurgitation-requested-20261019-143955-335162-3.jsonl",
+      "sha256": "4525b8fc4496da76afa91b8bdea93f234a3c648e084112beff86b463dab685ef",
+      "bytes": 1337891,
+      "requested_move": "bile_corrosive_regurgitation",
+      "samples": 361,
+      "markers": 4,
+      "resources": [
+        "36aa99cce5e60146"
+      ],
+      "all_actors_locally_owned": true,
+      "max_sample_gap_s": 0.146775,
+      "read_errors": 0.0,
+      "complete": true,
+      "duration_s": 42.083105,
+      "assessment": "locally_owned_move_evidence",
+      "active_ability_periods": {
+        "188": 4,
+        "191": 3,
+        "190": 1
+      },
+      "marker_context": [
+        {
+          "marker_t": 3.013061,
+          "line": 88,
+          "observed_target": "local",
+          "associated_ability": 188,
+          "seconds_after_first_sample": 1.055528,
+          "seconds_after_first_fire_input": 0.162856
+        },
+        {
+          "marker_t": 10.489842,
+          "line": 285,
+          "observed_target": "local",
+          "associated_ability": 188,
+          "seconds_after_first_sample": 1.481409,
+          "seconds_after_first_fire_input": 0.581456
+        },
+        {
+          "marker_t": 20.535613,
+          "line": 543,
+          "observed_target": "local",
+          "associated_ability": 188,
+          "seconds_after_first_sample": 1.068875,
+          "seconds_after_first_fire_input": 0.125556
+        },
+        {
+          "marker_t": 32.646573,
+          "line": 850,
+          "observed_target": "local",
+          "associated_ability": 188,
+          "seconds_after_first_sample": 1.616604,
+          "seconds_after_first_fire_input": 0.69863
+        }
+      ]
+    },
+    {
+      "file": "Sekiro danger alert-Combat-charger_charge-requested-20261019-144601-701181-6.jsonl",
+      "sha256": "ff615525a93f0e430dbeaf7a125d2791c00079197790268b445e369426da7704",
+      "bytes": 2407163,
+      "requested_move": "charger_charge",
+      "samples": 574,
+      "markers": 3,
+      "resources": [
+        "1a7fcdff98c664b0"
+      ],
+      "all_actors_locally_owned": true,
+      "max_sample_gap_s": 0.15218,
+      "read_errors": 0.0,
+      "complete": true,
+      "duration_s": 66.180437,
+      "assessment": "locally_owned_move_evidence",
+      "active_ability_periods": {
+        "222": 4,
+        "224": 1,
+        "220": 4,
+        "223": 3,
+        "219": 1
+      },
+      "marker_context": [
+        {
+          "marker_t": 11.874243,
+          "line": 331,
+          "observed_target": "local",
+          "associated_ability": 222,
+          "seconds_after_first_sample": 1.017735
+        },
+        {
+          "marker_t": 28.754916,
+          "line": 785,
+          "observed_target": "local",
+          "associated_ability": 222,
+          "seconds_after_first_sample": 2.10599
+        },
+        {
+          "marker_t": 47.923663,
+          "line": 1303,
+          "observed_target": "local",
+          "associated_ability": 222,
+          "seconds_after_first_sample": 1.872708
+        }
+      ],
+      "charge_phase_root_distance_minima_m": [
+        2.236,
+        12.044,
+        4.117,
+        2.948
+      ],
+      "periods_observed_within_radius_not_warning_count": {
+        "5": 3,
+        "6": 3,
+        "10": 3
+      }
+    },
+    {
+      "file": "Sekiro danger alert-Combat-charger_charge-requested-20261019-144716-775820-7.jsonl",
+      "sha256": "3dfa78fbe52a8579b3679527ccedffc7b26b22b6d2661d62efb18e19fbd99bf6",
+      "bytes": 1763176,
+      "requested_move": "charger_charge",
+      "samples": 421,
+      "markers": 3,
+      "resources": [
+        "6b202392f4ab605e"
+      ],
+      "all_actors_locally_owned": true,
+      "max_sample_gap_s": 0.14019,
+      "read_errors": 0.0,
+      "complete": true,
+      "duration_s": 48.410776,
+      "assessment": "locally_owned_move_evidence",
+      "active_ability_periods": {
+        "222": 3,
+        "223": 2,
+        "225": 1
+      },
+      "marker_context": [
+        {
+          "marker_t": 3.406557,
+          "line": 98,
+          "observed_target": "unknown",
+          "associated_ability": 222,
+          "seconds_after_first_sample": 2.542816
+        },
+        {
+          "marker_t": 15.840633,
+          "line": 435,
+          "observed_target": "local",
+          "associated_ability": 222,
+          "seconds_after_first_sample": 2.179831
+        },
+        {
+          "marker_t": 36.29219,
+          "line": 985,
+          "observed_target": "local",
+          "associated_ability": 222,
+          "seconds_after_first_sample": 2.009763
+        }
+      ],
+      "charge_phase_root_distance_minima_m": [
+        3.705,
+        4.001,
+        10.948
+      ],
+      "periods_observed_within_radius_not_warning_count": {
+        "5": 2,
+        "6": 2,
+        "10": 2
+      }
+    },
+    {
+      "file": "Sekiro danger alert-Combat-charger_charge-requested-20261019-144817-837619-8.jsonl",
+      "sha256": "5bddab1a943f1a028c08c9f5094afb9dd999f8f195620d56601eeffd1a670751",
+      "bytes": 2947690,
+      "requested_move": "charger_charge",
+      "samples": 674,
+      "markers": 4,
+      "resources": [
+        "a05bd1ec67b3ac4c"
+      ],
+      "all_actors_locally_owned": true,
+      "max_sample_gap_s": 0.168396,
+      "read_errors": 0.0,
+      "complete": true,
+      "duration_s": 77.545344,
+      "assessment": "locally_owned_move_evidence",
+      "active_ability_periods": {
+        "222": 5,
+        "223": 4,
+        "225": 1,
+        "219": 1,
+        "243": 1
+      },
+      "marker_context": [
+        {
+          "marker_t": 20.209315,
+          "line": 547,
+          "observed_target": "local",
+          "associated_ability": 222,
+          "seconds_after_first_sample": 1.894217
+        },
+        {
+          "marker_t": 34.36827,
+          "line": 929,
+          "observed_target": "local",
+          "associated_ability": 222,
+          "seconds_after_first_sample": 2.365093
+        },
+        {
+          "marker_t": 49.15391,
+          "line": 1333,
+          "observed_target": "local",
+          "associated_ability": 222,
+          "seconds_after_first_sample": 2.506063
+        },
+        {
+          "marker_t": 62.882238,
+          "line": 1704,
+          "observed_target": "local",
+          "associated_ability": 222,
+          "seconds_after_first_sample": 2.096722
+        }
+      ],
+      "charge_phase_root_distance_minima_m": [
+        3.284,
+        2.827,
+        4.371,
+        6.956,
+        3.881
+      ],
+      "periods_observed_within_radius_not_warning_count": {
+        "5": 4,
+        "6": 4,
+        "10": 5
+      }
+    },
+    {
+      "file": "Sekiro danger alert-Combat-charger_charge-requested-20261019-144946-926507-9.jsonl",
+      "sha256": "c877330b306351ff0452610538001714b76a738e7ab51e6e102de5fc80b67dea",
+      "bytes": 3934576,
+      "requested_move": "charger_charge",
+      "samples": 946,
+      "markers": 4,
+      "resources": [
+        "0ab7b92b131c228c"
+      ],
+      "all_actors_locally_owned": true,
+      "max_sample_gap_s": 0.157644,
+      "read_errors": 0.0,
+      "complete": true,
+      "duration_s": 109.072977,
+      "assessment": "locally_owned_move_evidence",
+      "active_ability_periods": {
+        "216": 2,
+        "217": 2,
+        "222": 5,
+        "223": 5,
+        "221": 1
+      },
+      "marker_context": [
+        {
+          "marker_t": 38.46971,
+          "line": 1050,
+          "observed_target": "local",
+          "associated_ability": 222,
+          "seconds_after_first_sample": 1.399312
+        },
+        {
+          "marker_t": 61.761267,
+          "line": 1674,
+          "observed_target": "local",
+          "associated_ability": 222,
+          "seconds_after_first_sample": 1.780035
+        },
+        {
+          "marker_t": 75.544405,
+          "line": 2046,
+          "observed_target": "local",
+          "associated_ability": 222,
+          "seconds_after_first_sample": 1.890891
+        },
+        {
+          "marker_t": 93.180529,
+          "line": 2515,
+          "observed_target": "local",
+          "associated_ability": 222,
+          "seconds_after_first_sample": 1.841858
+        }
+      ],
+      "charge_phase_root_distance_minima_m": [
+        2.839,
+        5.179,
+        3.955,
+        5.023,
+        7.676
+      ],
+      "periods_observed_within_radius_not_warning_count": {
+        "5": 2,
+        "6": 4,
+        "10": 5
+      }
+    },
+    {
+      "file": "Sekiro danger alert-Combat-charger_heavy_crush-requested-20261019-143706-166211-1.jsonl",
+      "sha256": "8f3736c8c8e0e8335aea96abb6ccc792c583e7e48d76d7533b62dbb06236ea18",
+      "bytes": 1014366,
+      "requested_move": "charger_heavy_crush",
+      "samples": 632,
+      "markers": 6,
+      "resources": [],
+      "all_actors_locally_owned": null,
+      "max_sample_gap_s": 0.136616,
+      "read_errors": 0.0,
+      "complete": true,
+      "duration_s": 71.679742,
+      "assessment": "no_matching_units",
+      "active_ability_periods": {},
+      "marker_context": [
+        {
+          "marker_t": 11.067148,
+          "line": 299,
+          "observed_target": "ambiguous",
+          "associated_ability": null,
+          "seconds_after_first_sample": null
+        },
+        {
+          "marker_t": 18.910707,
+          "line": 500,
+          "observed_target": "ambiguous",
+          "associated_ability": null,
+          "seconds_after_first_sample": null
+        },
+        {
+          "marker_t": 32.051896,
+          "line": 849,
+          "observed_target": "ambiguous",
+          "associated_ability": null,
+          "seconds_after_first_sample": null
+        },
+        {
+          "marker_t": 42.238096,
+          "line": 1117,
+          "observed_target": "ambiguous",
+          "associated_ability": null,
+          "seconds_after_first_sample": null
+        },
+        {
+          "marker_t": 50.888252,
+          "line": 1346,
+          "observed_target": "ambiguous",
+          "associated_ability": null,
+          "seconds_after_first_sample": null
+        },
+        {
+          "marker_t": 62.788464,
+          "line": 1665,
+          "observed_target": "ambiguous",
+          "associated_ability": null,
+          "seconds_after_first_sample": null
+        }
+      ]
+    },
+    {
+      "file": "Sekiro danger alert-Combat-commander_charge-requested-20261019-145235-1095582-10.jsonl",
+      "sha256": "e92435259453b25d3dd82986745bec169ea3e828b1efd44d15aec99c2e1104ca",
+      "bytes": 1549483,
+      "requested_move": "commander_charge",
+      "samples": 504,
+      "markers": 1,
+      "resources": [
+        "d522fd4748d443a5"
+      ],
+      "all_actors_locally_owned": true,
+      "max_sample_gap_s": 0.143663,
+      "read_errors": 0.0,
+      "complete": true,
+      "duration_s": 58.870815,
+      "assessment": "locally_owned_move_evidence",
+      "active_ability_periods": {
+        "488": 2,
+        "464": 1,
+        "468": 1,
+        "471": 1,
+        "490": 1,
+        "487": 1,
+        "454": 1
+      },
+      "marker_context": [
+        {
+          "marker_t": 20.159009,
+          "line": 543,
+          "observed_target": "local",
+          "associated_ability": 464,
+          "seconds_after_first_sample": 1.30833
+        }
+      ],
+      "charge_phase_root_distance_minima_m": [
+        3.841
+      ],
+      "periods_observed_within_radius_not_warning_count": {
+        "5": 1,
+        "6": 1,
+        "10": 1
+      }
+    },
+    {
+      "file": "Sekiro danger alert-Combat-commander_charge-requested-20261019-145511-1250984-11.jsonl",
+      "sha256": "4a353a378930a856b1deffed324220af9c42226ba482b4fe13b5191eb14c6fa5",
+      "bytes": 3255275,
+      "requested_move": "commander_charge",
+      "samples": 903,
+      "markers": 4,
+      "resources": [
+        "f79cd8bb654397df"
+      ],
+      "all_actors_locally_owned": true,
+      "max_sample_gap_s": 0.142597,
+      "read_errors": 0.0,
+      "complete": true,
+      "duration_s": 104.626911,
+      "assessment": "locally_owned_move_evidence",
+      "active_ability_periods": {
+        "463": 4,
+        "464": 4,
+        "465": 1,
+        "489": 1,
+        "487": 4,
+        "454": 4,
+        "468": 2,
+        "453": 2,
+        "490": 1,
+        "471": 1
+      },
+      "marker_context": [
+        {
+          "marker_t": 3.195222,
+          "line": 93,
+          "observed_target": "local",
+          "associated_ability": 464,
+          "seconds_after_first_sample": 0.735701
+        },
+        {
+          "marker_t": 24.209517,
+          "line": 654,
+          "observed_target": "local",
+          "associated_ability": 464,
+          "seconds_after_first_sample": 1.632279
+        },
+        {
+          "marker_t": 55.452775,
+          "line": 1494,
+          "observed_target": "local",
+          "associated_ability": 464,
+          "seconds_after_first_sample": 2.098359
+        },
+        {
+          "marker_t": 95.034125,
+          "line": 2576,
+          "observed_target": "local",
+          "associated_ability": 464,
+          "seconds_after_first_sample": 1.942281
+        }
+      ],
+      "charge_phase_root_distance_minima_m": [
+        5.933,
+        5.857,
+        12.599
+      ],
+      "periods_observed_within_radius_not_warning_count": {
+        "5": 0,
+        "6": 2,
+        "10": 2
+      }
+    },
+    {
+      "file": "Sekiro danger alert-Combat-nursing_putrid_regurgitation-requested-20261019-143834-254423-2.jsonl",
+      "sha256": "2343f2f32942d9c1cf40ee3c66fc3dea9523786aa1e4bf6fe7a322e08821510f",
+      "bytes": 2599974,
+      "requested_move": "nursing_putrid_regurgitation",
+      "samples": 633,
+      "markers": 5,
+      "resources": [
+        "cc7022fdd172089b"
+      ],
+      "all_actors_locally_owned": true,
+      "max_sample_gap_s": 0.141896,
+      "read_errors": 0.0,
+      "complete": true,
+      "duration_s": 72.361049,
+      "assessment": "locally_owned_move_evidence",
+      "active_ability_periods": {
+        "188": 5,
+        "190": 1,
+        "191": 5
+      },
+      "marker_context": [
+        {
+          "marker_t": 16.044558,
+          "line": 442,
+          "observed_target": "local",
+          "associated_ability": 188,
+          "seconds_after_first_sample": 1.135145,
+          "seconds_after_first_fire_input": 0.221199
+        },
+        {
+          "marker_t": 27.896647,
+          "line": 764,
+          "observed_target": "local",
+          "associated_ability": 188,
+          "seconds_after_first_sample": 1.131036,
+          "seconds_after_first_fire_input": 0.209083
+        },
+        {
+          "marker_t": 37.730201,
+          "line": 1019,
+          "observed_target": "local",
+          "associated_ability": 188,
+          "seconds_after_first_sample": 0.995876,
+          "seconds_after_first_fire_input": 0.086894
+        },
+        {
+          "marker_t": 46.868201,
+          "line": 1259,
+          "observed_target": "local",
+          "associated_ability": 188,
+          "seconds_after_first_sample": 1.15267,
+          "seconds_after_first_fire_input": 0.218697
+        },
+        {
+          "marker_t": 63.037568,
+          "line": 1699,
+          "observed_target": "local",
+          "associated_ability": 188,
+          "seconds_after_first_sample": 0.880393,
+          "seconds_after_first_fire_input": 0.000996
+        }
+      ]
+    },
+    {
+      "file": "Sekiro danger alert-Combat-rupture_corrosive_regurgitation-requested-20261019-144123-423584-4.jsonl",
+      "sha256": "5b8422f31e1430e6923b24743e060b97b638f1f3a43248add50acad9d6b1623f",
+      "bytes": 129776,
+      "requested_move": "rupture_corrosive_regurgitation",
+      "samples": 82,
+      "markers": 0,
+      "resources": [
+        "a381a11c07d3eb94"
+      ],
+      "all_actors_locally_owned": true,
+      "max_sample_gap_s": 0.138634,
+      "read_errors": 0.0,
+      "complete": true,
+      "duration_s": 9.52736,
+      "assessment": "unmarked_context",
+      "active_ability_periods": {
+        "186": 1
+      },
+      "marker_context": []
+    },
+    {
+      "file": "Sekiro danger alert-Combat-rupture_corrosive_regurgitation-requested-20261019-144227-486790-5.jsonl",
+      "sha256": "bbee78525c5cb837fe3aefc87a7cbc7afd15200010808f53ef814db6c8a1b38b",
+      "bytes": 2240275,
+      "requested_move": "rupture_corrosive_regurgitation",
+      "samples": 519,
+      "markers": 5,
+      "resources": [
+        "a381a11c07d3eb94"
+      ],
+      "all_actors_locally_owned": true,
+      "max_sample_gap_s": 0.228614,
+      "read_errors": 0.0,
+      "complete": true,
+      "duration_s": 61.143874,
+      "assessment": "locally_owned_move_evidence",
+      "active_ability_periods": {
+        "182": 1,
+        "188": 3,
+        "186": 2,
+        "187": 6,
+        "191": 1
+      },
+      "marker_context": [
+        {
+          "marker_t": 19.35361,
+          "line": 517,
+          "observed_target": "local",
+          "associated_ability": 187,
+          "seconds_after_first_sample": 3.709318,
+          "seconds_after_first_fire_input": 1.395585
+        },
+        {
+          "marker_t": 26.741985,
+          "line": 710,
+          "observed_target": "local",
+          "associated_ability": 187,
+          "seconds_after_first_sample": 3.147289,
+          "seconds_after_first_fire_input": 0.995356
+        },
+        {
+          "marker_t": 32.79388,
+          "line": 871,
+          "observed_target": "local",
+          "associated_ability": 187,
+          "seconds_after_first_sample": 3.250446,
+          "seconds_after_first_fire_input": 0.892049
+        },
+        {
+          "marker_t": 39.596427,
+          "line": 1055,
+          "observed_target": "local",
+          "associated_ability": 187,
+          "seconds_after_first_sample": 2.725438,
+          "seconds_after_first_fire_input": 0.508213
+        },
+        {
+          "marker_t": 54.978578,
+          "line": 1461,
+          "observed_target": "other",
+          "associated_ability": 187,
+          "seconds_after_first_sample": 3.007251,
+          "seconds_after_first_fire_input": 0.8054
+        }
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "control": "nursing_putrid_regurgitation",
+      "resources": [
+        "cc7022fdd172089b"
+      ],
+      "ability": 188,
+      "handler_rva": "010a6300",
+      "fire_input_frames": [
+        55,
+        110
+      ],
+      "classification": "sustained_spew",
+      "decoded_handler_listing_sha256": "837a92b7b19000c2bc249a42caddb9ec0c06c62d39b3d6a10917ab18cd9e8a18",
+      "locally_owned_marked": true,
+      "native_handler_bytes": 544,
+      "native_handler_sha256": "b81c371eee250b9157f6a596ccecff7e7c562e6415afc2be8c686e4303838697"
+    },
+    {
+      "control": "bile_corrosive_regurgitation",
+      "resources": [
+        "36aa99cce5e60146"
+      ],
+      "ability": 188,
+      "handler_rva": "010a6300",
+      "fire_input_frames": [
+        55,
+        110
+      ],
+      "classification": "sustained_spew",
+      "decoded_handler_listing_sha256": "837a92b7b19000c2bc249a42caddb9ec0c06c62d39b3d6a10917ab18cd9e8a18",
+      "locally_owned_marked": true,
+      "native_handler_bytes": 544,
+      "native_handler_sha256": "b81c371eee250b9157f6a596ccecff7e7c562e6415afc2be8c686e4303838697"
+    },
+    {
+      "control": "rupture_corrosive_regurgitation",
+      "resources": [
+        "a381a11c07d3eb94"
+      ],
+      "ability": 187,
+      "handler_rva": "010a60a0",
+      "fire_input_frames": [
+        135,
+        200
+      ],
+      "classification": "emerging_sustained_spew",
+      "decoded_handler_listing_sha256": "880f8f478d84041015d5f65fb8702225e3e3d09bb640a01b672b5259e012d5b6",
+      "locally_owned_marked": true,
+      "native_handler_bytes": 608,
+      "native_handler_sha256": "909a757a4d1f9fa8f43d6c46ca78391239d72e21dfff0c0f0ac1dad90c6f178f"
+    },
+    {
+      "control": "rupture_corrosive_regurgitation",
+      "resources": [
+        "a381a11c07d3eb94"
+      ],
+      "ability": 188,
+      "handler_rva": "010a6300",
+      "fire_input_frames": [
+        55,
+        110
+      ],
+      "classification": "shared_ground_spew_handler",
+      "note": "Observed with the same weapon-slot firing edges as the marked Nursing/Bile 188; keep separate from the marked emerging variant.",
+      "decoded_handler_listing_sha256": "837a92b7b19000c2bc249a42caddb9ec0c06c62d39b3d6a10917ab18cd9e8a18",
+      "locally_owned_marked": false,
+      "native_handler_bytes": 544,
+      "native_handler_sha256": "b81c371eee250b9157f6a596ccecff7e7c562e6415afc2be8c686e4303838697"
+    },
+    {
+      "control": "charger_charge",
+      "resources": [
+        "1a7fcdff98c664b0",
+        "6b202392f4ab605e",
+        "a05bd1ec67b3ac4c",
+        "0ab7b92b131c228c"
+      ],
+      "ability": 222,
+      "handler_rva": "010a85d0",
+      "charge_contact_frame": 80,
+      "classification": "charge",
+      "excluded_phase_ids": [
+        219,
+        220,
+        221,
+        223,
+        224,
+        225
+      ],
+      "same_cycle_end_ids": [
+        223,
+        225
+      ],
+      "decoded_handler_listing_sha256": "c7fe2239098da19b6d0f8d6f20c799aa416b0d1cdec1dd3854c507a06291206b",
+      "locally_owned_marked": true,
+      "native_handler_bytes": 480,
+      "native_handler_sha256": "439dd196d007c431b1292932f9ff86e41770655f777c3a3f286f9183246989fb"
+    },
+    {
+      "control": "commander_charge",
+      "resources": [
+        "d522fd4748d443a5",
+        "f79cd8bb654397df"
+      ],
+      "ability": 464,
+      "handler_rva": "010b92c0",
+      "charge_contact_frame": 80,
+      "classification": "charge",
+      "excluded_phase_ids": [
+        463,
+        465,
+        468,
+        471,
+        488,
+        489,
+        490
+      ],
+      "same_cycle_end_ids": [
+        465,
+        468
+      ],
+      "decoded_handler_listing_sha256": "b625b014d7de98a8ae4dbb24baac8e4f2a6b7558a02739bfbb8b80c3708468ae",
+      "locally_owned_marked": true,
+      "native_handler_bytes": 512,
+      "native_handler_sha256": "82d587fc48b9bdd5a09a9d56f0bcbd90f14d981476c6c9cd044bd81bff610f9b"
+    }
+  ],
+  "limitations": [
+    "F8 marks are delayed and do not measure impact time.",
+    "All selected actors were locally owned (owned=true); this does not establish the session host role. The owned=false path is not covered.",
+    "Native contact/firing frames are engine events, not independently timed visible impacts.",
+    "Nursing mission variant, armored Bile variant and the alternate Behemoth root were not captured.",
+    "Range statistics use sampled root-to-root distance, not collision surfaces or warning counts.",
+    "Other expansion attacks remain pending capture; no new rule is attached to the standard 1.0.0 entry."
+  ]
+}

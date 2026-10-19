@@ -32,6 +32,27 @@
       "records": 158,
       "offset": 5056,
       "stride": 32
+    },
+    "TurretComponentData": {
+      "index": 248,
+      "slots": 146,
+      "records": 74,
+      "offset": 2336,
+      "stride": 76
+    },
+    "SensorEyeComponentData": {
+      "index": 191,
+      "slots": 626,
+      "records": 314,
+      "offset": 10016,
+      "stride": 44
+    },
+    "BeamWeaponComponentData": {
+      "index": 270,
+      "slots": 46,
+      "records": 24,
+      "offset": 736,
+      "stride": 120
     }
   },
   "enemies": [
@@ -581,6 +602,100 @@
         }
       ],
       "live_verified": false
+    },
+    {
+      "id": "gazer",
+      "label": "Gazer 小炮台核心 / Gazer core",
+      "path": "content/env_illuminate/gameplay/il_turret_01",
+      "hash": "0883366204e1ccc5",
+      "behavior": 305,
+      "faction": 4,
+      "package_source": "world_package",
+      "packages": [
+        "6ed3d770b520924d"
+      ],
+      "package_evidence": {
+        "archive": "9ba626afa44a3aa3",
+        "resource": "6ed3d770b520924d",
+        "sha256": "fed12d313d2848522704e7421589c01f9e0d3a764491f856869d85355c3ba42a",
+        "bytes": 768,
+        "resource_count": 47,
+        "contains": {
+          "type": "e0a48d0be9a7453f",
+          "name": "0883366204e1ccc5"
+        },
+        "bundle_database_sha256": "c738e2b35f4b02042a6cff69f1c4816b12e5104a7bc5eda71020ff476209b433"
+      },
+      "component_guards": [
+        {
+          "table": "TurretComponentData",
+          "hex": "d0589bfcf526a009000090410000904100000000000034c20000b442000034c300003443cdcccc3dcdcccc3d000000000000000000000000000000000000000000000000ae53d64dd0589bfc"
+        },
+        {
+          "table": "SensorEyeComponentData",
+          "hex": "0000aa420000803f0000803f0000f0420000f0422bce8e2c010000000d00000002000000000000410000003f"
+        },
+        {
+          "table": "BeamWeaponComponentData",
+          "hex": "0e0000000000000000000000000034430000803f00000000000020410000a0400000000000000000000000000000000000000000000000000000000000000000fb64e88b745ff47a0000803e2bce8e2c00000000000000007e2166ae0000000000000000040000003c000000010000000000000000000000"
+        }
+      ],
+      "required_units": [
+        {
+          "entity": "0883366204e1ccc5",
+          "unit": "0883366204e1ccc5"
+        }
+      ],
+      "single_player_only": true,
+      "live_verified": false,
+      "spawn_note": "Standalone weapon core, not a mission site or the decorative tower/base. Native creation needs live validation."
+    },
+    {
+      "id": "gazer_spire",
+      "label": "Gazer Spire 激光塔核心 / Gazer Spire core",
+      "path": "content/env_illuminate/gameplay/il_turret_tactical_obj",
+      "hash": "1448d494665d01a0",
+      "behavior": 306,
+      "faction": 4,
+      "package_source": "world_package",
+      "packages": [
+        "d48566d2a4e10857"
+      ],
+      "package_evidence": {
+        "archive": "9ba626afa44a3aa3",
+        "resource": "d48566d2a4e10857",
+        "sha256": "cc625a27c5099b1933d36d2902877f9936d022b8a5d1f6af039a4cfd595d16fc",
+        "bytes": 3040,
+        "resource_count": 189,
+        "contains": {
+          "type": "e0a48d0be9a7453f",
+          "name": "1448d494665d01a0"
+        },
+        "bundle_database_sha256": "c738e2b35f4b02042a6cff69f1c4816b12e5104a7bc5eda71020ff476209b433"
+      },
+      "component_guards": [
+        {
+          "table": "TurretComponentData",
+          "hex": "d0589bfcf526a009000050410000504100000000000082c20000b442000034c300003443cdcccc3dcdcccc3d000000000000000000000000000000000000000000000000ae53d64dd0589bfc"
+        },
+        {
+          "table": "SensorEyeComponentData",
+          "hex": "00008c430000803f0000803f00002a4300002a432bce8e2c010000000d00000003000000000000410000003f"
+        },
+        {
+          "table": "BeamWeaponComponentData",
+          "hex": "1d0000000000000000000000000034430000803f00000000000020410000a04000000000000000000000000000000000000000000000000000000000000000004e0b55367bf95d1b0000803e2bce8e2c00000000000000007e2166ae0000000000000000040000003c000000010000000000000000000000"
+        }
+      ],
+      "required_units": [
+        {
+          "entity": "1448d494665d01a0",
+          "unit": "1448d494665d01a0"
+        }
+      ],
+      "single_player_only": true,
+      "live_verified": false,
+      "spawn_note": "Standalone weapon core, not a mission site or the decorative tower/base. Native creation needs live validation."
     }
   ]
 }

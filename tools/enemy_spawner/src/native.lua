@@ -166,7 +166,19 @@ function M.new(memory,profile,catalog,core,log,calls)
     end
     local function identities(enemy,scene)
         local ep=record(scene.world,'EnemyPackageComponentData',enemy.hash)
-        assert(ep and rawhex(ep)==enemy.package_record,'enemy package definitions changed')
+        if enemy.package_source=='world_package' then
+            -- Fixed defenses use a curated vanilla world package, not an EnemyPackage
+            -- record. Re-prove their weapon, turret and sensor definitions before the
+            -- already reviewed generic creation request. Never infer packages from paths.
+            assert(ep==nil and enemy.single_player_only==true,'building package definitions changed')
+            assert(#enemy.component_guards==3,'building component guard count')
+            for _,guard in ipairs(enemy.component_guards)do
+                local definition=record(scene.world,guard.table,enemy.hash)
+                assert(definition and rawhex(definition)==guard.hex,'building definition changed: '..guard.table)
+            end
+        else
+            assert(enemy.package_source==nil and ep and rawhex(ep)==enemy.package_record,'enemy package definitions changed')
+        end
         local behavior=record(scene.world,'BehaviorComponentData',enemy.hash)
         assert(behavior and u32(behavior,0)==enemy.behavior,'enemy behavior definition changed')
         for _,unit in ipairs(enemy.required_units)do
@@ -270,6 +282,9 @@ function M.new(memory,profile,catalog,core,log,calls)
         return true
     end
     function self:prepare(enemy,scene)
+        if enemy.single_player_only and (scene.player_count~=1 or scene.requester or scene.host~=true)then
+            return nil,'炮台核心目前仅支持单人任务 / Turret cores currently require a solo mission'
+        end
         self:prove();identities(enemy,scene)
         if enemy.min_difficulty and not enemy.summons then
             local G=assert(profile.summon_gate,'missing reviewed difficulty layout')
@@ -309,6 +324,7 @@ function M.new(memory,profile,catalog,core,log,calls)
         local function same(a,b)
             return a.key==b.key and a.world==b.world and a.avatar.id==b.avatar.id and a.avatar.unit==b.avatar.unit
                 and a.avatar.network_id==b.avatar.network_id and a.faction==enemy.faction
+                and (not enemy.single_player_only or a.host==true and a.player_count==1 and not a.requester)
         end
         if not same(latest,scene) then
             return nil,'场景已变化 / Scene changed'

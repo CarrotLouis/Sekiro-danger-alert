@@ -45,9 +45,10 @@ Sekiro danger alert 1.1.0-dev.1 — 新增招式采集版
 三类喷涌虫未来均默认关闭，其余本次新增项默认开启。
 
 放怪工具
-使用独立 Sekiro danger alert - Enemy Spawner 0.4.0。
+使用独立 Sekiro danger alert - Enemy Spawner 0.4.1。
 “使用列表”选新增，再在“新增敌人”选三类喷涌虫、霸王虫或两类指挥官；原有四种强袭虫仍在原有列表。
-Gazer 小炮台、大激光塔、电塔均为固定建筑，不通过敌人单位创建接口放置；请进相应光能任务寻找。
+0.4.1 在新增列表最后追加 Gazer 小炮台核心、Gazer Spire 激光塔核心，仅支持单人光能任务，尚需实机验证；不生成完整塔基或任务场地。
+先确认核心的外观、转向、开火正常，再分别选择本采集包的 Gazer / Gazer Spire 范围记录。光能电塔仍需在相应任务寻找。
 霸王虫要求 7–10 难度、无现存实例，每任务本工具最多一只。实际生成、AI 与地形仍需实机确认。
 
 交回文件
@@ -62,5 +63,6 @@ Sekiro danger alert-Combat-<所选招式>-requested-<时间>-<序号>.jsonl
 启动和菜单注册不采样，只有手动开始后才启用 F8；每段最多两分钟、8 MiB，原始记录不写进发行包。
 本包没有新内存写入和新原生调用，也没有把新单位名猜成攻击事件。
 离线检查不能证明实际前摇与时间窗；补齐数据后才生成新功能包。
+最终冲锋范围改为强袭虫、指挥官两个独立滑块，各 0–15m、1m 步进、默认 5m；本采集包暂未注册这两个预警设置。
 
 Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime

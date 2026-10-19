@@ -15,6 +15,105 @@ ROOT = Path(__file__).resolve().parents[1]
 REPORT_KIND = 'Sekiro danger alert capture analysis'
 
 
+def expansion_summary(rows):
+    """Active periods for the October 19 spewer/charge evidence, not attack verdicts.
+
+    The older ability-run summary includes inactive cached rows. That is useful
+    for clock research but cannot establish a live charge. Keep this independent
+    channel active-only, split identity changes/gaps and retain fire-input edges.
+    F8 can fall in recovery and never defines an ability or its beginning.
+    """
+    resources = {'cc7022fdd172089b', '6021e22338333d88', '36aa99cce5e60146',
+        'ccae5264acd591b7', 'a381a11c07d3eb94', 'd522fd4748d443a5', 'f79cd8bb654397df',
+        '1a7fcdff98c664b0', '6b202392f4ab605e', 'a05bd1ec67b3ac4c',
+        '0ab7b92b131c228c', '3aff5fd7d5450b99'}
+    periods, current, actors, targets, errors, markers = [], {}, {}, Counter(), Counter(), []
+    sample_times, observations = [], []
+    def finite(n):
+        return isinstance(n, (int, float)) and not isinstance(n, bool) and math.isfinite(n)
+    def target(s, avatar):
+        ai, aim = s.get('ai') or {}, s.get('aim') or {}
+        if s.get('owned') is True and ai.get('has_target') is True and ai.get('tracks_entity') is True:
+            if finite(ai.get('target')) and ai['target'] > 0 and finite(avatar) and avatar > 0:
+                return 'local' if ai['target'] == avatar else 'other'
+        return 'unknown'  # This evidence pass does not certify new guest mappings.
+    for line, row in enumerate(rows, 1):
+        if row.get('event') == 'user_attack_mark':
+            markers.append(dict(line=row.get('_source_line', line), t=row['t']))
+        if row.get('event') != 'research_sample':
+            continue
+        t = row.get('sample_t', row.get('t'))
+        if not finite(t):
+            raise ValueError('non-finite expansion sample time')
+        sample_times.append(t)
+        abilities = {a['entity']: a for a in row.get('abilities', []) or []}
+        next_current, observed = {}, []
+        for s in row.get('states', []) or []:
+            resource = s.get('resource')
+            if resource not in resources:
+                continue
+            key = (resource, s['entity'], s.get('unit'))
+            actors.setdefault(key, dict(actor=len(actors)+1, resource=resource, owned=s.get('owned')))
+            outcome = target(s, row.get('avatar_entity'))
+            targets[outcome] += 1
+            errors.update((s.get('observation_errors') or {}).keys())
+            a = abilities.get(s['entity'], {})
+            observed.append(dict(actor=actors[key]['actor'], resource=resource, target=outcome,
+                ability=a.get('id'), active=a.get('active')))
+            if a.get('active') is not True or a.get('paused') is True:
+                continue
+            clock, ability, distance = a.get('time'), a.get('id'), s.get('distance')
+            if not all(finite(v) for v in (clock, ability, distance)) or clock < 0 or distance < 0:
+                continue
+            old = current.get(key)
+            # Dense manager rows can move while the same owner/clock continues.
+            # A storage slot is not an ability-cycle identity.
+            restart = not old or old['ability'] != ability
+            gap = bool(old and (t < old['last_sample'] or t-old['last_sample'] > .35))
+            rewind = bool(old and old['ability'] == ability and clock < old['last_clock']-.1)
+            if restart or gap or rewind:
+                old = dict(actor=actors[key]['actor'], resource=resource, ability=int(ability),
+                    first_sample=t, last_sample=t, first_clock=clock, last_clock=clock,
+                    first_line=row.get('_source_line', line), last_line=row.get('_source_line', line),
+                    initial_partial=clock > .2, discontinuity=gap or rewind, samples=0,
+                    distance_min=distance, distance_max=distance, target_samples={}, input_onsets=[],
+                    slot_changes=0, _slot=a.get('slot'), _firing=False)
+                periods.append(old)
+            if a.get('slot') != old['_slot']:
+                old['slot_changes'] += 1
+                old['_slot'] = a.get('slot')
+            old.update(last_sample=t, last_clock=clock, last_line=row.get('_source_line', line),
+                samples=old['samples']+1, distance_min=min(old['distance_min'], distance),
+                distance_max=max(old['distance_max'], distance))
+            old['target_samples'][outcome] = old['target_samples'].get(outcome, 0)+1
+            inputs = (s.get('weapon_inputs') or {}).get('local_input_bytes') or []
+            firing = bool(inputs and inputs[0] == 1)
+            if firing and not old['_firing']:
+                old['input_onsets'].append(dict(t=t, ability_clock=clock, target=outcome,
+                    line=row.get('_source_line', line)))
+            old['_firing'] = firing
+            next_current[key] = old
+        current = next_current
+        observations.append((t, observed))
+    for p in periods:
+        p.pop('_slot'); p.pop('_firing')
+    for m in markers:
+        prior = next(((t, s) for t, s in reversed(observations) if t <= m['t']), None)
+        m['prior_observation'] = dict(t=prior[0], states=prior[1]) if prior else None
+        m['nearby_periods'] = [i+1 for i, p in enumerate(periods)
+            if p['first_sample'] <= m['t'] <= p['last_sample']+2]
+    gaps = [b-a for a, b in zip(sample_times, sample_times[1:])]
+    return dict(actors=list(actors.values()), active_periods=periods, markers=markers,
+        target_samples=dict(targets), observation_errors=dict(errors),
+        max_sample_gap_s=max(gaps) if gaps else None,
+        time_reversals=sum(g < 0 for g in gaps),
+        limitations=['Active periods and F8 markers are not measured impacts or attack counts.',
+            'Fire-input edges indicate requested firing, not independently observed damage.',
+            'A sampled distance is root-to-root; a crossing may fall between samples.',
+            'Only locally owned AI target attribution is certified; session host role is not inferred.',
+            'A cached inactive ability, impact or braking phase must not start a fresh charge.'])
+
+
 def research_summary(rows):
     """Compact schema-2 evidence; timestamps stay local to this capture.
 
@@ -211,7 +310,7 @@ def analyze(rows, excluded_markers=()):
         duration_s=stop.get('t'), stop_reason=stop.get('reason'), event_counts=dict(events),
         marker_times=markers, observed_targeting_entities=len(selected), decision_sample_counts=dict(decisions),
         excluded_markers=[dict(index=i, t=all_markers[i-1]) for i in sorted(excluded)],
-        research=research_summary(rows),
+        research=research_summary(rows), expansion=expansion_summary(rows),
         sample_gap_s=dict(max=max(gaps) if gaps else None, median=gaps[len(gaps)//2] if gaps else None),
         targeting_transitions=transitions, ability_runs=runs,
         marker_ability_context=[dict(marker_t=t, candidates=[dict(entity=x['entity'], ability=x['ability'],
@@ -272,7 +371,7 @@ def main():
             raise ValueError('no usable capture/sample records')
         result = analyze(rows, args.exclude_marker)
         summary = {k: result[k] for k in ['report_kind', 'mode', 'version', 'research_schema', 'capture_stopped', 'duration_s', 'stop_reason',
-            'event_counts', 'marker_times', 'excluded_markers', 'observed_targeting_entities', 'sample_gap_s', 'research']}
+            'event_counts', 'marker_times', 'excluded_markers', 'observed_targeting_entities', 'sample_gap_s', 'research', 'expansion']}
         payload = summary if args.summary_only else result
         target.parent.mkdir(parents=True, exist_ok=True)
         with target.open('w' if args.replace_output else 'x', encoding='utf-8', newline='\n') as stream:
