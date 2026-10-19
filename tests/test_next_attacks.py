@@ -13,7 +13,7 @@ from hd2_archive import resource_hash, read_archive, LUA_TYPE
 request=json.loads((ROOT/'config/expansion_v2.json').read_text(encoding='utf-8'))
 assert request['steam_build']=='25480438'
 controls={c['id']:c for c in request['controls']}
-assert len(controls)==11 and len(request['capture_moves'])==13
+assert len(controls)==11 and len(request['capture_moves'])==14
 assert {c['id']for c in controls.values()if not c['default']}=={
     'nursing_putrid_regurgitation','bile_corrosive_regurgitation','rupture_corrosive_regurgitation'}
 assert all(c['status']=='requires_live_mapping' for c in controls.values())
@@ -25,7 +25,12 @@ for r in resources.values():
         assert r['hash']=='0d382ae7ffea9d45' and r['name_text_id']=='4bc6d48a'
         assert r['identity_evidence']['arc_type']==5
 for move in request['capture_moves']:
-    assert move['control'] in controls and move['resources']
+    assert move['resources']
+    if move['id']=='hive_lord_all':
+        assert move['controls']==['hive_lord_body_slam','hive_lord_bile_rain']
+        assert [(x['key'],x['vk']) for x in move['manual_markers']]==[('-',0xbd),('=',0xbb),('[',0xdb),(']',0xdd)]
+        assert move['capture_profile']=='hive_lord_long'
+    else:assert move['control'] in controls
     assert set(move['resources'])<=resources.keys()
     assert move['status']=='pending_capture'
 assert len(controls['charger_charge']['resources'])==5
@@ -69,5 +74,5 @@ with zipfile.ZipFile(target) as archive:
         assert token in source,token
     assert archive.read('README-使用说明.txt')==(ROOT/'tools/diagnostics/README-新增招式采集.txt').read_bytes()
     assert b'WriteProcessMemory'not in source and b'VirtualProtect'not in source
-    assert archive.read('README.txt').startswith(b'Sekiro danger alert 1.1.0-dev.1')
-print('PASS 11 pending controls/13 capture scopes, native name-ID identity, defaults, bounded menu plan, and isolated same-GUID collection ZIP; native timing mapping remains pending')
+    assert archive.read('README.txt').startswith(('Sekiro danger alert '+request['version']).encode())
+print('PASS 11 pending controls/14 capture scopes, four Hive keys, identities, defaults, bounded menu plan and isolated same-GUID collection ZIP; new warning integration remains pending')

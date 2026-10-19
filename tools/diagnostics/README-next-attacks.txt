@@ -1,4 +1,4 @@
-Sekiro danger alert 1.1.0-dev.1 - next-attack collection
+Sekiro danger alert 1.1.0-dev.2 - next-attack collection
 
 Requires Bingus Shared Loader v18+ and Mod Options Menu v1.2 (API 3).
 Replace the ordinary warning addon; the GUID, entry and saved settings are shared.
@@ -7,9 +7,16 @@ This ZIP does not implement the proposed new toggles, merged toggles or charge-r
 The plan now uses independent Charger/Commander sliders: 0-15m, 1m steps, each defaulting to 5m.
 
 See README-使用说明.txt for the complete collection procedure and files to return.
-Select a collection group and move, start with APPLY, close the menu and press F8 at the described cue.
+Select a collection group and move, start with APPLY and close the menu. Ordinary scopes use F8.
+Hive Lord: choose the last new-Terminid scope (any old Hive scope also redirects to it).
+Use - for surfaced Body Slam, = for emerging Body Slam, [ for sweeping Bile Rain, ] for straight Bile Rain.
+Use the main keyboard without Shift. F8 is ignored in the combined Hive scope.
 Four groups separate the original Terminids, Automatons, Illuminate/allied towers and new Terminids.
-Each segment stops at two minutes or 8 MiB. Only a manual start enables collection/F8.
+Ordinary scopes stop at two minutes or 8 MiB. Hive sessions run for up to 60 minutes, automatically
+rotating at five minutes or 8 MiB; the session is capped at 256 MiB and 64 parts. No menu restart is needed.
+Return EVERY part of the session, not only the final part. All timestamps keep the same session origin.
+Hive capture pauses across death and resumes with an explicit player epoch after reinforcement;
+a mission change still stops it. Only a manual start enables sampling and focused key-edge detection.
 For co-op, collect on the attacked player's own computer.
 
 The independent Enemy Spawner 0.4.1 keeps three spewers, Hive Lord and both commanders.

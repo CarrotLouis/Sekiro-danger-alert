@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-dev.1",
+  "version": "1.1.0-dev.2",
   "steam_build": "25480438",
   "source": {
     "entities_sha256": "21377252b81fdbc670eba1e59a8ab64b170323df208f175e708992e4c1fb515e",
@@ -658,6 +658,52 @@
       ],
       "status": "pending_capture",
       "capture_group": "bugs_new"
+    },
+    {
+      "id": "hive_lord_all",
+      "controls": [
+        "hive_lord_body_slam",
+        "hive_lord_bile_rain"
+      ],
+      "label": "霸王虫 · 四招联合采集（60分钟）",
+      "attack_name": "Body Slam and Bile Rain: four separately keyed variants",
+      "faction": 2,
+      "resources": [
+        "d465d9c7f77a07cb"
+      ],
+      "status": "pending_capture",
+      "capture_group": "bugs_new",
+      "capture_profile": "hive_lord_long",
+      "manual_markers": [
+        {
+          "key": "-",
+          "vk": 189,
+          "move": "hive_lord_body_slam_surfaced",
+          "control": "hive_lord_body_slam",
+          "label": "霸王虫 · 出土后下压"
+        },
+        {
+          "key": "=",
+          "vk": 187,
+          "move": "hive_lord_body_slam_emerging",
+          "control": "hive_lord_body_slam",
+          "label": "霸王虫 · 破土拍击"
+        },
+        {
+          "key": "[",
+          "vk": 219,
+          "move": "hive_lord_bile_rain_sweeps",
+          "control": "hive_lord_bile_rain",
+          "label": "霸王虫 · 三轮扫射吐酸"
+        },
+        {
+          "key": "]",
+          "vk": 221,
+          "move": "hive_lord_bile_rain_stream",
+          "control": "hive_lord_bile_rain",
+          "label": "霸王虫 · 直线吐酸"
+        }
+      ]
     }
   ],
   "merged_controls": [
@@ -707,8 +753,16 @@
     "legacy_attack_windows": "unchanged",
     "timing_and_charge_ids": "require_live_mapping",
     "distance_options": [
-      {"id": "charger_charge_range", "control": "charger_charge", "default": 5},
-      {"id": "commander_charge_range", "control": "commander_charge", "default": 5}
+      {
+        "id": "charger_charge_range",
+        "control": "charger_charge",
+        "default": 5
+      },
+      {
+        "id": "commander_charge_range",
+        "control": "commander_charge",
+        "default": 5
+      }
     ]
   },
   "menu_plan": {

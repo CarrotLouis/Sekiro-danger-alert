@@ -197,7 +197,7 @@ def build():
                  'Requires Bingus Shared Loader v18+ and Mod Options Menu v1.2. '
                  'Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
     suffix=' Diagnostics'if OPTIONS.diagnostics else''
-    if OPTIONS.diagnostics:description+=' Includes optional F8 collection on a separate diagnostic page; replaces the normal package.'
+    if OPTIONS.diagnostics:description+=' Includes optional F8 collection and a four-key, segmented 60-minute Hive Lord session on a separate diagnostic page; replaces the normal package.'
     if NEXT:description+=' Next-attack collection catalog only; new warning rules are not enabled without live mapping.'
     manifest={'Version':1,'Guid':CONFIG['guid'],'Name':'Sekiro danger alert '+CONFIG['version']+suffix,'Description':description,
               'Options':[{'Name':'Sekiro danger alert','Description':description,'Include':['Addon']}]}

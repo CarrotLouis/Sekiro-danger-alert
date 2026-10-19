@@ -9,10 +9,30 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT_KIND = 'Sekiro danger alert capture analysis'
+
+
+def keyed_hive_marker_segment(rows):
+    """A valid rotation may contain a key and its prior observation, but no new sample."""
+    if not rows:
+        return False
+    h=rows[0];part=h.get('part_index');session=h.get('session_id')
+    if h.get('research_schema')!=3 or h.get('requested_move')!='hive_lord_all' or not isinstance(session,str):
+        return False
+    if len(session)>160 or not re.fullmatch(r'hive_lord_all-(?:requested|comparison)-\d{8}-\d{6}-\d+-\d+',session):
+        return False
+    if isinstance(part,bool) or not isinstance(part,(int,float)) or part%1 or not 1<=part<=64:
+        return False
+    if h.get('timestamp_basis')!='seconds_since_session_start':
+        return False
+    moves={'-':'hive_lord_body_slam_surfaced','=':'hive_lord_body_slam_emerging',
+        '[':'hive_lord_bile_rain_sweeps',']':'hive_lord_bile_rain_stream'}
+    return any(r.get('event')=='user_attack_mark' and r.get('key') in moves
+        and r.get('marked_move')==moves[r['key']] for r in rows)
 
 
 def expansion_summary(rows):
@@ -243,11 +263,16 @@ def analyze(rows, excluded_markers=()):
     events = Counter(r.get('event', 'unknown') for r in rows)
     start = next((r for r in rows if r.get('event') == 'capture_start'), {})
     stop = next((r for r in reversed(rows) if r.get('event') == 'capture_stop'), {})
-    all_markers = [r['t'] for r in rows if r.get('event') == 'user_attack_mark']
+    marker_rows = [r for r in rows if r.get('event') == 'user_attack_mark']
+    all_markers = [r['t'] for r in marker_rows]
     excluded = set(excluded_markers)
     if any(i < 1 or i > len(all_markers) for i in excluded):
         raise ValueError('--exclude-marker must name an existing one-based marker')
     markers = [t for i, t in enumerate(all_markers, 1) if i not in excluded]
+    annotations = [dict(index=i, t=r['t'], key=r.get('key', 'F8'),
+        marked_move=r.get('marked_move'), marked_control=r.get('marked_control'),
+        avatar_epoch=r.get('avatar_epoch'), local_avatar_available=r.get('local_avatar_available'))
+        for i, r in enumerate(marker_rows, 1) if i not in excluded]
     decisions = Counter()
     observations, transitions, previous, times, selected = [], [], {}, [], set()
     runs, active_runs = [], {}
@@ -308,18 +333,25 @@ def analyze(rows, excluded_markers=()):
         research_schema=start.get('research_schema'), capture_stopped=bool(stop),
         requested_move=start.get('requested_move'), capture_context=start.get('capture_context'),
         duration_s=stop.get('t'), stop_reason=stop.get('reason'), event_counts=dict(events),
+        capture_segment=dict(session_id=start.get('session_id'),part_index=start.get('part_index'),
+            part_started_t=start.get('part_started_t'),session_continues=stop.get('session_continues'),
+            duration_s=stop['t']-start['t'] if start.get('session_id')and stop else None,
+            has_sample_records=any(events[k] for k in ('research_sample','targeting_sample','detector_sample')),
+            timestamp_basis=start.get('timestamp_basis'),manual_markers=start.get('manual_markers')),
+        marker_annotations=annotations,
+        marked_move_counts=dict(Counter(x['marked_move']for x in annotations if x['marked_move'])),
         marker_times=markers, observed_targeting_entities=len(selected), decision_sample_counts=dict(decisions),
         excluded_markers=[dict(index=i, t=all_markers[i-1]) for i in sorted(excluded)],
         research=research_summary(rows), expansion=expansion_summary(rows),
         sample_gap_s=dict(max=max(gaps) if gaps else None, median=gaps[len(gaps)//2] if gaps else None),
         targeting_transitions=transitions, ability_runs=runs,
-        marker_ability_context=[dict(marker_t=t, candidates=[dict(entity=x['entity'], ability=x['ability'],
+        marker_ability_context=[dict(marker_t=m['t'],key=m['key'],marked_move=m['marked_move'],candidates=[dict(entity=x['entity'], ability=x['ability'],
             first_sample=x['first_sample'], estimated_start=x['estimated_start'],
-            marker_after_estimated_start=t-x['estimated_start'] if x['estimated_start'] is not None else None)
-            for x in runs if x['first_sample'] <= t <= x['last_sample']+2]) for t in markers],
+            marker_after_estimated_start=m['t']-x['estimated_start'] if x['estimated_start'] is not None else None)
+            for x in runs if x['first_sample'] <= m['t'] <= x['last_sample']+2]) for m in annotations],
         marker_windows=[dict(marker_t=t, start=t-4, end=t+1,
                              observations=[x for x in observations if t-4 <= x['t'] <= t+1]) for t in markers],
-        limitations=['F8 is a delayed human marker, not a measured attack onset.',
+        limitations=['Manual attack markers are delayed human labels, not measured attack onsets.',
             'AI target, replicated aim target and a committed attack are different states.',
             'No transitions does not prove no enemy: inspect heartbeat selection, queue and read errors.',
             'Decision counts are sample counts, not attack counts; legacy logs lack detector decisions.'])
@@ -366,12 +398,14 @@ def main():
                     rows.append(dict(row, _source_line=line))
                 except ValueError as exc:
                     raise ValueError(f'line {line}: {exc}') from exc
-        if not rows or rows[0].get('event') != 'capture_start' or not any(
-                r.get('event') in ('research_sample', 'targeting_sample', 'detector_sample') for r in rows):
+        if not rows or rows[0].get('event') != 'capture_start' or not (any(
+                r.get('event') in ('research_sample', 'targeting_sample', 'detector_sample') for r in rows)
+                or keyed_hive_marker_segment(rows)):
             raise ValueError('no usable capture/sample records')
         result = analyze(rows, args.exclude_marker)
         summary = {k: result[k] for k in ['report_kind', 'mode', 'version', 'research_schema', 'capture_stopped', 'duration_s', 'stop_reason',
-            'event_counts', 'marker_times', 'excluded_markers', 'observed_targeting_entities', 'sample_gap_s', 'research', 'expansion']}
+            'event_counts', 'marker_times', 'excluded_markers', 'observed_targeting_entities', 'sample_gap_s', 'research', 'expansion',
+            'capture_segment', 'marker_annotations', 'marked_move_counts']}
         payload = summary if args.summary_only else result
         target.parent.mkdir(parents=True, exist_ok=True)
         with target.open('w' if args.replace_output else 'x', encoding='utf-8', newline='\n') as stream:
