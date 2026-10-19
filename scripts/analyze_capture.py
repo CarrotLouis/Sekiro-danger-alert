@@ -35,6 +35,38 @@ def keyed_hive_marker_segment(rows):
         and r.get('marked_move')==moves[r['key']] for r in rows)
 
 
+def vehicle_summary(rows):
+    start=next((r for r in rows if r.get('event')=='capture_start'),{})
+    if not start.get('vehicle_scenario'):
+        return None
+    statuses,relations,seats,projection,errors=Counter(),Counter(),Counter(),Counter(),Counter()
+    samples=0
+    for row in rows:
+        if row.get('event')=='vehicle_local_state':
+            statuses['local_avatar_unavailable']+=1
+        if row.get('event')!='research_sample':
+            continue
+        samples+=1
+        vehicle=row.get('vehicle')or{}
+        statuses[vehicle.get('status','unavailable')]+=1
+        if vehicle.get('vehicle'):
+            v=vehicle['vehicle'];seat=vehicle.get('seat')or{}
+            seats[f"{v.get('resource')}:{seat.get('node')}"]+=1
+        if row.get('vehicle_error'):
+            errors[row['vehicle_error']]+=1
+        geometry=row.get('presentation_geometry')or{}
+        projection[str(geometry.get('head_projectable','unavailable'))]+=1
+        for target in row.get('target_descriptions')or[]:
+            relations[target.get('relation','unknown')]+=1
+    return dict(scenario=start['vehicle_scenario'],sample_count=samples,status_counts=dict(statuses),
+        seat_counts=dict(seats),target_relation_counts=dict(relations),head_projection_counts=dict(projection),
+        observation_errors=dict(errors),warning_outputs=[r for r in rows if r.get('event')=='warning_output'],
+        presentation_transitions=[r for r in rows if r.get('event')=='presentation_state'],
+        limitations=['Scenario labels are user annotations, not proof of an occupied vehicle.',
+            'A seat collection relation is diagnostic evidence only; production targeting is unchanged.',
+            'Projection and submitted audio/bitmap state do not prove what the player saw or heard.'])
+
+
 def expansion_summary(rows):
     """Active periods for the October 19 spewer/charge evidence, not attack verdicts.
 
@@ -340,6 +372,8 @@ def analyze(rows, excluded_markers=()):
             timestamp_basis=start.get('timestamp_basis'),manual_markers=start.get('manual_markers')),
         marker_annotations=annotations,
         marked_move_counts=dict(Counter(x['marked_move']for x in annotations if x['marked_move'])),
+        marked_control_counts=dict(Counter(x['marked_control']for x in annotations if x['marked_control'])),
+        vehicle=vehicle_summary(rows),
         marker_times=markers, observed_targeting_entities=len(selected), decision_sample_counts=dict(decisions),
         excluded_markers=[dict(index=i, t=all_markers[i-1]) for i in sorted(excluded)],
         research=research_summary(rows), expansion=expansion_summary(rows),
@@ -400,12 +434,14 @@ def main():
                     raise ValueError(f'line {line}: {exc}') from exc
         if not rows or rows[0].get('event') != 'capture_start' or not (any(
                 r.get('event') in ('research_sample', 'targeting_sample', 'detector_sample') for r in rows)
+                or rows[0].get('vehicle_scenario')in ('on_foot','bastion_driver','bastion_gunner','frv_driver','empty_vehicle')
+                and any(r.get('event')=='vehicle_local_state' and isinstance(r.get('local_control'),dict)for r in rows)
                 or keyed_hive_marker_segment(rows)):
             raise ValueError('no usable capture/sample records')
         result = analyze(rows, args.exclude_marker)
         summary = {k: result[k] for k in ['report_kind', 'mode', 'version', 'research_schema', 'capture_stopped', 'duration_s', 'stop_reason',
             'event_counts', 'marker_times', 'excluded_markers', 'observed_targeting_entities', 'sample_gap_s', 'research', 'expansion',
-            'capture_segment', 'marker_annotations', 'marked_move_counts']}
+            'capture_segment', 'marker_annotations', 'marked_move_counts', 'marked_control_counts', 'vehicle']}
         payload = summary if args.summary_only else result
         target.parent.mkdir(parents=True, exist_ok=True)
         with target.open('w' if args.replace_output else 'x', encoding='utf-8', newline='\n') as stream:

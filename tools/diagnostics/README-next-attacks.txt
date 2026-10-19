@@ -1,4 +1,4 @@
-Sekiro danger alert 1.1.0-dev.2 - next-attack collection
+Sekiro danger alert 1.1.0-dev.3 - next-attack collection
 
 Requires Bingus Shared Loader v18+ and Mod Options Menu v1.2 (API 3).
 Replace the ordinary warning addon; the GUID, entry and saved settings are shared.
@@ -9,7 +9,8 @@ The plan now uses independent Charger/Commander sliders: 0-15m, 1m steps, each d
 See README-使用说明.txt for the complete collection procedure and files to return.
 Select a collection group and move, start with APPLY and close the menu. Ordinary scopes use F8.
 Hive Lord: choose the last new-Terminid scope (any old Hive scope also redirects to it).
-Use - for surfaced Body Slam, = for emerging Body Slam, [ for sweeping Bile Rain, ] for straight Bile Rain.
+Use - for surfaced Body Slam, = for emerging Body Slam, and either [ or ] for Bile Rain.
+Bile Rain variants do not need separate labels; the two keys remain compatible aliases for the same final control.
 Use the main keyboard without Shift. F8 is ignored in the combined Hive scope.
 Four groups separate the original Terminids, Automatons, Illuminate/allied towers and new Terminids.
 Ordinary scopes stop at two minutes or 8 MiB. Hive sessions run for up to 60 minutes, automatically
@@ -30,5 +31,11 @@ Ordinary logs and Combat JSONL files are in the loader log directory, usually:
 Return complete Combat JSONL files and Sekiro danger alert.log.
 
 No new game-memory writes or native calls. Existing build, lifecycle and read-budget checks remain.
+Version dev.3 adds five vehicle comparison contexts and a three-second icon/sound preview in the Record action.
+See README-载具测试.txt: first verify on foot, then Bastion driver/gunner, FRV driver and an empty-vehicle control.
+Only these explicitly selected contexts observe seat/vehicle identity and projected-head/output state.
+The automatic local-target rule is unchanged; this is a diagnostic package, not a claimed vehicle fix.
+Raw AI hex is recorded only at heartbeat cadence. One sample above 20 ms backs off, three consecutive
+overruns or a single sample of at least 50 ms stop recording. Mandatory read failures still stop at eight.
 Offline verification is not live validation of new attack timing or new spawns.
 Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime

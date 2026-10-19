@@ -160,6 +160,11 @@ def build():
                       ('detector_module','src/detector.lua')]:
         chunks.append('local '+name+'='+module(ROOT/path)+'\n')
     if OPTIONS.diagnostics:
+        vehicle=json.loads((ROOT/'config/vehicle_probe.json').read_text(encoding='utf-8'))
+        assert vehicle['build']==CONFIG.get('steam_build','25480438')
+        chunks.append('profile.vehicle_probe='+lua(vehicle)+'\n')
+        folder=BUILD/'diagnostics';folder.mkdir(exist_ok=True)
+        (folder/'vehicle_profile.lua').write_text('return '+lua(vehicle)+'\n',encoding='utf-8')
         if NEXT:
             existing={r['hash']for r in catalog['resources']}
             catalog['resources']+= [r for r in NEXT['resources']if r['hash']not in existing]
@@ -167,12 +172,14 @@ def build():
             folder=BUILD/'diagnostics';folder.mkdir(exist_ok=True)
             (folder/'catalog.lua').write_text('return '+lua(catalog)+'\n',encoding='utf-8')
         chunks.append('local diagnostic_catalog='+lua(catalog)+'\n')
-        for name,path in [('research_native','tools/diagnostics/src/native.lua'),
+        for name,path in [('vehicle_probe_module','tools/diagnostics/src/vehicle.lua'),
+                          ('research_native','tools/diagnostics/src/native.lua'),
                           ('capture_module','tools/diagnostics/src/capture.lua'),
                           ('tracking_module','tools/diagnostics/src/tracking.lua'),
                           ('marker_module','tools/diagnostics/src/marker.lua'),
                           ('instrument_module','tools/diagnostics/src/instrument.lua')]:
             chunks.append('local '+name+'='+module(ROOT/path)+'\n')
+        chunks.append('research_native.vehicle=vehicle_probe_module\n')
         chunks.append('local instrumentation=instrument_module.new(research_native,capture_module,tracking_module,marker_module,diagnostic_catalog,profile,project.version)\n')
     chunks.append((ROOT/('tools/diagnostics/src/entry.lua' if OPTIONS.diagnostics else 'src/entry.lua')).read_text(encoding='utf-8'))
     if not OPTIONS.diagnostics:
@@ -197,7 +204,7 @@ def build():
                  'Requires Bingus Shared Loader v18+ and Mod Options Menu v1.2. '
                  'Uses code / research from HD2Runtime by SkyeShade https://github.com/SkyeShade/HD2Runtime')
     suffix=' Diagnostics'if OPTIONS.diagnostics else''
-    if OPTIONS.diagnostics:description+=' Includes optional F8 collection and a four-key, segmented 60-minute Hive Lord session on a separate diagnostic page; replaces the normal package.'
+    if OPTIONS.diagnostics:description+=' Includes optional F8 collection, vehicle comparison contexts and a segmented 60-minute Hive Lord session on a separate diagnostic page; automatic targeting is unchanged; replaces the normal package.'
     if NEXT:description+=' Next-attack collection catalog only; new warning rules are not enabled without live mapping.'
     manifest={'Version':1,'Guid':CONFIG['guid'],'Name':'Sekiro danger alert '+CONFIG['version']+suffix,'Description':description,
               'Options':[{'Name':'Sekiro danger alert','Description':description,'Include':['Addon']}]}
@@ -207,7 +214,9 @@ def build():
         files[name]=(ROOT/name).read_bytes()
     for source,target in [('Bingus-LICENSE.txt','LICENSES/Bingus-0BSD.txt'),('HD2Runtime-LICENSE.txt','LICENSES/HD2Runtime-MIT.txt')]:
         files[target]=(ROOT/'vendor'/source).read_bytes()
-    if OPTIONS.diagnostics:files['README-采集说明.txt']=(ROOT/'tools/diagnostics/README-采集说明.txt').read_bytes()
+    if OPTIONS.diagnostics:
+        files['README-采集说明.txt']=(ROOT/'tools/diagnostics/README-采集说明.txt').read_bytes()
+        files['README-载具测试.txt']=(ROOT/'tools/diagnostics/README-载具测试.txt').read_bytes()
     if NEXT:
         guide=(ROOT/'tools/diagnostics/README-新增招式采集.txt').read_bytes()
         files['README-使用说明.txt']=guide

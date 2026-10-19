@@ -38,7 +38,9 @@ local function initialize()
     overlay=overlay_module.new(native,assets,log,function()return menu:appearance()end)
     detector=detector_module.new(native,profile,log,function(event)
         if event.sample_time~=last_warning_sample then
-            last_warning_sample=event.sample_time;overlay:play(now());play_audio()
+            last_warning_sample=event.sample_time
+            local visual=overlay:play(now());local sound,why=play_audio()
+            if instrumentation then instrumentation:record_warning(event,visual,sound,why,menu:volume())end
         end
     end,function(move)return menu:enabled(move)end,function(move)return menu:delay(move)end)
     if instrumentation then instrumentation:initialize(native,detector,now,log,directory)end
@@ -51,9 +53,12 @@ local function visual_step(t)
         if not overlay.ready and overlay:warmup()then status('ready: head tracking and targeted attack warning')end
         if pending_visual and t>=pending_visual then
             pending_visual=nil
-            if overlay:play(t)then play_audio()end
+            local visual=overlay:play(t);local sound,why
+            if visual then sound,why=play_audio()end
+            if instrumentation then instrumentation:record_warning({source='manual_preview'},visual,sound,why,menu:volume())end
         end
         overlay:step(t)
+        if instrumentation then instrumentation:record_presentation(overlay,t)end
     end)
     if not ok then
         api.visual_failed=true;log('visual stopped: '..tostring(why));pcall(overlay.close,overlay)
@@ -86,6 +91,7 @@ local function step()
             log('diagnostics stopped: '..tostring(why))
             pcall(instrumentation.stop,instrumentation,'diagnostic failure');instrumentation=nil
         end
+        if instrumentation and instrumentation:consume_preview()then pending_visual=t+3 end
     end
 end
 local function stop(reason)

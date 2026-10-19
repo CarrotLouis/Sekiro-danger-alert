@@ -72,6 +72,7 @@ function M.new(native,path,log,clock,tracking,catalog,version)
     end
     local function emit(kind,data)
         if not file or not self.active then return false end
+        data=data or {}
         local line=line_for(kind,data)
         -- Reserve footer space. Rotation never resets the mission, tracker,
         -- ability clock, marker counters or session-relative timestamps.
@@ -92,6 +93,16 @@ function M.new(native,path,log,clock,tracking,catalog,version)
         if kind=='research_sample'then self.part_samples=self.part_samples+1 end
         if kind=='user_attack_mark'then self.part_markers=self.part_markers+1 end
         return true
+    end
+    local function budget(channel,cost)
+        local streak=cost>.020 and (self.overruns[channel]or 0)+1 or 0
+        self.overruns[channel]=streak
+        if streak>0 then
+            emit('sample_overrun',{channel=channel,cost_ms=cost*1000,consecutive=streak,
+                action=(cost>=.050 or streak>=3)and 'stop'or'backoff'})
+            self.backoff_until=clock()+1
+            if cost>=.050 or streak>=3 then self:stop(channel..' sampling budget exceeded')end
+        end
     end
     local function accept_scene(scene)
         if not scene.mission then
@@ -146,7 +157,7 @@ function M.new(native,path,log,clock,tracking,catalog,version)
             end
         end
     end
-    function self:start(mode,move_id,capture_context)
+    function self:start(mode,move_id,capture_context,vehicle_scenario)
         if self.active then self:stop('restarted') end
         self.mode=mode=='combat' and 'combat' or mode=='targeting' and 'targeting' or 'crusher'
         self.sample_interval=self.mode=='combat' and
@@ -154,6 +165,9 @@ function M.new(native,path,log,clock,tracking,catalog,version)
         self.requested_move=nil;self.resources=nil;self.long_capture=false;self.marker_bindings=nil
         self.marker_counts={};self.key_moves={};self.selected_move=move_id
         self.capture_context=capture_context=='comparison' and 'comparison' or 'requested'
+        local scenarios={on_foot=true,bastion_driver=true,bastion_gunner=true,frv_driver=true,empty_vehicle=true}
+        assert(vehicle_scenario==nil or scenarios[vehicle_scenario],'unknown vehicle capture scenario')
+        self.vehicle_scenario=vehicle_scenario
         if self.mode=='combat' then
             for _,move in ipairs(catalog.moves)do if move.id==move_id then self.requested_move=move end end
             assert(self.requested_move,'unknown capture move')
@@ -188,6 +202,7 @@ function M.new(native,path,log,clock,tracking,catalog,version)
         self.serial=(self.serial or 0)+1
         local timestamp=os.date('%Y%m%d-%H%M%S')..'-'..math.floor(clock()*1000)..'-'..self.serial
         local label=self.mode=='combat' and 'Combat-'..move_id..'-'..self.capture_context..'-' or self.mode=='targeting' and 'Targeting-' or 'Crusher-'
+        if vehicle_scenario and not self.long_capture then label=label..'vehicle_'..vehicle_scenario..'-'end
         base_path=path..'/Sekiro danger alert-'..label..timestamp
         limits=self.long_capture and {seconds=3600,part_seconds=300,part_bytes=8388608,total_bytes=268435456,parts=64}
             or {seconds=120,part_seconds=120,part_bytes=8388608,total_bytes=8388608,parts=1}
@@ -200,6 +215,7 @@ function M.new(native,path,log,clock,tracking,catalog,version)
         bytes_written=0;self.active=true;self.last={};self.errors=0;self.samples=0;self.cost=0
         self.successful_samples=0;self.marker_count=0;self.stop_reason=nil;self.channel_warning=nil
         self.ability_stamp=nil;self.observation=nil;self.detector_observation=nil;self.detector_t=nil;self.animation_cursor=0
+        self.overruns={};self.presentation_stamp=nil;self.backoff_until=nil;self.local_control=nil
         local source=native
         if self.mode=='targeting' then
             source={discover=function(_,h,c,n)return native:targeting_discover(h,c,n)end,
@@ -223,6 +239,8 @@ function M.new(native,path,log,clock,tracking,catalog,version)
             requested_status=self.requested_move and self.requested_move.status,
             requested_warning_enabled=self.requested_move and self.requested_move.status=='enabled_from_capture' or false,
             capture_context=self.mode=='combat' and self.capture_context,
+            vehicle_scenario=vehicle_scenario,vehicle_observation_only=vehicle_scenario and true or nil,
+            overrun_policy={backoff_above_ms=20,stop_consecutive=3,stop_immediate_ms=50},
             requested_resources=self.requested_move and self.requested_move.resources,
             new_moves_automatic_warning=expanded,automatic_warning_supported=true,
             manual_marker=self.long_capture and '- = [ ]'or'F8',manual_markers=self.marker_bindings,
@@ -278,7 +296,22 @@ function M.new(native,path,log,clock,tracking,catalog,version)
         emit('detector_sample',{sample_t=snapshot.t-began,nearby=observation.nearby,
             items=snapshot.abilities,decisions=snapshot.decisions,tracking=snapshot.tracking,
             avatar_entity=snapshot.scene.avatar.id,avatar_unit=snapshot.scene.avatar.unit})
-        if clock()-started>0.020 then self:stop('detector recording exceeded 20 ms budget') end
+        budget('detector_recording',clock()-started)
+    end
+    function self:record_warning(event,visual,audio,why,volume)
+        if not self.active or not self.vehicle_scenario then return end
+        emit('warning_output',{source=event.source or 'automatic',decision=event,
+            visual_started=visual==true,audio_request_succeeded=audio==true,audio_reason=why,
+            volume=volume,audio_muted=volume==0})
+    end
+    function self:record_presentation(overlay,t)
+        if not self.active or not self.vehicle_scenario then return end
+        local result={ready=overlay.ready==true,playing=overlay.until_time~=nil and t<overlay.until_time,
+            bitmap_present=overlay.id~=nil,anchor_status=overlay.anchor_status}
+        local stamp=json(result)
+        if stamp~=self.presentation_stamp then
+            self.presentation_stamp=stamp;emit('presentation_state',result)
+        end
     end
     function self:step()
         if not self.active then return end
@@ -288,6 +321,14 @@ function M.new(native,path,log,clock,tracking,catalog,version)
         local started=now
         local ok,why=pcall(function()
             native:begin();local scene=native:scene()
+            if self.vehicle_scenario and scene.mission and (scene.avatar or now>=next_heartbeat)then
+                local good,result=pcall(native.local_control_state,native,scene)
+                self.local_control=good and result or {error=tostring(result)}
+                if not scene.avatar and now>=next_heartbeat then
+                    emit('vehicle_local_state',{local_control=self.local_control,avatar_available=false,
+                        vehicle_scenario=self.vehicle_scenario})
+                end
+            end
             if not accept_scene(scene)then
                 if self.active and now>=next_heartbeat then
                     emit(self.waiting_avatar and 'waiting_for_local_avatar'or'waiting_for_mission');next_heartbeat=now+5
@@ -326,13 +367,25 @@ function M.new(native,path,log,clock,tracking,catalog,version)
                 for _,e in ipairs(selected) do
                     states[#states+1]=native:combat_state(aim_header,e,scene.avatar,now>=next_heartbeat)
                 end
+                local vehicle,vehicle_error,targets,geometry
+                if self.vehicle_scenario then
+                    local good,result=pcall(native.vehicle_state,native,scene,now>=next_heartbeat)
+                    if good then vehicle=result else vehicle_error=tostring(result)end
+                    local described,value=pcall(native.target_descriptions,native,h,states,scene,vehicle)
+                    if described then targets=value else vehicle_error=(vehicle_error or '')..'; targets: '..tostring(value)end
+                    local projected,value=pcall(native.presentation_geometry,native)
+                    geometry=projected and value or {available=false,reason=tostring(value)}
+                end
                 self.observation={sample_t=now-began,source='combat_probe',states=states,
-                    requested_move=self.requested_move.id,capture_context=self.capture_context,tracking=stats}
+                    requested_move=self.requested_move.id,capture_context=self.capture_context,tracking=stats,
+                    vehicle=vehicle,vehicle_error=vehicle_error,target_descriptions=targets,presentation_geometry=geometry}
                 emit('research_sample',{sample_t=now-began,states=states,abilities=active,tracking=stats,
                     requested_move=self.requested_move.id,avatar_entity=scene.avatar.id,
                     avatar_epoch=self.long_capture and self.avatar_epoch or nil,
                     avatar_unit=scene.avatar.unit,avatar_network=scene.avatar.network_id,
-                    ability_table=ability_stats,targeting_table=aim_table,local_position=scene.position})
+                    ability_table=ability_stats,targeting_table=aim_table,local_position=scene.position,
+                    vehicle=vehicle,vehicle_error=vehicle_error,target_descriptions=targets,presentation_geometry=geometry,
+                    local_control=self.vehicle_scenario and self.local_control or nil})
             elseif self.mode=='targeting' then
                 local states={}
                 for _,e in ipairs(selected) do states[#states+1]=native:targeting_state(h,e,scene.avatar) end
@@ -358,7 +411,7 @@ function M.new(native,path,log,clock,tracking,catalog,version)
             if self.errors>=8 then self:stop('eight read failures') end
         end
         local cost=clock()-started
-        if cost>0.020 then self:stop('sample exceeded 20 ms budget') end
+        budget('capture',cost)
         self.cost=cost
     end
     return self

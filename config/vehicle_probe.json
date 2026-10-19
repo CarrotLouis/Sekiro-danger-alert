@@ -1,0 +1,61 @@
+{
+  "build": "25480438",
+  "game_sha256": "2e2c3b7c2500646dadd5f2b4c6e0504dbb7e7896139f64cddc0d1813c718f51e",
+  "source": "Read-only seat/collection layout independently decoded from retained current-build module sections; installed Vehicle Specified Seat Switch used only as a lookup clue. No copied implementation or native calls.",
+  "globals": {
+    "seater": 53636472,
+    "collection": 53636488
+  },
+  "resources": {
+    "cc21c7ffd3ebefb9": {
+      "class_name": "frv",
+      "path": "content/fac_helldivers/vehicles/frv/frv"
+    },
+    "e9cd1d0d118886af": {
+      "class_name": "frv",
+      "path": "content/fac_helldivers/vehicles/frv/frv_superearth"
+    },
+    "9b2140378640432e": {
+      "class_name": "frv_support",
+      "path": "content/fac_helldivers/vehicles/frv_supply/frv_supply"
+    },
+    "2d85bfe3d8717fe5": {
+      "class_name": "frv_flamer",
+      "path": "content/fac_helldivers/vehicles/frv_heavy/frv_flamer"
+    },
+    "16474112801385b6": {
+      "class_name": "bastion",
+      "path": "content/fac_helldivers/vehicles/tank/tank"
+    },
+    "b0c9faf4af8903f9": {
+      "class_name": "maelstrom",
+      "path": "content/fac_helldivers/vehicles/tank_storm/tank_storm"
+    },
+    "423ff97d57ab04f5": {
+      "class_name": "tanker",
+      "path": "content/fac_helldivers/vehicles/oilrig/oil_rig"
+    }
+  },
+  "pins": [
+    {
+      "rva": 6547283,
+      "hex": "4c8b3d1e86ce023bd07442458b4f284533c0",
+      "label": "seater global and hash header"
+    },
+    {
+      "rva": 6547365,
+      "hex": "498b6f488bce48c1e106807c2930000f85490100008b1c298b54291c4c8b1dc085ce02",
+      "label": "seater row stride, collection ID, seat node and collection global"
+    },
+    {
+      "rva": 6513751,
+      "hex": "448bd2496bd2644b8d0452488d348500000000488b4148448b1402",
+      "label": "collection row stride and records"
+    },
+    {
+      "rva": 6530702,
+      "hex": "488b41484c8bc9418be8448bc28bd248c1e206896c101833c0488b49484889441128498b4948c644113001498b49384a8b14c1",
+      "label": "seater pending node and transition flag"
+    }
+  ]
+}

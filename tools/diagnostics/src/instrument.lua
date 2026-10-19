@@ -27,6 +27,7 @@ function M.new(extension,capture_module,tracking_module,marker_module,catalog,pr
         assert(#group.moves>=2 and #group.moves<=16,'diagnostic choice limit')
     end
     local menu,clock,log
+    local scenarios={[3]='on_foot',[4]='bastion_driver',[5]='bastion_gunner',[6]='frv_driver',[7]='empty_vehicle'}
     function self:register()
         if self.ready then return true end
         menu=rawget(_G,'ModOptionsMenu')
@@ -41,10 +42,12 @@ function M.new(extension,capture_module,tracking_module,marker_module,catalog,pr
                 description='仅当“采集阵营”选中'..group.name..'时使用；切换选择本身不会开始采集。'}}
         end
         specs[#specs+1]={'context',{type='choice',label='采集场景 / Context',default=1,
-            choices={'攻击本人 / Attacking me','攻击队友等对照 / Comparison'},
-            description='优先记录本人。普通范围按 F8；霸王虫任一范围均联合采四招：- 出土后下压，= 破土拍击，[ 扫射吐酸，] 直线吐酸。'}}
+            choices={'攻击本人 / Attacking me','攻击队友等对照 / Comparison',
+                '载具排查：本人徒步','载具排查：堡垒驾驶位','载具排查：堡垒炮手位',
+                '载具排查：FRV驾驶位','载具排查：空车对照（本人车外）'},
+            description='载具排查每个场景单独开始，F8标敌人出招；增加座位、载具、敌人目标及投影记录，不改变预警判断。霸王虫 - 下压、= 破土拍击、[或] 吐酸（无需区分变体）。'}}
         specs[#specs+1]={'action',{type='choice',label='开始或停止采集 / Record',default=1,
-            choices={'待命 / Ready','开始采集 / Start','停止采集 / Stop'},
+            choices={'待命 / Ready','开始采集 / Start','停止采集 / Stop','3秒后预览图标和声音'},
             description=function()
                 local c=self.collector;local state='未采集'
                 if c then
@@ -77,9 +80,11 @@ function M.new(extension,capture_module,tracking_module,marker_module,catalog,pr
                             if binding.move==selected then selected=combined.id;break end
                         end
                     end end
-                    self.pending={move=selected,context=menu.get(prefix..'context')==2 and 'comparison'or'requested'}
+                    local context=menu.get(prefix..'context')
+                    self.pending={move=selected,context=(context==2 or context==7)and 'comparison'or'requested',scenario=scenarios[context]}
                 end
-            elseif value==3 then self.pending={stop=true}end
+            elseif value==3 then self.pending={stop=true}
+            elseif value==4 then self.pending={preview=true}end
         end))
         self.ready=true;log('diagnostic menu registered: '..#specs..' options; marker keys enabled only during capture')
         return true
@@ -97,7 +102,7 @@ function M.new(extension,capture_module,tracking_module,marker_module,catalog,pr
         end
     end
     function self:reset()
-        self.pending=nil;self.marker=nil
+        self.pending=nil;self.marker=nil;self.preview_requested=nil
         if self.collector then self.collector:stop('all settings reset')end
         for key,value in pairs(self.defaults or {})do assert(menu.set(prefix..key,value))end
     end
@@ -110,16 +115,20 @@ function M.new(extension,capture_module,tracking_module,marker_module,catalog,pr
         if actions.reset==2 then self:reset()end
         local pending=self.pending;self.pending=nil
         if pending then
-            self.marker=nil
             assert(menu.set(prefix..'action',1))
-            if pending.stop then self.collector:stop('user stopped')
-            else self.collector:start('combat',pending.move,pending.context);self.next_sample=0 end
+            if pending.preview then self.preview_requested=true
+            else
+                self.marker=nil
+                if pending.stop then self.collector:stop('user stopped')
+                else self.collector:start('combat',pending.move,pending.context,pending.scenario);self.next_sample=0 end
+            end
         end
         if not self.collector.active then return end
         self.collector:record_detection(self.detector.snapshot)
         if t>=self.next_sample then
             self.collector:step()
-            self.next_sample=t+((self.collector.cost or 0)>.010 and .2 or(self.collector.sample_interval or .1))
+            self.next_sample=t+(((self.collector.cost or 0)>.010
+                or t<(self.collector.backoff_until or 0))and .2 or(self.collector.sample_interval or .1))
         end
         if self.collector.active then
             self.marker=self.marker or marker_module.new(self.collector.marker_bindings)
@@ -128,6 +137,15 @@ function M.new(extension,capture_module,tracking_module,marker_module,catalog,pr
                 for _,key in ipairs(edges)do self.collector:mark(key)end
             elseif edges then self.collector:mark()end
         end
+    end
+    function self:consume_preview()
+        local value=self.preview_requested;self.preview_requested=nil;return value
+    end
+    function self:record_warning(event,visual,audio,why,volume)
+        if self.collector then self.collector:record_warning(event,visual,audio,why,volume)end
+    end
+    function self:record_presentation(overlay,t)
+        if self.collector then self.collector:record_presentation(overlay,t)end
     end
     function self:stop(reason)
         if reason=='diagnostic failure'then self.failure='诊断已停止，请查看日志并重启游戏'end

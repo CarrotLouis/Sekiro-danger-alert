@@ -73,6 +73,9 @@ with zipfile.ZipFile(target) as archive:
     for token in [b"key='bugs_new'",b'requested_control',b'requested_warning_enabled',b'pending_capture']:
         assert token in source,token
     assert archive.read('README-使用说明.txt')==(ROOT/'tools/diagnostics/README-新增招式采集.txt').read_bytes()
+    assert archive.read('README-载具测试.txt')==(ROOT/'tools/diagnostics/README-载具测试.txt').read_bytes()
+    assert b'research_native.vehicle=vehicle_probe_module' in source
+    assert b'profile.vehicle_probe=' in source and b'function self:vehicle_state' in source
     assert b'WriteProcessMemory'not in source and b'VirtualProtect'not in source
     assert archive.read('README.txt').startswith(('Sekiro danger alert '+request['version']).encode())
 print('PASS 11 pending controls/14 capture scopes, four Hive keys, identities, defaults, bounded menu plan and isolated same-GUID collection ZIP; new warning integration remains pending')

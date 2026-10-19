@@ -219,7 +219,7 @@ function M.install(self,tools)
             local ok,value=pcall(fn)
             if ok then result[key]=value else result.observation_errors[key]=tostring(value)end
         end
-        optional('ai',function()return self:behavior_target(e,avatar,true)end)
+        optional('ai',function()return self:behavior_target(e,avatar,include_raw)end)
         optional('weapon_inputs',function()return self:weapon_inputs(e,include_raw)end)
         if e.resource=='843d18d4b5512b63'then
             optional('projectile_state',function()return self:projectile_state(e)end)
@@ -267,5 +267,6 @@ function M.install(self,tools)
         end
         return result
     end
+    if M.vehicle then M.vehicle.install(self,tools)end
 end
 return M
