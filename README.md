@@ -4,6 +4,10 @@ English / [简体中文](https://github.com/CarrotLouis/Sekiro-danger-alert/blob
 
 A Helldivers 2 Lua mod that displays a Sekiro-style danger icon above your Helldiver and plays a warning sound for recognized dangerous attacks aimed at you.
 
+## Current game compatibility
+
+As of 2026-11-01, 1.0.0 supports the older Steam build 25480438. It has **not been ported to the new Lua 5.1 / MDL3 environment**. MDL3 Preview dev.21 with Data Hub 0.3.0 does not expose the live enemy attack and targeting data this mod needs. Changing the loader dependency alone does not restore warnings. See the [MDL3 compatibility investigation](docs/MDL3-COMPATIBILITY.md) for the verified limitations and the interface needed to continue.
+
 ## Installation
 
 Import Sekiro danger alert 1.0.0.zip into your mod manager, replace the previous version, deploy and restart the game. Enable only one version. Allow about 20 seconds after startup.
