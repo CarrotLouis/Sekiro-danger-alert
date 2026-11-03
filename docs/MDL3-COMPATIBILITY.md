@@ -2,13 +2,29 @@
 
 English / [简体中文](https://github.com/CarrotLouis/Sekiro-danger-alert/blob/main/docs/MDL3-COMPATIBILITY_cn.md)
 
-Reviewed on 2026-11-01. This is a migration assessment, not a working MDL3 release. The production code, addon identity, saved option identifiers and existing packages are unchanged.
+Initially reviewed on 2026-11-01; dev.33 rechecked on 2026-11-03. This is a migration assessment, not a working MDL3 release. The production code, addon identity, saved option identifiers and existing packages are unchanged.
 
 ## Result
 
 The presentation and settings can be ported, but **the supplied public preview cannot currently restore the attack detector through its documented interfaces**. HD2 Data Hub 0.3.0 has no live enemy ability, attack clock, AI target or replicated attack-target interface. MDL3 Preview dev.21 also restricts native code to authorized modules. Our own replacement reader cannot simply be submitted through the bridge.
 
 The supported route is to have Data Hub expose these observations, or obtain an explicitly authorized read-only native module from the MDL3 author. This report does not modify the loader, its authorization mechanism, the anti-cheat, or game memory. No replacement warning package has been produced.
+
+## dev.33 recheck (2026-11-03)
+
+The supplied `MDL3-3.0.0-dev.33-preview-Data-Hub-0.3.0.zip` has SHA-256 `da60ebd6f96e890516c156992703cf8c7afc826d5ac234f56ce09ab173e5dda4`. Its ZIP CRC check passes, and its declared native DLL and loader-patch hashes match the packaged bytes. Direct comparison with the dev.21 bundle gives:
+
+| Component | dev.33 result | SHA-256 shared with dev.21 |
+|---|---|---|
+| Complete Data Hub addon archive | Byte-identical; Hub 0.3.0, API 1 | `b9f5f0899d519825e903b191fd4829c302f83c8060b2679a0c72965c4385458b` |
+| Native bridge DLL | Byte-identical; native host 0.4.5 | `99877159a6914fb4d5dc5efb0d3a12f87c56d75949c119800ebf08de3e61c08d` |
+| Packaged field reference | Byte-identical | `820b011ce3102bb58be5cb611d911377c2254a0df88784c9096b2f944ad06a90` |
+
+The Hub still exposes the same 18 public functions and 16 events listed below. It adds no enemy ability/attack clock, selected attack target, cancellation or preparation-state observation. It therefore cannot restore the existing pre-hit, local-target warning rules. Damage and explosion events remain too late for this purpose.
+
+The loader boot patch changed; its Lua header identifies dev.33, PUC Lua 5.1 and a protected preview. This review did not deobfuscate or execute that boot script. The detailed loader trust-flow discussion below comes from the readable dev.21 source. In dev.33, the unchanged Hub still loads a signed manifest and opens a trusted native owner; the native DLL is also unchanged. The supplied public reference provides no new supported interface for our own attack reader.
+
+The [official update history](https://ayakamods.com/mods/mdl3-preview-%E9%BA%A6%E5%BD%93%E5%8A%B33-%E9%A2%84%E8%A7%88%E7%89%88%EF%BC%81.5710/updates) describes installation, compatibility, audio and crash fixes. The unchanged Hub and its actual API, rather than the release notes alone, establish that the attack-data blocker remains. Updating the loader alone is insufficient; no new warning package or additional manual recording is requested on this evidence.
 
 ## Evidence and scope
 
@@ -73,7 +89,7 @@ stratagem_called, stratagem_used, strike_started, strike_ended
 Important distinctions for this mod:
 
 - `D.aim()` describes the **local player's** aim. Its `target` is a position, not an enemy's selected victim.
-- Entity handles expose identity, faction, health and optional position, not the current ability or AI target.
+- Entity handles expose identity, faction, a cached maximum health and optional event-time position, not the current ability or AI target. Post-damage current health is carried by damage events; there is no arbitrary-entity current-health getter.
 - `D.strikes()` covers the barrage / eagle / orbital mechanisms described in the reference. It is not a feed of every enemy melee, beam, cannon or charge attack.
 - Damage, death and explosion observations do not provide the pre-hit attack state needed to warn the player in time to dive.
 - Catalog strings containing `ability` or `behavior` are not proof of a live attack interface. Such strings also occur in the static explosion-name catalog.
@@ -82,7 +98,7 @@ The adapted BFV mod illustrates a valid migration for its own purpose: it subscr
 
 ## Why a private reader cannot just be added
 
-In the supplied loader, `PREVIEW` is true. Its FFI facade contains no functioning FFI operations; unsupported operations raise `E_UNTRUSTED`. Source submission and module loading are subject to native trust checks. Existing authorized audio and Hub modules have signed manifests with source hashes and permitted exports.
+In the readable dev.21 loader, `PREVIEW` is true. Its FFI facade contains no functioning FFI operations; unsupported operations raise `E_UNTRUSTED`. Source submission and module loading are subject to native trust checks. Existing authorized audio and Hub modules have signed manifests with source hashes and permitted exports. See the dev.33 recheck above for the scope of the current comparison.
 
 Consequently, the existence of `client`, owner objects or module-definition methods is not authorization for our own source. Changing a trusted module's body also changes its source hash. This investigation does not remove those checks, reuse another author's authorization, or treat internal native helpers as public addon APIs.
 
