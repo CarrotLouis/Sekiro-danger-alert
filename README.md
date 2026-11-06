@@ -6,7 +6,7 @@ A Helldivers 2 Lua mod that displays a Sekiro-style danger icon above your Helld
 
 ## Current game compatibility
 
-As of 2026-11-03, 1.0.0 supports the older Steam build 25480438. It has **not been ported to the new Lua 5.1 / MDL3 environment**. MDL3 Preview dev.33 ships the same Data Hub 0.3.0 as the previously reviewed dev.21; it still does not expose the live enemy attack and targeting data this mod needs. Changing the loader dependency alone does not restore warnings. See the [MDL3 compatibility investigation](docs/MDL3-COMPATIBILITY.md) for the byte comparison, verified limitations and interface needed to continue.
+As of 2026-11-06, 1.0.0 supports Steam build 25480438 with Bingus Shared Loader. MDL3 Preview dev.43 provides screen drawing and audio APIs. **HD2 Data Hub 0.6.0 still lacks the live enemy attack and targeting data required to restore the warning.** The checked interfaces and remaining requirements are documented in the [MDL3 compatibility investigation](docs/MDL3-COMPATIBILITY.md).
 
 ## Installation
 

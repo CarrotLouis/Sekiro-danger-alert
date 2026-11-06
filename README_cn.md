@@ -6,7 +6,7 @@
 
 ## 当前游戏兼容情况
 
-截至 2026-11-03，1.0.0 适配的是旧 Steam build 25480438，**尚未迁移到新的 Lua 5.1 / MDL3 环境**。MDL3 Preview dev.33 附带的 Data Hub 0.3.0 与此前核对的 dev.21 相同，仍没有公开本模组所需的敌方实时招式与索敌数据，仅更换加载器依赖无法恢复预警。字节比对、已核实的限制和后续所需接口见 [MDL3 兼容性研究](docs/MDL3-COMPATIBILITY_cn.md)。
+截至 2026-11-06，1.0.0 适配 Steam build 25480438，使用 Bingus Shared Loader。MDL3 Preview dev.43 提供屏幕绘图和音频接口。**HD2 Data Hub 0.6.0 仍缺少恢复预警所需的敌方实时招式与索敌数据。** 已核实的接口和剩余需求见 [MDL3 兼容性研究](docs/MDL3-COMPATIBILITY_cn.md)。
 
 ## 安装
 

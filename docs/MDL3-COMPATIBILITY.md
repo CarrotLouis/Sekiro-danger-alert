@@ -2,13 +2,32 @@
 
 English / [简体中文](https://github.com/CarrotLouis/Sekiro-danger-alert/blob/main/docs/MDL3-COMPATIBILITY_cn.md)
 
-Initially reviewed on 2026-11-01; dev.33 rechecked on 2026-11-03. This is a migration assessment, not a working MDL3 release. The production code, addon identity, saved option identifiers and existing packages are unchanged.
+Initial review on 2026-11-01. Bundle rechecks on 2026-11-03 (dev.33) and 2026-11-06 (dev.43). Sekiro danger alert 1.0.0 targets Steam build 25480438.
 
 ## Result
 
-The presentation and settings can be ported, but **the supplied public preview cannot currently restore the attack detector through its documented interfaces**. HD2 Data Hub 0.3.0 has no live enemy ability, attack clock, AI target or replicated attack-target interface. MDL3 Preview dev.21 also restricts native code to authorized modules. Our own replacement reader cannot simply be submitted through the bridge.
+MDL3 dev.43 supplies public screen drawing and audio APIs. **HD2 Data Hub 0.6.0 still lacks the data that the attack detector needs**, including enemy ability and attack progress, authoritative or replicated attack targets, and updates when the attack changes or cancels. Following the player's head also requires a supported head position and projection path.
 
 The supported route is to have Data Hub expose these observations, or obtain an explicitly authorized read-only native module from the MDL3 author. This report does not modify the loader, its authorization mechanism, the anti-cheat, or game memory. No replacement warning package has been produced.
+
+## dev.43 and Data Hub 0.6.0 recheck (2026-11-06)
+
+The supplied `MDL3-3.0.0-dev.43-preview-Data-Hub-0.6.0.zip` has SHA-256 `f2bfe300b166471344ade74c06482cc6d5ae88eef7a216dedd8cbf44c9c03f0c`. The ZIP CRC check passes and the actual DLL and loader patch hashes match `BUILD.json`. The new Hub Lua body has SHA-256 `d8d074a1f1e1076800f1827180a96190f4deb08ebea3e2a4adb6e5d0d0b1f970`. The native bridge DLL is byte-identical to dev.33 (native host 0.4.5), and the Hub still starts through a signed manifest and a trusted owner.
+
+Hub 0.6.0 adds `enemy_pool`, `buffs`, `lobby`, `lobby_search` and `backpacks` to the public API from 0.3.0. It exposes 23 functions and the same 16 event names. The field reference, public table and native dispatcher agree on the scope of the new data.
+
+| Interface | What the supplied implementation provides |
+|---|---|
+| `HD2Data.enemy_pool()` | Predicted entity types that a mission may load. It has no live enemy instances or attack states. |
+| `entity_damaged`, `entity_died` | Additional attacker or killer entity identity. The damage event reads this from the latest damage attribution after observing a health decrease. It cannot supply a warning before that hit. |
+| `HD2Data.lobby()` | `host_is_local` and member roles when lobby data is available. The public API exposes no enemy attack targets or their replicas on host or client. |
+| `HD2Data.strikes()` and `aim()` | The same strike reader and local aiming reader as 0.3.0. They cover specific strike mechanisms and the local player's aim, respectively. |
+
+The bundled GUI guide documents `MDL3.gui` API 1. A canvas can draw packaged image frames at screen coordinates, which gives the animation a supported rendering path. The API has no world-to-screen projection, and `HD2Data.player().position` describes the avatar's root. The head anchor still needs a verified position and projection source. The GUI guide also says moving an image rebuilds the canvas, so in-game frame cost matters for a tracked animation.
+
+The bundled audio guide documents `MDL3.audio` API 2. Our 48 kHz stereo PCM16 cue fits the documented format, and the namespace volume API can implement the independent slider. The approved art and sound are reusable source assets. Image deployment, visual fidelity and playback still need an in-game check. [Author's dev.43 release notes](https://ayakamods.com/mods/mdl3-preview-%E9%BA%A6%E5%BD%93%E5%8A%B33-%E9%A2%84%E8%A7%88%E7%89%88%EF%BC%81.5710/update/8864/)
+
+The migration prerequisite remains a supported source of pre-hit enemy attack and target observations on host and client. This recheck covers the supplied archive, Hub implementation, and GUI and audio documentation offline. Warning timing, head tracking and multiplayer behavior remain unverified in the current game.
 
 ## dev.33 recheck (2026-11-03)
 
@@ -28,7 +47,7 @@ The [official update history](https://ayakamods.com/mods/mdl3-preview-%E9%BA%A6%
 
 ## Evidence and scope
 
-The owner's supplied files were inspected as data; their installer and DLL were not executed by this investigation. The missing temporary copy of the field reference was recovered from the adjacent `For Modder.zip`.
+This section records the original dev.21 assessment. The owner's supplied files were inspected as data. The missing temporary copy of the field reference was recovered from the adjacent `For Modder.zip`.
 
 | Artifact | Identity |
 |---|---|
@@ -75,7 +94,7 @@ The image animation and original sound do not need artistic reconstruction. The 
 
 ## What Data Hub actually exposes
 
-The complete supplied field reference was cross-checked against the packaged public API and native dispatcher. Public functions cover local/squad player data, local aim, stratagems and catalogs, active strikes, mission state, subscriptions and diagnostics. None returns a live enemy attack snapshot.
+The original 0.3.0 field reference was cross-checked against the packaged public API and native dispatcher. Its public functions cover local/squad player data, local aim, stratagems and catalogs, active strikes, mission state, subscriptions and diagnostics. The dev.43 recheck above covers the additions in 0.6.0.
 
 Its 16 event names are:
 
@@ -104,7 +123,7 @@ Consequently, the existence of `client`, owner objects or module-definition meth
 
 ## Interface request for the provider author
 
-The following is a **proposed data contract**, not an API that exists in Hub 0.3.0. A filtered snapshot or equivalent pre-attack event stream would both work, provided they include cancellation and retargeting updates.
+The following is the **proposed data contract** for the attack observations still missing in Hub 0.6.0. A filtered snapshot or equivalent pre-attack event stream would both work, provided they include cancellation and retargeting updates.
 
 | Required information | Purpose |
 |---|---|
